@@ -1,0 +1,11 @@
+{ 
+  "queue": "standard",
+  "project": "ChiPpipeline",
+  "res_req": "span[hosts=1] select[rhel7]",
+  "steps": {
+    "Bowtie": {
+      "processors" : "20",
+      "res_req": "rusage[mem=10000]",
+    },
+  },
+}
