@@ -10,17 +10,17 @@ inputs:
   fastqfile: File
   chromsizes: File
   output_prefix: string?
-  best_alignments: boolean
-  nomodel: boolean
-  wiggle: boolean
-  single_profile: boolean
-  good_alignments: int
-  limit_alignments: int
-  processors: int
-  shiftsize: int
-  space: int
-  
-  
+  best_alignments: boolean?
+  nomodel: boolean?
+  wiggle: boolean?
+  single_profile: boolean?
+  good_alignments: int?
+  limit_alignments: int?
+  processors: int?
+  shiftsize: int?
+  space: int?
+
+
 outputs:
   sam:
     outputSource: Bowtie/samfile
@@ -55,7 +55,7 @@ outputs:
     type: File
 
   treat:
-    outputSource: MACS/treatfile
+    outputSource: MACS/wigfile
     type: File
 
   outRPM:
@@ -122,7 +122,7 @@ steps:
       space: space
       wiggle: wiggle
       single_profile: single_profile
-    out: [peaksbedfile, peaksxlsfile, summitsfile, treatfile]
+    out: [peaksbedfile, peaksxlsfile, summitsfile, wigfile]
     run: ../tools/macs.cwl
 
   RMDupSort:
@@ -139,7 +139,7 @@ steps:
 
   RPM:
     in:
-      treatfile: MACS/treatfile
+      wigfile: MACS/wigfile
       peaksxls: MACS/peaksxlsfile
     out: [RPMwig]
     run: ../tools/normalize.cwl
@@ -150,40 +150,3 @@ steps:
       chromsizes: chromsizes
     out: [outfile]
     run: ../tools/wigtobigwig.cwl
-
-
-s:name: "ChipSeq-workflow"
-s:author:
-  - class: s:Person
-    s:name: Modupeore Adetunji
-    s:email: mailto:madetunj@stjude.org
-    s:worksFor:
-      - class: s:Organization
-        s:name: St.Jude Children's Research Hospital
-        s:location: 262 Danny Thomas Place Memphis, TN 38105
-        s:department:
-          - class: s:Organization
-            s:name: Computational Biology
- 
-s:citation: if any
-s:codeRepository: if any
-s:dateCreated: "2019-08-01"
-s:license: if any
- 
-doc: |
-  Workflow for ChiP-Seq peak calling for single-end fastQ files
-  It performs the following steps:
-    1. Reference mapping in SAM format using `bowtie`
-    2. Convert to BAM, sort, remove duplicates & index are performed using `samtools`.
-    3. Peak calling using `macs` & normalization.
-    4. Convert normalized peak calls to binary file for visualization using `wigToBigWig`.
-
-  Usage:
-    cwlexec -p ChipSeq-workflow.cwl inputparameters.cwl -c LSFconfig.json
-
-$namespaces:
-  s: http://schema.org/
- 
- 
-$schemas:
- - https://schema.org/docs/schema_org_rdfa.html

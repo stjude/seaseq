@@ -4,7 +4,7 @@ baseCommand: [ bedtools, getfasta ]
 class: CommandLineTool
 
 doc: |
-  bedtools getfasta -fi <peads bed> -fo <fasta outputfile>
+  bedtools getfasta -fi <reference fa> -bed <peads bed> -fo <fasta outputfile>
 
 
 requirements:
