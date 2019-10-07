@@ -7,7 +7,7 @@
 #------
 ###FILES
 #------
-location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/ChipSeqPipeline"
+location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/ChipSeqPipeline"
 parameters="$location/inputparameters.yml"
 script="$location/workflows/Toil-chipSEQ.cwl"
 

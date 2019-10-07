@@ -2,22 +2,22 @@
 
 reference: 
   class: Directory
-  location: /home/madetunj/.genomes/hg19/TOPHAT
+  location: /rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/genomes/hg19/TOPHAT
 
 fastqfile: 
   class: File
-  path: /home/madetunj/ChipToCWL/example/selected.fastq.gz
+  path: /rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/fastqfiles/selected.fastq.gz
 
 chromsizes: 
   class: File
-  path: /home/madetunj/.genomes/hg19/UCSC_CHROMSIZES/UCSC_hg19_chromInfo.tab
+  path: /rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/genomes/hg19/UCSC_CHROMSIZES/UCSC_hg19_chromInfo.tab
 
 blacklistfile:
   class: File
-  path: /home/madetunj/.genomes/hg19/hg19-blacklist.v2.bed
+  path: /rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/genomes/hg19/hg19-blacklist.v2.bed
 
 motifdatabases:
-  - /home/madetunj/motif_databases/JASPAR/JASPAR2018_CORE_vertebrates_redundant.meme
-  - /home/madetunj/motif_databases/EUKARYOTE/jolma2013.meme
-  - /home/madetunj/motif_databases/CIS-BP/Homo_sapiens.meme
-  - /home/madetunj/motif_databases/HUMAN/HOCOMOCOv11_full_HUMAN_mono_meme_format.meme
+  - /rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/motif_databases/JASPAR/JASPAR2018_CORE_vertebrates_redundant.meme
+  - /rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/motif_databases/EUKARYOTE/jolma2013.meme
+  - /rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/motif_databases/CIS-BP/Homo_sapiens.meme
+  - /rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/motif_databases/HUMAN/HOCOMOCOv11_full_HUMAN_mono_meme_format.meme
