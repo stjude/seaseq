@@ -7,7 +7,7 @@ use File::Basename;
 use Getopt::Long;
 use Statistics::R;
 
-my $PATH = "/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/ChipSeqPipeline/scripts";
+my $PATH = "/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/software";
 my ($help, $manual, $rmdupbam, $gfffile, $outfile);
 my $usage = "perl $0 -g <gff file> -b <bam file> [-outfile <outputfile>]\n";
 
@@ -18,7 +18,7 @@ else { $outfile = fileparse($outfile, qr/\.[^.]*(\..*)?$/); }
 
 #generation of gff regions files.
 `grep "gbkey=Gene" $gfffile | grep "gene_biotype=protein_coding" > genes.gff`;
-`perl $PATH/flanking.pl -i genes.gff -f 2000 > promoters.gff`;
+`perl flanking.pl -i genes.gff -f 2000 > promoters.gff`;
 `bedtools flank -i genes.gff -g ~/.genomes/hg19/UCSC_CHROMSIZES/UCSC_hg19_chromInfo.tab -l 2000 -r 0 -s > upstream.gff`;
 `bedtools flank -i genes.gff -g ~/.genomes/hg19/UCSC_CHROMSIZES/UCSC_hg19_chromInfo.tab -l 0 -r 2000 -s > downstream.gff`;
 

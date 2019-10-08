@@ -79,9 +79,3 @@ outputs:
     type: File
     outputBinding:
       glob: '*islandfiltered.bed'
- 
-  wigfile:
-    type: File
-    outputBinding:
-      glob: '*islandfiltered-normalized.wig'
-
