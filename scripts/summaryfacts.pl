@@ -7,6 +7,7 @@ use warnings;
 use File::Basename;
 use Getopt::Long;
 
+my $PATH = "/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/software";
 my ($help, $manual, $rmdupbam, $peaksbed, $bamflag, $rmdupflag, $bkflag, $outfile, $fastqczip);
 my $usage = "perl $0 -b <bam file> -p <peaks bed> -bamflag <bamflagstat> -rmdupflag <rmdupflagstat> -bkflag <bklistflagstat> -outfile <outputfile> -fqc <fastqczipfile>\n";
 
@@ -72,8 +73,10 @@ if ($rmdupbam) {
 
 #Process NSC (normalized) + RSC (relative strand cross-correlation coefficient)
   print "Processing NSC and RSC ...";
-  `Rscript run_spp.R -c=$rmdupbam -savp -out=$sppout 1>outfile.fake 2>outfile.fake;`;
-  open (IN, "<$sppout") || die $!; my ($NSC, $RSC) = (split("\t", <IN>))[8,9]; close(IN);
+  print "run_spp.R -c=$rmdupbam -savp -out=$sppout 1>outfile.fake 2>outfile.fake;\n";
+  `Rscript $PATH/run_spp.R -c=$rmdupbam -savp -out=$sppout 1>outfile.fake 2>outfile.fake;`;
+  open (IN, "<$sppout"); # || die $!; 
+  my ($NSC, $RSC) = (split("\t", <IN>))[8,9]; close(IN);
   print OUT "Normalized Strand cross-correlation coefficient (NSC) = $NSC\nRelative Strand cross-correlation Coefficient (RSC) = $RSC\n";
   print ".. Done\n";
 }
@@ -82,7 +85,7 @@ if ($peaksbed && $rmdupbam) {
 #FRIP score
 print "Processing FRIP score ... ";
   $countsfile = fileparse($peaksbed, qr/\.[^.]*(\.bed)?$/)."-out.txt"; 
-  `bedtools sort -i $bambed | intersectBed -a $peaksbed -b stdin -c > $countsfile`;
+  `sort-bed $bambed | intersectBed -sorted -a $peaksbed -b stdin -c > $countsfile`;
 
   open(IN,"<$countsfile")|| die $!;
   while(<IN>){

@@ -17,9 +17,9 @@ outputs:
   outfile:
     type: File
     outputBinding:
-      glob: '*ame.txt'
+      glob: '*/meme.txt'
 
   htmlfile:
     type: File
     outputBinding:
-      glob: '*ame.html'
+      glob: '*/meme.html'

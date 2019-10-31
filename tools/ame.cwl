@@ -24,9 +24,9 @@ outputs:
   outfile:
     type: File
     outputBinding:
-      glob: '*ame.txt'
+      glob: '*/ame.txt'
 
   htmlfile:
     type: File
     outputBinding:
-      glob: '*ame.html'
+      glob: '*/ame.html'

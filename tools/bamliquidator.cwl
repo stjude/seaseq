@@ -18,6 +18,7 @@ requirements:
 inputs:
   bamfile:
     type: File
+    secondaryFiles: $(self.basename+".bai")
     inputBinding:
       prefix: -b
 
@@ -44,9 +45,19 @@ outputs:
   promoters:
     type: File
     outputBinding: 
-      glob: '*promoters.pdf'
+      glob: '*-promoters.pdf'
 
   genebody:
     type: File
     outputBinding:
-      glob: '*gene.pdf'
+      glob: '*-entiregene.pdf'
+
+  promotersheatmap:
+    type: File
+    outputBinding: 
+      glob: '*heatmap.promoters.png'
+
+  genebodyheatmap:
+    type: File
+    outputBinding:
+      glob: '*heatmap.entiregene.png'

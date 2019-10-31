@@ -90,3 +90,26 @@ outputs:
     type: File
     outputBinding:
       glob: '*_treat_afterfiting_all.wig.gz'
+
+
+doc: |
+  Model-based Analysis for ChIP-Sequencing
+    Usage: macs.cwl [-h] [--nomodel] --treatmentfile TREATMENTFILE --outputname OUTPUTNAME 
+                [--shiftsize SHIFTSIZE] [--single_profile] [--space SPACE] [--nomodel] 
+                [--wiggle]
+
+    Options: --treatmentfile	FILE 	input CHiP bam file
+             --outputname	FILE	experiment outfile file name 
+             --shiftsize	INT	bp shift size (default: 200)
+             --space		INT	saved wiggle file resolution (default: 50)
+             --wiggle		BOOLEAN	save extended fragment pileup into a wiggle file (default: true)
+             --nomodel		BOOLEAN	build shifting model (default: true)
+             --single_profile	BOOLEAN	entire genome for treatment and input (default: true)
+                
+ 
+$namespaces:
+  s: http://schema.org/
+ 
+ 
+$schemas:
+ - https://schema.org/docs/schema_org_rdfa.html
