@@ -71,7 +71,7 @@ then
   cwlexec -p -w $tmp -o $out -c $config -p $secondscript $NEW_UUID.yml 1>$logout.2 2>$logerr.2
 
   ##extract require files into folder
-  if [ -s $logout.2]
+  if [ -s $logout.2 ]
   then
     chipseqreadjson.pl -i $logout.2 -s 2 -f $OUTPUTFOLDER
     rm -rf $NEW_UUID.yml $logerr $logerr.2 $logout $logout.2
