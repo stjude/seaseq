@@ -11,8 +11,7 @@ requirements:
   expressionLib:
   - var var_output_name = function() {
       if (inputs.outfile == ""){
-        if (inputs.bamfile != null) { return inputs.bamfile.nameroot+'.txt'; }
-        else if (inputs.peaksbed != null) { return inputs.peaksbed.nameroot+'.txt'; }
+        if (inputs.peaksbed != null) { return inputs.peaksbed.nameroot+'.txt'; }
         else if (inputs.bamflag != null) { return inputs.bamflag.nameroot+'.txt'; }
         else if (inputs.rmdupflag != null) { return inputs.rmdupflag.nameroot+'.txt'; }
         else if (inputs.bkflag != null) { return inputs.bkflag.nameroot+'.txt'; }

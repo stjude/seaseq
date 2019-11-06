@@ -80,12 +80,12 @@ dev.off();
 colz=colorRampPalette(c("white", "red"))(quantile(as.vector(t(promoters[,3:ncol(promoters)])),.80));
 breaks=seq(0,(quantile(as.vector(t(promoters[,3:ncol(promoters)])),.80))+1,by=1);
 png("$outfile-heatmap.promoters.png", type="cairo");
-heatmap.3(promoters[,3:ncol(promoters)], col=colz, breaks=breaks, trace="none", dendrogram="none", Colv=NA, Rowv=NA, density.info="none", labRow=NA, labCol=NA, main="$samplename Promoters");
+heatmap.3(promoters[,3:ncol(promoters)], col=colz, breaks=breaks, trace="none", dendrogram="none", Colv=NA, Rowv=NA, density.info="none", labRow=NA, labCol=NA, main="$samplename\nPromoters");
 dev.off();
 colz=colorRampPalette(c("white", "red"))(quantile(as.vector(t(combined[,3:ncol(combined)])),.80));
 breaks=seq(0,(quantile(as.vector(t(combined[,3:ncol(combined)])),.80))+1,by=1);
 png("$outfile-heatmap.entiregene.png",type="cairo");
-heatmap.3(combined[,3:ncol(combined)], col=colz, breaks=breaks, trace="none", dendrogram="none", Colv=NA, Rowv=NA, density.info="none", labRow=NA, labCol=NA, main="$samplename  MetaGenes");
+heatmap.3(combined[,3:ncol(combined)], col=colz, breaks=breaks, trace="none", dendrogram="none", Colv=NA, Rowv=NA, density.info="none", labRow=NA, labCol=NA, main="$samplename\nMetaGenes");
 dev.off();
 ENDOFR
 

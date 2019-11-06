@@ -47,7 +47,6 @@ if ($step == 1) {
 
 elsif ($step == 2 && $folder) {
   #output to desired folder
-  `cp $data->{'summits'}->{'path'} $folder`;
   `cp $data->{'sicerbed'}->{'path'} $folder`;
   `cp $data->{'genebodypdf'}->{'path'} $folder`;
   `cp $data->{'promoterspdf'}->{'path'} $folder`;
@@ -55,6 +54,7 @@ elsif ($step == 2 && $folder) {
   `cp $data->{'promotersheatmappng'}->{'path'} $folder`;
   
   #auto
+  `cp $data->{'summits'}->{'path'} $folder`;
   `cp $data->{'ameout'}->{'path'} $folder`;
   `cp $data->{'memeout'}->{'path'} $folder`;
   `cp $data->{'memehtml'}->{'path'} $folder`;
@@ -63,9 +63,10 @@ elsif ($step == 2 && $folder) {
   `cp $data->{'peaksxls'}->{'path'} $folder`;
   `cp $data->{'peaksbed'}->{'path'} $folder`;
   `cp $data->{'statout'}->{'path'} $folder`;
-  `cp $data->{'tdffile'}->{'path'} $folder`;
+  `cp $data->{'outtdf'}->{'path'} $folder`;
 
   #all
+  `cp $data->{'allsummits'}->{'path'} $folder`;
   `cp $data->{'allameout'}->{'path'} $folder`;
   `cp $data->{'allmemeout'}->{'path'} $folder`;
   `cp $data->{'allmemehtml'}->{'path'} $folder`;
@@ -74,5 +75,5 @@ elsif ($step == 2 && $folder) {
   `cp $data->{'allpeaksxls'}->{'path'} $folder`;
   `cp $data->{'allpeaksbed'}->{'path'} $folder`;
   `cp $data->{'allstatout'}->{'path'} $folder`;
-  `cp $data->{'alltdffile'}->{'path'} $folder`;
+  `cp $data->{'allouttdf'}->{'path'} $folder`;
 }
