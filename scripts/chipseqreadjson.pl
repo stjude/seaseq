@@ -33,7 +33,6 @@ if ($step == 1) {
   print $fh "\nSTATrmdupoutfile: \n  class: File\n  path: " .
       $data->{'statrmdup'}->{'path'} . "\n";
   close $fh;
-
   if ($folder) {
     `mkdir -p $folder`;
     #copy the relevant files to the specified folder
@@ -47,6 +46,7 @@ if ($step == 1) {
 
 elsif ($step == 2 && $folder) {
   #output to desired folder
+  `mkdir -p $folder`;
   `cp $data->{'sicerbed'}->{'path'} $folder`;
   `cp $data->{'genebodypdf'}->{'path'} $folder`;
   `cp $data->{'promoterspdf'}->{'path'} $folder`;

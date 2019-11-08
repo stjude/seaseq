@@ -13,5 +13,11 @@
     "MetaGene": {
       "res_req": "rusage[mem=10000]",
     },
+    "Peaks-Auto/PeaksQC": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "Peaks-All/PeaksQC": {
+      "res_req": "rusage[mem=10000]",
+    },
   },
 }

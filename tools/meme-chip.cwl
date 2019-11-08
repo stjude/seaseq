@@ -27,7 +27,7 @@ inputs:
     inputBinding:
       position: 1000
       shellQuote: false
-      prefix: '&& mv ame_out/ame.txt'
+      prefix: '&& mv memechip_out/meme_out/meme.txt'
       valueFrom: |
         ${
             if (self == ""){
@@ -43,7 +43,7 @@ inputs:
     inputBinding:
       position: 999
       shellQuote: false
-      prefix: '&& mv ame_out/ame.html'
+      prefix: '&& mv memechip_out/meme_out/meme.html'
       valueFrom: |
         ${
             if (self == ""){
