@@ -22,32 +22,40 @@ my $data = decode_json($json);
 if ($step == 1) {
   #output to tempfile: bamfile, zipfile, STATbkoutfile, STATbamoutfile, STATrmdupoutfile
   open my $fh, ">>", $outfile;
-  print $fh "\nbamfile: \n  class: File\n  path: " .
-      $data->{'bam'}->{'path'} . "\n";
-  print $fh "\nzipfile: \n  class: File\n  path: " .
-      $data->{'readqczip'}->{'path'} . "\n";
+  print $fh "\nbklistbamfile: \n  class: File\n  path: " .
+      $data->{'bklist_bam'}->{'path'} . "\n";
+  print $fh "\nrmdupbamfile: \n  class: File\n  path: " .
+      $data->{'rmdup_bam'}->{'path'} . "\n";
+  print $fh "\nreadzipfile: \n  class: File\n  path: " .
+      $data->{'readqc_zip'}->{'path'} . "\n";
   print $fh "\nSTATbkoutfile: \n  class: File\n  path: " .
-      $data->{'statbk'}->{'path'} . "\n";
+      $data->{'stat_bk'}->{'path'} . "\n";
   print $fh "\nSTATbamoutfile: \n  class: File\n  path: " .
-      $data->{'statbam'}->{'path'} . "\n";
+      $data->{'stat_bam'}->{'path'} . "\n";
   print $fh "\nSTATrmdupoutfile: \n  class: File\n  path: " .
-      $data->{'statrmdup'}->{'path'} . "\n";
+      $data->{'stat_rmdup'}->{'path'} . "\n";
   close $fh;
+
   if ($folder) {
     `mkdir -p $folder`;
     #copy the relevant files to the specified folder
-    `cp $data->{'bam'}->{'path'} $folder`;
-    `cp $data->{'readqczip'}->{'path'} $folder`;
-    `cp $data->{'bamqczip'}->{'path'} $folder`;
-    `cp $data->{'readqchtml'}->{'path'} $folder`;
-    `cp $data->{'bamqchtml'}->{'path'} $folder`;
+    `cp $data->{'sam_sort'}->{'path'} $folder`;
+    `cp $data->{'rmdup_bam'}->{'path'} $folder`;
+    `cp $data->{'rmdup_index'}->{'path'} $folder`;
+    `cp $data->{'bklist_bam'}->{'path'} $folder`;
+    `cp $data->{'bklist_index'}->{'path'} $folder`;
+    `cp $data->{'readqc_zip'}->{'path'} $folder`;
+    `cp $data->{'bamqc_zip'}->{'path'} $folder`;
+    `cp $data->{'readqc_html'}->{'path'} $folder`;
+    `cp $data->{'bamqc_html'}->{'path'} $folder`;
   }
 }
 
 elsif ($step == 2 && $folder) {
   #output to desired folder
-  `mkdir -p $folder`;
   `cp $data->{'sicerbed'}->{'path'} $folder`;
+  `cp $data->{'sicergraph'}->{'path'} $folder`;
+  `cp $data->{'sicerisland'}->{'path'} $folder`;
   `cp $data->{'genebodypdf'}->{'path'} $folder`;
   `cp $data->{'promoterspdf'}->{'path'} $folder`;
   `cp $data->{'genebodyheatmappng'}->{'path'} $folder`;
@@ -62,8 +70,13 @@ elsif ($step == 2 && $folder) {
   `cp $data->{'outBW'}->{'path'} $folder`;
   `cp $data->{'peaksxls'}->{'path'} $folder`;
   `cp $data->{'peaksbed'}->{'path'} $folder`;
+  `cp $data->{'treatwig'}->{'path'} $folder`;
   `cp $data->{'statout'}->{'path'} $folder`;
   `cp $data->{'outtdf'}->{'path'} $folder`;
+  `cp $data->{'summitameout'}->{'path'} $folder`;
+  `cp $data->{'summitmemeout'}->{'path'} $folder`;
+  `cp $data->{'summitmemehtml'}->{'path'} $folder`;
+  `cp $data->{'summitamehtml'}->{'path'} $folder`;
 
   #all
   `cp $data->{'allsummits'}->{'path'} $folder`;
@@ -74,6 +87,11 @@ elsif ($step == 2 && $folder) {
   `cp $data->{'alloutBW'}->{'path'} $folder`;
   `cp $data->{'allpeaksxls'}->{'path'} $folder`;
   `cp $data->{'allpeaksbed'}->{'path'} $folder`;
+  `cp $data->{'alltreatwig'}->{'path'} $folder`;
   `cp $data->{'allstatout'}->{'path'} $folder`;
   `cp $data->{'allouttdf'}->{'path'} $folder`;
+  `cp $data->{'allsummitameout'}->{'path'} $folder`;
+  `cp $data->{'allsummitmemeout'}->{'path'} $folder`;
+  `cp $data->{'allsummitmemehtml'}->{'path'} $folder`;
+  `cp $data->{'allsummitamehtml'}->{'path'} $folder`;
 }

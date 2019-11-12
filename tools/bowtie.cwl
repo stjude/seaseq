@@ -15,11 +15,8 @@ requirements:
 
   expressionLib:
   - var var_output_name = function() {
-      if (inputs.output_prefix != null) {
-        return inputs.output_prefix+'.sam';
-      } else {
-        return inputs.fastqfile.basename.split('.fastq')[0]+'.sam';
-      }
+      if (inputs.output_prefix != null) { return inputs.output_prefix+'.sam'; } 
+      else { return inputs.fastqfile.basename.split('_').slice(0,-2).join('_')+'.sam'; }
    };
   - var var_readLength = function() {
       if (inputs.readLengthFile != null) {

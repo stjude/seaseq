@@ -5,7 +5,7 @@ class: CommandLineTool
 
 label: MACS - Model based Analysis from ChiP-Seq
 doc: |
-  macs14 -t $file.sorted.bam -w -p 1e-9 --keep-dup=auto -n $file\_p9_kd-auto
+  macs14 -t $file.bam -w -p 1e-9 --keep-dup=auto -n $file\_p9_kd-auto
 
 requirements:
 - class: ShellCommandRequirement
@@ -13,7 +13,7 @@ requirements:
 
   expressionLib:
   - var var_output_name = function() {
-      return inputs.treatmentfile.nameroot.split('.').slice(0,-1).join('.')+'_p9_kd-'+inputs.keep_dup+'_nm';
+      return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_p9_kd-'+inputs.keep_dup+'_nm';
    };
 
 inputs:

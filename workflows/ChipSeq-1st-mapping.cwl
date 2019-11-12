@@ -16,42 +16,55 @@ inputs:
   processors: int?
 
 outputs:
-  bam:
+  sam_sort:
+    outputSource: SamSort/outfile
+    type: File
+
+  rmdup_bam:
     outputSource: SamRMDup/outfile
     type: File
 
-  index:
+  rmdup_index:
     outputSource: SamIndex/outfile
     type: File
 
-  bamqchtml:
+  bklist_bam:
+    outputSource: BkList/outfile
+    type: File
+
+  bklist_index: 
+    outputSource: BkIndex/outfile
+    type: File
+
+  bamqc_html:
     outputSource: BamQC/htmlfile
     type: File
 
-  bamqczip:
+  bamqc_zip:
     outputSource: BamQC/zipfile
     type: File
 
-  readqczip:
+  readqc_zip:
     outputSource: ReadQC/zipfile
     type: File
 
-  readqchtml:
+  readqc_html:
     outputSource: ReadQC/htmlfile
     type: File
 
-  statbk:
+  stat_bk:
     outputSource: STATbk/outfile
     type: File
 
-  statbam:
+  stat_bam:
     outputSource: STATbam/outfile
     type: File
 
-  statrmdup:
+  stat_rmdup:
     outputSource: STATrmdup/outfile
     type: File
     
+
 steps:
   ReadLen:
     in:
@@ -86,7 +99,7 @@ steps:
 
   BamQC:
     in:
-      infile: SamRMDup/outfile
+      infile: SamView/outfile
     out: [htmlfile, zipfile]
     run: ../tools/fastqc.cwl
 
@@ -102,6 +115,12 @@ steps:
       blacklistfile: blacklistfile
     out: [outfile]
     run: ../tools/blacklist.cwl
+
+  BkIndex:
+    in:
+      infile: BkList/outfile
+    out: [bam2file, outfile]
+    run: ../tools/samtools-index.cwl
 
   SamRMDup:
     in:
@@ -132,6 +151,7 @@ steps:
       infile: BkList/outfile
     out: [outfile]
     run: ../tools/sambamba.cwl
+
 
 doc: |
   Runs ChIP-Seq SE Mapping FastQ SE files to generate BAM file for step 2 in ChIP-Seq Pipeline.

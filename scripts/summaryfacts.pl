@@ -8,23 +8,27 @@ use File::Basename;
 use Getopt::Long;
 
 my $PATH = "/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/software";
-my ($help, $manual, $rmdupbam, $peaksbed, $bamflag, $rmdupflag, $bkflag, $outfile, $fastqczip);
+my ($help, $manual, $inputbam, $peaksbed, $bamflag, $rmdupflag, $bkflag, $outfile, $fastqczip);
 my $usage = "perl $0 -b <bam file> -p <peaks bed> -bamflag <bamflagstat> -rmdupflag <rmdupflagstat> -bkflag <bklistflagstat> -outfile <outputfile> -fqc <fastqczipfile>\n";
 
-GetOptions ("b|bam=s"=>\$rmdupbam,"p|peak=s"=>\$peaksbed,"bamflag=s"=>\$bamflag,"rmdupflag=s"=>\$rmdupflag,"bkflag=s"=>\$bkflag,"fqc|fastqczip=s"=>\$fastqczip,"outfile|o=s"=>\$outfile);
-unless ($rmdupbam || $peaksbed || $bamflag || $rmdupflag || $bkflag || $fastqczip) { die $usage;}
+GetOptions ("b|bam=s"=>\$inputbam,"p|peak=s"=>\$peaksbed,"bamflag=s"=>\$bamflag,"rmdupflag=s"=>\$rmdupflag,"bkflag=s"=>\$bkflag,"fqc|fastqczip=s"=>\$fastqczip,"outfile|o=s"=>\$outfile);
+unless ($inputbam || $peaksbed || $bamflag || $rmdupflag || $bkflag || $fastqczip) { die $usage;}
 
 #Filenames
-my ($countsfile, $bambed, $sppout, $statsout);
+my ($countsfile, $bambed, $sppout, $statsout, $tempsortbed);
 my ($totalreads, $mappedreads, $rmdupreads, $bklistreads);
 
 #Initialize variables
 my ($Uniquecnt, $Totalcnt, $Fripcnt, $FRIP, $peaks, $NRF) = (0,0,0,0,0,0);
 my $prev = "NA";
 
-if ($outfile) { $statsout = fileparse($outfile, qr/\.[^.]*(\..*)?$/)."-stats.out"; } 
-else { $statsout = fileparse($rmdupbam, qr/\.[^.]*(\..*)?$/)."-stats.out"; }
-
+unless ($outfile) {
+  if ($peaksbed) { $statsout = fileparse($peaksbed, qr/(\.[\w\d]+)?$/)."-stats.out"; } 
+  else { $statsout = fileparse($inputbam, qr/(\.[\w\d]+)?$/)."-stats.out"; }
+} else {
+  unless ($outfile =~ /\-stats.out$/) { $statsout = fileparse($outfile, qr/(\.[\w\d]+)$/)."-stats.out"; }
+  else { $statsout = $outfile; }
+}
 open (OUT, ">$statsout"); #opening outputfile
 
 #working with FastQC
@@ -50,13 +54,13 @@ if ($rmdupflag) {
 }
 
 #PROCESS NRF
-if ($rmdupbam) {
+if ($inputbam) {
   print "Processing NRF score ...";
-  unless ($rmdupbam =~ /\.bam$/) { die $!; }
-  $bambed = fileparse($rmdupbam, qr/\.[^.]*(\.bam)?$/)."-bam2bed.bed";
-  $sppout = fileparse($rmdupbam, qr/\.[^.]*(\.bam)?$/)."-spp.out";
+  unless ($inputbam =~ /\.bam$/) { die $!; }
+  $bambed = fileparse($inputbam, qr/(\.bam)?$/)."-bam2bed.bed";
+  $sppout = fileparse($inputbam, qr/(\.bam)?$/)."-spp.out";
 
-  `bamToBed -i $rmdupbam > $bambed`;
+  `bamToBed -i $inputbam > $bambed`;
   open(IN, "<$bambed") || die $!;
   while(<IN>){
     chomp;
@@ -67,25 +71,27 @@ if ($rmdupbam) {
     $prev=$t;
   } close (IN);
   $NRF = $Uniquecnt/$Totalcnt;
-  print OUT "From SPP: Mapped Reads = $Totalcnt\nFrom SPP: Unique Reads = $Uniquecnt\nNRF score = $NRF\n";
+  print OUT "From BamFile: Mapped Reads = $Totalcnt\nFrom BamFile: Unique Reads = $Uniquecnt\nNRF score = $NRF\n";
   print ".. Done\n";
 
 
 #Process NSC (normalized) + RSC (relative strand cross-correlation coefficient)
+  print "\n$PATH/run_spp.R -c=$inputbam -savp -out=$sppout 1>outfile.fake 2>outfile.fake;\n";
   print "Processing NSC and RSC ...";
-  print "run_spp.R -c=$rmdupbam -savp -out=$sppout 1>outfile.fake 2>outfile.fake;\n";
-  `Rscript $PATH/run_spp.R -c=$rmdupbam -savp -out=$sppout 1>outfile.fake 2>outfile.fake;`;
+  `Rscript $PATH/run_spp.R -c=$inputbam -savp -out=$sppout 1>outfile.fake 2>outfile.fake;`;
   open (IN, "<$sppout"); # || die $!; 
   my ($NSC, $RSC) = (split("\t", <IN>))[8,9]; close(IN);
   print OUT "Normalized Strand cross-correlation coefficient (NSC) = $NSC\nRelative Strand cross-correlation Coefficient (RSC) = $RSC\n";
   print ".. Done\n";
 }
 
-if ($peaksbed && $rmdupbam) {
+if ($peaksbed && $inputbam) {
 #FRIP score
 print "Processing FRIP score ... ";
-  $countsfile = fileparse($peaksbed, qr/\.[^.]*(\.bed)?$/)."-out.txt"; 
-  `sort-bed $bambed | intersectBed -sorted -a $peaksbed -b stdin -c > $countsfile`;
+  $countsfile = fileparse($peaksbed, qr/(\.bed)?$/)."-out.txt"; 
+  $tempsortbed = fileparse($bambed, qr/(\.bed)?$/).".sorted.bed";
+  `sort-bed $bambed > $tempsortbed`;
+  `intersectBed -sorted -a $peaksbed -b $tempsortbed -c > $countsfile`;
 
   open(IN,"<$countsfile")|| die $!;
   while(<IN>){
@@ -101,4 +107,4 @@ print "Processing FRIP score ... ";
   close OUT;
 }
 
-`rm -rf outfile.fake $sppout`;
+#`rm -rf outfile.fake $sppout`;

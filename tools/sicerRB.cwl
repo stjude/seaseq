@@ -79,3 +79,13 @@ outputs:
     type: File
     outputBinding:
       glob: '*islandfiltered.bed'
+
+  scoreisland:
+    type: File
+    outputBinding:
+      glob: '*scoreisland'
+
+  graph:
+    type: File
+    outputBinding:
+      glob: '*graph'

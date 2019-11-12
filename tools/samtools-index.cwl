@@ -18,9 +18,8 @@ inputs:
 outputs:
   outfile:
     type: File
-    secondaryFiles: '.bai'
     outputBinding: 
-      glob: $(inputs.infile.basename)
+      glob: '*.bai'
 
   bam2file:
     type: File

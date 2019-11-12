@@ -84,6 +84,10 @@ outputs:
     type: File
     outputSource: Summit-MOTIFS/memehtml
 
+  rpmwig:
+    type: File
+    outputSource: RPM/RPMwig
+
 steps:
   MACS:
     in:

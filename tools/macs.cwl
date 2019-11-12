@@ -13,7 +13,7 @@ requirements:
 
   expressionLib:
   - var var_output_name = function() {
-      return inputs.treatmentfile.nameroot.split('.').slice(0,-1).join('.')+'_nm';
+      return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_nm';
    };
 
 inputs:

@@ -11,7 +11,7 @@ requirements:
   expressionLib:
   - var var_output_name = function() {
       if (inputs.infile != null) {
-         return inputs.infile.nameroot+'.bam';
+         return inputs.infile.nameroot+'.bam.bam';
       }
    };
 

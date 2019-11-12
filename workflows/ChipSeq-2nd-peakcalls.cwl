@@ -8,7 +8,7 @@ requirements:
 inputs:
   reference: Directory
   chromsizes: File
-  gfffile: File
+  gtffile: File
   nomodel: boolean?
   wiggle: boolean?
   single_profile: boolean?
@@ -18,11 +18,12 @@ inputs:
   keep_dup: string?
   motifdatabases: string[]
   flank: int?
-  bamfile: File
-  zipfile: File
+  bklistbamfile: File
+  readzipfile: File
   STATbamoutfile: File
   STATrmdupoutfile: File
   STATbkoutfile: File
+  rmdupbamfile: File
 
 outputs:
   peaksbed:
@@ -69,6 +70,26 @@ outputs:
     type: File
     outputSource: Peaks-Auto/memehtml
 
+  summitameout:
+    type: File
+    outputSource: Peaks-Auto/summitameout
+
+  summitamehtml:
+    type: File
+    outputSource: Peaks-Auto/summitamehtml
+
+  summitmemeout:
+    type: File
+    outputSource: Peaks-Auto/summitmemeout
+
+  summitmemehtml:
+    type: File
+    outputSource: Peaks-Auto/summitmemehtml
+
+  rpmwig:
+    type: File
+    outputSource: Peaks-Auto/rpmwig
+
   allpeaksbed:
     outputSource: Peaks-All/peaksbedfile
     type: File
@@ -113,9 +134,37 @@ outputs:
     type: File
     outputSource: Peaks-All/memehtml
 
+  allsummitameout:
+    type: File
+    outputSource: Peaks-All/summitameout
+
+  allsummitamehtml:
+    type: File
+    outputSource: Peaks-All/summitamehtml
+
+  allsummitmemeout:
+    type: File
+    outputSource: Peaks-All/summitmemeout
+
+  allsummitmemehtml:
+    type: File
+    outputSource: Peaks-All/summitmemehtml
+
+  allrpmwig:
+    type: File
+    outputSource: Peaks-All/rpmwig
+
   sicerbed:
     type: File
     outputSource: SICER/islandbed
+
+  sicergraph:
+    type: File
+    outputSource: SICER/graph
+
+  sicerisland:
+    type: File
+    outputSource: SICER/scoreisland
 
   promoterspdf:
     type: File
@@ -136,27 +185,27 @@ outputs:
 steps:
   B2Bed:
     in:
-      infile: bamfile
+      infile: rmdupbamfile
     out: [outfile]
     run: ../tools/bamtobed.cwl
 
   SICER:
     in:
       peaksbedfile: B2Bed/outfile
-    out: [islandbed]
+    out: [islandbed, scoreisland, graph]
     run: ../tools/sicerRB.cwl
 
   MetaGene:
     in:
-      bamfile: bamfile
-      gfffile: gfffile
+      bamfile: rmdupbamfile
+      gtffile: gtffile
     out: [promoters, genebody, promotersheatmap, genebodyheatmap]
     run: ../tools/bamliquidator.cwl
 
   Peaks-Auto:
     run: ../subworkflows/peakcalls.cwl
     in:
-      bamfile: bamfile
+      bamfile: bklistbamfile
       nomodel: nomodel
       shiftsize: shiftsize
       space: space
@@ -164,20 +213,20 @@ steps:
       wiggle: wiggle
       single_profile: single_profile
       flank: flank
-      zipfile: zipfile
+      zipfile: readzipfile
       STATbamout: STATbamoutfile
       STATrmdupout: STATrmdupoutfile
       STATbkout: STATbkoutfile
       chromsizes: chromsizes
       reference: reference
       motifdatabases: motifdatabases
-    out: [tdffile, peaksbedfile, peaksxlsfile, summitsfile, wigfile, statsfile, bigwig, ameout, amehtml, memeout, memehtml]
+    out: [rpmwig, tdffile, peaksbedfile, peaksxlsfile, summitsfile, wigfile, statsfile, bigwig, ameout, amehtml, memeout, memehtml, summitameout, summitamehtml, summitmemeout, summitmemehtml ]
 
   Peaks-All:
     run: ../subworkflows/peakcalls.cwl
     in:
       keep_dup: keep_dup
-      bamfile: bamfile
+      bamfile: bklistbamfile
       nomodel: nomodel
       shiftsize: shiftsize
       space: space
@@ -185,11 +234,11 @@ steps:
       wiggle: wiggle
       single_profile: single_profile
       flank: flank
-      zipfile: zipfile
+      zipfile: readzipfile
       STATbamout: STATbamoutfile
       STATrmdupout: STATrmdupoutfile
       STATbkout: STATbkoutfile
       chromsizes: chromsizes
       reference: reference
       motifdatabases: motifdatabases
-    out: [tdffile, peaksbedfile, peaksxlsfile, summitsfile, wigfile, statsfile, bigwig, ameout, amehtml, memeout, memehtml]
+    out: [rpmwig, tdffile, peaksbedfile, peaksxlsfile, summitsfile, wigfile, statsfile, bigwig, ameout, amehtml, memeout, memehtml, summitameout, summitamehtml, summitmemeout, summitmemehtml]

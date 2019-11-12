@@ -14,7 +14,7 @@ requirements:
   expressionLib:
   - var var_output_name = function() {
       if (inputs.infile != null) {
-         return inputs.infile.nameroot.split('.rmdup')[0]+'.rm-blist.bam';
+         return inputs.infile.nameroot.split('.bam')[0]+'.bklist.bam';
       }
    };
 
@@ -50,4 +50,4 @@ outputs:
   outfile:
     type: File
     outputBinding: 
-      glob: '*rm-blist.bam'
+      glob: '*bklist.bam'

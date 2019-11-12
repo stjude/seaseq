@@ -22,7 +22,7 @@ inputs:
     inputBinding:
       prefix: -b
 
-  gfffile:
+  gtffile:
     type: File
     inputBinding:
       prefix: -g
