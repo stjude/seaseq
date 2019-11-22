@@ -7,28 +7,27 @@ use File::Basename;
 use Getopt::Long;
 
 my $PATH = "/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/software";
-my ($help, $manual, $rmdupbam, $gtffile, $outfile, $samplename);
+my ($help, $manual, $rmdupbam, $gtffile, $outfile, $samplename, $feature);
 my (%HASH, %CONTENT);
-my $usage = "perl $0 -g <gtf file> -b <bam file> [-outfile <outputfile>] [-sample <samplename>]\n";
+my $usage = "perl $0 -g <gtf file> -b <bam file> -f <feature type> [-outfile <outputfile>] [-sample <samplename>]\n";
 
-GetOptions ("b|bam=s"=>\$rmdupbam,"g|gtf=s"=>\$gtffile,"outfile|o=s"=>\$outfile, "sample|s=s"=>\$samplename);
+GetOptions ("b|bam=s"=>\$rmdupbam,"g|gtf=s"=>\$gtffile,"feature|f=s"=>\$feature,"outfile|o=s"=>\$outfile, "sample|s=s"=>\$samplename);
 unless ($rmdupbam && $gtffile) { die $usage; }
 unless ($outfile) { $outfile = fileparse($rmdupbam, qr/(\.bam)?$/); } 
 else { $outfile = fileparse($outfile, qr/(\.[\d\w]+)?$/); }
-unless ($samplename) {$samplename = fileparse($outfile, qr/\.[^.]*(\..*)?$/); }
+unless ($samplename) { $samplename = fileparse($outfile, qr/\.[^.]*(\..*)?$/); }
+unless ($feature) { $feature = "gene"; } #specify feature queried is gene
 
 #generation of gff file
-#initially gff file 
-#`grep "gbkey=Gene" $gfffile | grep "gene_biotype=protein_coding" > genes.gff`;
-#now from gtf file
-open (GTF, "<", $gtffile); open (GFF, '>genes.gff');
-while (<GTF>) {
-  unless (/^#/) {
-    chomp;
-    if ($_ =~ /"protein_coding"/) {
+if ($gtffile =~ /\.gtf$/) { #if file is a gtf file
+#generation of gff file from gtf
+  open (GTF, "<", $gtffile); open (GFF, '>genes.gff');
+  while (<GTF>) {
+    unless (/^#/) {
+      chomp;
       $_ =~ s/\"//g;
       my @l = split /\t/; 
-      if ($l[2] =~ /^gene$/) {
+      if ($l[2] =~ /^$feature$/) {
         $l[0] =~ s/^M.+/M/g; #changing MT to M
         print GFF "chr",$l[0],"\t"; #added chr to chrom
         print GFF join("\t",@l[1..7]); #plus the 2nd to 8th column
@@ -36,9 +35,24 @@ while (<GTF>) {
         print GFF "\t",$line[0],"=",$line[1],$line[4],"=",$line[5],$line[8],"=",$line[9],"\n"; #plus geneid,genename,genebiotype
       }
     }
-  }
+  } close (GTF); close (GFF);
+} elsif ($gtffile =~ /\.gff$/) { # if file is a gff file
+#generation of gff file from gff
+  open (oGFF, "<", $gtffile); open (GFF, '>genes.gff');
+  while (<oGFF>) {
+    unless (/^#/) {
+      chomp;
+      $_ =~ s/\"//g;
+      my @l = split /\t/;
+      if ($l[2] =~ /^$feature$/) {
+        $l[0] =~ s/^M.+/M/g; #changing MT to M
+        print GFF "chr",$l[0],"\t"; #added chr to chrom
+        print GFF join("\t",@l[1..$#l]),"\n"; #plus the rest of the columns
+      }
+    }
+  } close (oGFF); close (GFF);
 }
-close (GTF); close (GFF);
+
 
 #generating the gff regions files.
 `flanking.pl -i genes.gff -f 2000 > promoters.gff`;
@@ -105,14 +119,26 @@ axis(1, at=c(0,50,83,116,150,200), labels=c("-50", "TSS", "33%","66%", "TES", "5
 dev.off();
 
 #heatmap of promoters & genebody
-colz=colorRampPalette(c("white", "red"))(quantile(as.vector(t(promoters[,3:ncol(promoters)])),.80));
-breaks=seq(0,(quantile(as.vector(t(promoters[,3:ncol(promoters)])),.80))+1,by=1);
+#extrapolate breaks & colz
+remainder = round((quantile(as.vector(t(promoters[,3:ncol(promoters)])),.80)),digits=0) %% 2;
+finalcount = round((quantile(as.vector(t(promoters[,3:ncol(promoters)])),.80)),digits=0) + remainder;
+colz=colorRampPalette(c("white", "red"))(finalcount);
+breaks=seq(0,finalcount,by=1);
 png("$outfile-heatmap.promoters.png", type="cairo");
 heatmap.3(promoters[,3:ncol(promoters)], col=colz, breaks=breaks, trace="none", dendrogram="none", Colv=NA, Rowv=NA, density.info="none", labRow=NA, labCol=NA, main="$samplename\nPromoters");
 dev.off();
-colz=colorRampPalette(c("white", "red"))(quantile(as.vector(t(combined[,3:ncol(combined)])),.80));
-breaks=seq(0,(quantile(as.vector(t(combined[,3:ncol(combined)])),.80))+1,by=1);
+pdf("$outfile-heatmap.promoters.pdf");
+heatmap.3(promoters[,3:ncol(promoters)], col=colz, breaks=breaks, trace="none", dendrogram="none", Colv=NA, Rowv=NA, density.info="none", labRow=NA, labCol=NA, main="$samplename\nPromoters");
+dev.off();
+
+remainder = round((quantile(as.vector(t(combined[,3:ncol(combined)])),.80)),digits=0) %% 2;
+finalcount = round((quantile(as.vector(t(combined[,3:ncol(combined)])),.80) + remainder),digits=0) + remainder;
+colz=colorRampPalette(c("white", "red"))(finalcount);
+breaks=seq(0,finalcount,by=1);
 png("$outfile-heatmap.entiregene.png",type="cairo");
+heatmap.3(combined[,3:ncol(combined)], col=colz, breaks=breaks, trace="none", dendrogram="none", Colv=NA, Rowv=NA, density.info="none", labRow=NA, labCol=NA, main="$samplename\nMetaGenes");
+dev.off();
+pdf("$outfile-heatmap.entiregene.pdf");
 heatmap.3(combined[,3:ncol(combined)], col=colz, breaks=breaks, trace="none", dendrogram="none", Colv=NA, Rowv=NA, density.info="none", labRow=NA, labCol=NA, main="$samplename\nMetaGenes");
 dev.off();
 ENDOFR

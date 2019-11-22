@@ -20,7 +20,7 @@ blacklistfile:
 
 gtffile:
   class: File
-  path: /rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/genomes/hg19/Homo_sapiens.GRCh37.87.chr.gtf
+  path: /rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/genomes/hg19/GTF/GRCh37_latest_changed_genomic.gtf
 
 motifdatabases:
   - /rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/motif_databases/JASPAR/JASPAR2018_CORE_vertebrates_redundant.meme

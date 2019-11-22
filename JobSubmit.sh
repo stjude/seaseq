@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #------
 ###SYNTAX to run
-#bsub -P watcher -q compbio -R "rusage[mem=10000]" -J exec-cwl -o exec-cwl_out -e exec-cwl_err -N ./JobSubmit.sh
+#bsub -P watcher -q compbio -J exec-cwl -o exec-cwl_out -e exec-cwl_err -N ./JobSubmit.sh
 ####
 
 #------

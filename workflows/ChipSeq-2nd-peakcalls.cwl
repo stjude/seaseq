@@ -220,7 +220,7 @@ steps:
       chromsizes: chromsizes
       reference: reference
       motifdatabases: motifdatabases
-    out: [rpmwig, tdffile, peaksbedfile, peaksxlsfile, summitsfile, wigfile, statsfile, bigwig, ameout, amehtml, memeout, memehtml, summitameout, summitamehtml, summitmemeout, summitmemehtml ]
+    out: [bigwig, rpmwig, tdffile, peaksbedfile, peaksxlsfile, summitsfile, wigfile, statsfile, ameout, amehtml, memeout, memehtml, summitameout, summitamehtml, summitmemeout, summitmemehtml ]
 
   Peaks-All:
     run: ../subworkflows/peakcalls.cwl
@@ -241,4 +241,4 @@ steps:
       chromsizes: chromsizes
       reference: reference
       motifdatabases: motifdatabases
-    out: [rpmwig, tdffile, peaksbedfile, peaksxlsfile, summitsfile, wigfile, statsfile, bigwig, ameout, amehtml, memeout, memehtml, summitameout, summitamehtml, summitmemeout, summitmemehtml]
+    out: [bigwig, rpmwig, tdffile, peaksbedfile, peaksxlsfile, summitsfile, wigfile, statsfile, ameout, amehtml, memeout, memehtml, summitameout, summitamehtml, summitmemeout, summitmemehtml]

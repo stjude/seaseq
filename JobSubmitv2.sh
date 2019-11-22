@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #------
 ###SYNTAX to run
-#bsub -P watcher -q compbio -R "rusage[mem=10000]" -J execv2-cwl -o execv2-cwl_out -e execv2-cwl_err -N ./JobSubmitv2.sh
+#bsub -P watcher -q compbio -J execv2-cwl -o execv2-cwl_out -e execv2-cwl_err -N ./JobSubmitv2.sh
 ####
 
 #------
@@ -32,7 +32,7 @@ module load python/2.7.2
 module load bowtie/1.2.2
 module load samtools/1.9
 module load macs/041014
-module load wigToBigWig/4
+module load ucsc/041619
 module load R/3.6.1
 module load bedtools/2.25.0
 module load meme/4.11.2
@@ -46,9 +46,10 @@ export PATH=$PATH:$location/scripts
 ###HOUSEKEEPING
 #------
 #removing work and out files
-rm -rf $tmp $out
+#rm -rf $tmp $out
 mkdir -p $tmp $out
 
+#temp
 #------
 ###WORKFLOW
 #------
@@ -65,7 +66,7 @@ then
   ##extracting relevant files from 1st step to the next step & to outputfolder
   chipseqreadjson.pl -i $logout -o $NEW_UUID.yml -s 1 -f $OUTPUTFOLDER
 
-  echo "UPDATE:  STEP2 in progress";
+  echo "UPDATE:  STEP2 in progress"
 
   ##cwlexec 2nd step
   cwlexec -p -w $tmp -o $out -c $config -p $secondscript $NEW_UUID.yml 1>$logout.2 2>$logerr.2
@@ -74,11 +75,12 @@ then
   if [ -s $logout.2 ]
   then
     chipseqreadjson.pl -i $logout.2 -s 2 -f $OUTPUTFOLDER
-#    rm -rf $NEW_UUID.yml $logerr $logerr.2 $logout $logout.2
+    rm -rf $NEW_UUID.yml $logerr $logerr.2 $logout $logout.2
+    echo "UPDATE:  CHIPSEQ - SE Pipeline Completed"
   else
     echo "ERROR:   STEP2 for ChipSeq workflow terminated with errors"
   fi
 else
-  echo "ERROR:   STEP1 for ChipSeq workflow terminated with errors";
+  echo "ERROR:   STEP1 for ChipSeq workflow terminated with errors"
 fi
 
