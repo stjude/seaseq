@@ -46,7 +46,7 @@ export PATH=$PATH:$location/scripts
 ###HOUSEKEEPING
 #------
 #removing work and out files
-#rm -rf $tmp $out
+rm -rf $tmp $out
 mkdir -p $tmp $out
 
 #temp
@@ -75,7 +75,7 @@ then
   if [ -s $logout.2 ]
   then
     chipseqreadjson.pl -i $logout.2 -s 2 -f $OUTPUTFOLDER
-    rm -rf $NEW_UUID.yml $logerr $logerr.2 $logout $logout.2
+    rm -rf $NEW_UUID.yml $logerr $logerr.2 $logout $logout.2 $tmp $out
     echo "UPDATE:  CHIPSEQ - SE Pipeline Completed"
   else
     echo "ERROR:   STEP2 for ChipSeq workflow terminated with errors"
