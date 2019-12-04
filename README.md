@@ -1,2 +1,2 @@
-# ChipSeqPipeline
-ChipSeq analysis pipeline for SE data
+# Chromatin SE analysis pipeline.
+- Currently designed as ChipSeq
