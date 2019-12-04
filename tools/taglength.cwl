@@ -1,18 +1,17 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
-baseCommand: [readLength.sh]
+baseCommand: [tagLength.sh]
 class: CommandLineTool
 
 inputs:
-  fastqfile:
+  datafile:
     type: File
-    label: "FastQfiles"
     inputBinding:
       position: 1
 
 outputs:
-  readLength:
+  tagLength:
     type: File
-    label: random file containing read length
+    label: random file containing mean read length
     outputBinding:
       glob: '*.rdl'

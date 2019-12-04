@@ -40,20 +40,20 @@ inputs:
     default: 2
     inputBinding:
       prefix: -k
-      position: 1
+      position: 2
 
   limit_alignments:
     type: int?
     default: 2
     inputBinding:
       prefix: -m
-      position: 1
+      position: 3
 
   readLength:
     type: int
     inputBinding:
       prefix: -l
-      position: 2
+      position: 4
       valueFrom: |
         ${
             if (self == 0){
@@ -72,12 +72,12 @@ inputs:
     default: true
     inputBinding:
       prefix: --best
-      position: 3
+      position: 5
 
   reference:
     type: Directory
     inputBinding:
-      position: 4
+      position: 6
       valueFrom: |
         ${
             for (var i = 0; i < self.listing.length; i++) {
@@ -93,20 +93,20 @@ inputs:
   fastqfile:
     type: File
     inputBinding:
-      position: 5
+      position: 7
 
   samoutput:
     type: boolean?
     default: true
     inputBinding:
       prefix: -S
-      position: 6
+      position: 8
 
   samfile:
     type: string
     inputBinding:
       prefix: '>'
-      position: 7
+      position: 9
       valueFrom: |
         ${
             if (self == ""){

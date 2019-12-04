@@ -1,9 +1,9 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
-baseCommand: [ liquidator.pl ]
+baseCommand: [ BamToGFFMetaGenes.pl ]
 class: CommandLineTool
-label: BAM liquidator v1 on bam file for all metagenes
-doc: perl liquidator.pl -g <gff file> -b <bam file> [-o <outfile name>]
+label: BAM to GFF for MetaGenes calculation v1 on bam file for all metagenes
+doc: perl BamToGFFMetaGenes.pl -g <gff file|gtf file> -b <bam file> [-o <outfile name>]
 
 requirements:
 - class: ShellCommandRequirement
@@ -27,6 +27,12 @@ inputs:
     inputBinding:
       prefix: -g
 
+  feature:
+    type: string?
+    default: "gene"
+    inputBinding:
+      prefix: -f
+
   outfile:
     type: string?
     inputBinding:
@@ -40,8 +46,22 @@ inputs:
             }
         }
     default: ""
+  
+  savedDir:
+    type: string?
+    inputBinding:
+      position: 1000
+      shellQuote: false
+      prefix: '&& mkdir -p metagenes_out && mv *txt *png *pdf metagenes_out'
+    default: ""
+
 
 outputs:
+  metagenesDir:
+    type: Directory
+    outputBinding:
+      glob: "metagenes_out"
+
   promoters:
     type: File
     outputBinding: 
@@ -61,3 +81,35 @@ outputs:
     type: File
     outputBinding:
       glob: '*heatmap.entiregene.png'
+
+  promotersheatmappdf:
+    type: File
+    outputBinding:
+      glob: '*heatmap.promoters.pdf'
+
+  genebodyheatmappdf:
+    type: File
+    outputBinding:
+      glob: '*heatmap.entiregene.pdf'
+
+  liqpromoters:
+    type: File
+    outputBinding:
+      glob: '*-promoters.txt'
+
+  liqgenes:
+    type: File
+    outputBinding:
+      glob: '*-genebody.txt'
+
+  liqdownstream:
+    type: File
+    outputBinding:
+      glob: '*-downstream.txt'
+
+  liqupstream:
+    type: File
+    outputBinding:
+      glob: '*-upstream.txt'
+
+

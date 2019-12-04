@@ -11,7 +11,7 @@ requirements:
   expressionLib:
   - var var_output_name = function() {
       if (inputs.infile != null) {
-         return inputs.infile.basename.split('_nm')[0]+'.bw';
+         return inputs.infile.nameroot.split('wig')[0]+'bw';
       }
    };
 

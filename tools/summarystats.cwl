@@ -33,6 +33,11 @@ inputs:
     inputBinding:
       prefix: -p
 
+  peaksxls:
+    type: File?
+    inputBinding:
+      prefix: -px
+
   bamflag:
     type: File?
     inputBinding:
@@ -52,6 +57,16 @@ inputs:
     type: File?
     inputBinding:
       prefix: '-fqc'
+
+  fastqmetrics:
+    type: File?
+    inputBinding:
+      prefix: '-fx'
+
+  rosedir:
+    type: Directory?
+    inputBinding:
+      prefix: '-rose'
 
   outfile:
     type: string?
@@ -73,3 +88,8 @@ outputs:
     type: File
     outputBinding: 
       glob: '*stats.out'
+
+  htmlfile:
+    type: File
+    outputBinding:
+      glob: '*stats.html'

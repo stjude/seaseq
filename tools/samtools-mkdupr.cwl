@@ -1,8 +1,8 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
-baseCommand: [samtools, rmdup]
+baseCommand: [samtools, markdup, -r]
 class: CommandLineTool
-label: remove duplicates from bam file
+label: mark and remove duplicates from bam file
 
 requirements:
 - class: ShellCommandRequirement

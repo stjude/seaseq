@@ -12,42 +12,38 @@ inputs:
   motifdatabases: string[]
 
 outputs:
-  ameout:
-    type: File
-    outputSource: AME/outfile
+  memechipoutdir:
+    type: Directory
+    outputSource: MEMECHIP/outDir
 
-  amehtml:
-    type: File
-    outputSource: AME/htmlfile
+  memeoutdir:
+    type: Directory
+    outputSource: MEMECHIP/memeDir
 
-  memeout:
-    type: File
-    outputSource: MEME/outfile
-
-  memehtml:
-    type: File
-    outputSource: MEME/htmlfile
+  ameoutdir:
+    type: Directory
+    outputSource: AME/outDir
 
 steps:
+  MEMECHIP:
+    run: ../tools/meme-chip.cwl
+    in:
+      convertfasta: BEDfasta/outfile
+    out: [outDir, memeDir]
+
+  AME:
+    run: ../tools/ame.cwl
+    in:
+      convertfasta: BEDfasta/outfile
+      motifdatabases: motifdatabases
+    out: [outDir]
+
   BEDfasta:
     in:
       reference: reference
       bedfile: bedfile
     out: [outfile]
     run: ../tools/bedfasta.cwl
-
-  AME:
-    in:
-      convertfasta: BEDfasta/outfile
-      motifdatabases: motifdatabases
-    out: [outfile, htmlfile]
-    run: ../tools/ame.cwl
-
-  MEME:
-    in:
-      convertfasta: BEDfasta/outfile
-    out: [outfile, htmlfile]
-    run: ../tools/meme-chip.cwl
 
 
 doc: |

@@ -1,38 +1,31 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
-baseCommand: [ bedGraphToBigWig ]
+baseCommand: [basicfastqstats.sh]
 class: CommandLineTool
-#module load ucsc/041619
 
 requirements:
-- class: ShellCommandRequirement
 - class: InlineJavascriptRequirement
 
   expressionLib:
   - var var_output_name = function() {
-      if (inputs.infile != null) {
-         return inputs.infile.basename.split('_nm')[0]+'.bw';
+      if (inputs.fastqfile != null) {
+         return inputs.fastqfile.nameroot.split('.fastq')[0]+'-fastq.metrics.txt';
       }
    };
 
 inputs:
-  infile:
-    label: peak calling file in bedgraph format
+  fastqfile:
     type: File
+    label: "FastQfiles"
     inputBinding:
       position: 1
 
-  chromsizes:
-    label: chromosome sizes in a two-column file
-    type: File
+  outputresults:
+    type: string?
+    label: "Output File"
     inputBinding:
       position: 2
-
-  outfile:
-    label: outputfilename
-    type: string?
-    inputBinding:
-      position: 3
+      prefix: '>'
       valueFrom: |
         ${
             if (self == ""){
@@ -43,9 +36,9 @@ inputs:
         }
     default: ""
 
-outputs:
-  outfile:
-    type: File
-    outputBinding: 
-      glob: '*bw'
 
+outputs:
+  metrics_out:
+    type: File
+    outputBinding:
+      glob: '*metrics.txt'

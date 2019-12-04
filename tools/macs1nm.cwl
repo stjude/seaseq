@@ -1,20 +1,22 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
-baseCommand: macs14
+baseCommand: [macs14]
 class: CommandLineTool
 
 label: MACS - Model based Analysis from ChiP-Seq
 doc: |
-  bsub -K -R \"select[rhel7]\" macs14 -t $file.sorted.bam -w -S --space=50 --nomodel --shiftsize=200 -n $file\_nm" >> $outfile
+  macs14 -t $file.bam -w -S --shiftsize=100 --space=50 --nomodel -n $file\_nm
 
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement
-
   expressionLib:
   - var var_output_name = function() {
       return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_nm';
    };
+- class: InitialWorkDirRequirement 
+  listing: [ $(inputs.treatmentfile) ]
+
 
 inputs:
   treatmentfile:
@@ -22,18 +24,6 @@ inputs:
     inputBinding:
       prefix: -t
       position: 1
-  
-  wiggle:
-    type: boolean?
-    default: true
-    inputBinding:
-      prefix: -w
-
-  single_profile:
-    type: boolean?
-    default: true
-    inputBinding:
-      prefix: -S
 
   space:
     type: int?
@@ -54,9 +44,21 @@ inputs:
     inputBinding:
       prefix: --shiftsize=
       separate: false
+  
+  wiggle:
+    type: boolean?
+    default: true
+    inputBinding:
+      prefix: -w
+  
+  single_profile:
+    type: boolean?
+    default: true
+    inputBinding:
+      prefix: -S
 
   outputname:
-    type: string
+    type: string?
     inputBinding:
       prefix: -n
       valueFrom: |
@@ -94,17 +96,10 @@ outputs:
 
 doc: |
   Model-based Analysis for ChIP-Sequencing
-    Usage: macs.cwl [-h] [--nomodel] --treatmentfile TREATMENTFILE --outputname OUTPUTNAME 
-                [--shiftsize SHIFTSIZE] [--single_profile] [--space SPACE] [--nomodel] 
-                [--wiggle]
+    Usage: macs1nm.cwl [-h] [--outputname OUTPUTNAME]
 
-    Options: --treatmentfile	FILE 	input CHiP bam file
-             --outputname	FILE	experiment outfile file name 
-             --shiftsize	INT	bp shift size (default: 200)
-             --space		INT	saved wiggle file resolution (default: 50)
-             --wiggle		BOOLEAN	save extended fragment pileup into a wiggle file (default: true)
-             --nomodel		BOOLEAN	build shifting model (default: true)
-             --single_profile	BOOLEAN	entire genome for treatment and input (default: true)
+    Options: --outputname	STRING	experiment outfile file name
+             --treatmentfile	FILE	input CHIP bam file
                 
  
 $namespaces:

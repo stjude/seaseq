@@ -20,6 +20,10 @@ outputs:
     outputSource: SamSort/outfile
     type: File
 
+  fastq_metrics:
+    outputSource: BasicMetrics/metrics_out
+    type: File
+
   rmdup_bam:
     outputSource: SamRMDup/outfile
     type: File
@@ -66,13 +70,18 @@ outputs:
     
 
 steps:
-  ReadLen:
-    in:
+  BasicMetrics:
+    in: 
       fastqfile: fastqfile
-    out: [readLength]
-    run: ../tools/readlength.cwl
-   
+    out: [metrics_out]
+    run: ../tools/basicfastqstats.cwl
 
+  TagLen:
+    in: 
+      datafile: BasicMetrics/metrics_out
+    out: [tagLength]
+    run: ../tools/taglength.cwl
+   
   ReadQC:
     in:
       infile: fastqfile
@@ -82,7 +91,7 @@ steps:
   Bowtie:
     run: ../tools/bowtie.cwl
     in:
-      readLengthFile: ReadLen/readLength
+      readLengthFile: TagLen/tagLength
       best_alignments: best_alignments
       good_alignments: good_alignments
       fastqfile: fastqfile
@@ -126,7 +135,7 @@ steps:
     in:
       infile: BkList/outfile
     out: [outfile]
-    run: ../tools/samtools-rmdup.cwl
+    run: ../tools/samtools-mkdupr.cwl
 
   SamIndex:
     in:
@@ -138,19 +147,19 @@ steps:
     in:
       infile: SamView/outfile
     out: [outfile]
-    run: ../tools/sambamba.cwl
+    run: ../tools/samtools-flagstat.cwl
 
   STATrmdup:
     in:
       infile: SamRMDup/outfile
     out: [outfile]
-    run: ../tools/sambamba.cwl
+    run: ../tools/samtools-flagstat.cwl
 
   STATbk:
     in:
       infile: BkList/outfile
     out: [outfile]
-    run: ../tools/sambamba.cwl
+    run: ../tools/samtools-flagstat.cwl
 
 
 doc: |

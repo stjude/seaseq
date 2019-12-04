@@ -74,18 +74,24 @@ inputs:
     inputBinding:
       position: 10
 
+  outfile_txt:
+    type: string?
+    inputBinding:
+      position: 999
+      shellQuote: false
+      prefix: '&& gzip *graph'
+    default: ""
+
+  outdir:
+    type: string?
+    inputBinding:
+      position: 1000
+      shellQuote: false
+      prefix: '&& mkdir -p SICER_out && mv *W200* SICER_out'
+    default: ""
+
 outputs:
-  islandbed:
-    type: File
+  sicerDir:
+    type: Directory
     outputBinding:
-      glob: '*islandfiltered.bed'
-
-  scoreisland:
-    type: File
-    outputBinding:
-      glob: '*scoreisland'
-
-  graph:
-    type: File
-    outputBinding:
-      glob: '*graph'
+      glob: "SICER_out"

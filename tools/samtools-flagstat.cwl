@@ -1,11 +1,11 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
-baseCommand: [sambamba, flagstat]
+baseCommand: [samtools, flagstat]
 class: CommandLineTool
 
-label: SamBamBa flagstat
+label: SamTools flagstat
 doc: |
-  sambamba flagstat $BAM > flagstat.txt
+  samtools flagstat $BAM > flagstat.txt
 
 requirements:
 - class: ShellCommandRequirement

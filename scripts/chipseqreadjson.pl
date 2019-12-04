@@ -6,6 +6,7 @@ use strict;
 use JSON;
 use Getopt::Long;
 use Pod::Usage;
+use File::Basename;
  
 my ($help, $manual, $infile, $outfile, $json, $step, $folder);
 
@@ -21,9 +22,12 @@ my $data = decode_json($json);
 
 if ($step == 1) {
   #output to tempfile: bamfile, zipfile, STATbkoutfile, STATbamoutfile, STATrmdupoutfile
+  unless ($folder) { $folder = (split("\_fastq", $data->{'readqc_zip'}->{'nameroot'}))[0];  }
   open my $fh, ">>", $outfile;
   print $fh "\nbklistbamfile: \n  class: File\n  path: " .
       $data->{'bklist_bam'}->{'path'} . "\n";
+  print $fh "\nbklistbamindex: \n  class: File\n  path: " .
+      $data->{'bklist_index'}->{'path'} . "\n";
   print $fh "\nrmdupbamfile: \n  class: File\n  path: " .
       $data->{'rmdup_bam'}->{'path'} . "\n";
   print $fh "\nreadzipfile: \n  class: File\n  path: " .
@@ -34,64 +38,32 @@ if ($step == 1) {
       $data->{'stat_bam'}->{'path'} . "\n";
   print $fh "\nSTATrmdupoutfile: \n  class: File\n  path: " .
       $data->{'stat_rmdup'}->{'path'} . "\n";
+  print $fh "\nfastqmetricsfile: \n  class: File\n  path: " .
+      $data->{'fastq_metrics'}->{'path'} . "\n";
   close $fh;
 
-  if ($folder) {
-    `mkdir -p $folder`;
-    #copy the relevant files to the specified folder
-    `cp $data->{'sam_sort'}->{'path'} $folder`;
-    `cp $data->{'rmdup_bam'}->{'path'} $folder`;
-    `cp $data->{'rmdup_index'}->{'path'} $folder`;
-    `cp $data->{'bklist_bam'}->{'path'} $folder`;
-    `cp $data->{'bklist_index'}->{'path'} $folder`;
-    `cp $data->{'readqc_zip'}->{'path'} $folder`;
-    `cp $data->{'bamqc_zip'}->{'path'} $folder`;
-    `cp $data->{'readqc_html'}->{'path'} $folder`;
-    `cp $data->{'bamqc_html'}->{'path'} $folder`;
-  }
+  my $newpath = (fileparse($data->{'bklist_bam'}->{'path'}))[1];
+  #print "This is the path $newpath\n"; 
+  `mkdir -p $folder $folder/FASTQC_out $folder/BAM_out $folder/STATS_out`;
+
+  #copy the relevant files to the specified folder
+  `cp -rf $newpath/*fastqc* $folder/FASTQC_out`;
+  `cp -rf $newpath/*bam $newpath/*bai $folder/BAM_out`;
+  `cp -rf $newpath/*metrics.txt $folder/STATS_out`;
+ 
+  print $folder;
 }
 
 elsif ($step == 2 && $folder) {
   #output to desired folder
-  `cp $data->{'sicerbed'}->{'path'} $folder`;
-  `cp $data->{'sicergraph'}->{'path'} $folder`;
-  `cp $data->{'sicerisland'}->{'path'} $folder`;
-  `cp $data->{'genebodypdf'}->{'path'} $folder`;
-  `cp $data->{'promoterspdf'}->{'path'} $folder`;
-  `cp $data->{'genebodyheatmappng'}->{'path'} $folder`;
-  `cp $data->{'promotersheatmappng'}->{'path'} $folder`;
-  
-  #auto
-  `cp $data->{'summits'}->{'path'} $folder`;
-  `cp $data->{'ameout'}->{'path'} $folder`;
-  `cp $data->{'memeout'}->{'path'} $folder`;
-  `cp $data->{'memehtml'}->{'path'} $folder`;
-  `cp $data->{'amehtml'}->{'path'} $folder`;
-  `cp $data->{'outBW'}->{'path'} $folder`;
-  `cp $data->{'peaksxls'}->{'path'} $folder`;
-  `cp $data->{'peaksbed'}->{'path'} $folder`;
-  `cp $data->{'treatwig'}->{'path'} $folder`;
-  `cp $data->{'statout'}->{'path'} $folder`;
-  `cp $data->{'outtdf'}->{'path'} $folder`;
-  `cp $data->{'summitameout'}->{'path'} $folder`;
-  `cp $data->{'summitmemeout'}->{'path'} $folder`;
-  `cp $data->{'summitmemehtml'}->{'path'} $folder`;
-  `cp $data->{'summitamehtml'}->{'path'} $folder`;
-
-  #all
-  `cp $data->{'allsummits'}->{'path'} $folder`;
-  `cp $data->{'allameout'}->{'path'} $folder`;
-  `cp $data->{'allmemeout'}->{'path'} $folder`;
-  `cp $data->{'allmemehtml'}->{'path'} $folder`;
-  `cp $data->{'allamehtml'}->{'path'} $folder`;
-  `cp $data->{'alloutBW'}->{'path'} $folder`;
-  `cp $data->{'allpeaksxls'}->{'path'} $folder`;
-  `cp $data->{'allpeaksbed'}->{'path'} $folder`;
-  `cp $data->{'alltreatwig'}->{'path'} $folder`;
-  `cp $data->{'allstatout'}->{'path'} $folder`;
-  `cp $data->{'allouttdf'}->{'path'} $folder`;
-  `cp $data->{'allsummitameout'}->{'path'} $folder`;
-  `cp $data->{'allsummitmemeout'}->{'path'} $folder`;
-  `cp $data->{'allsummitmemehtml'}->{'path'} $folder`;
-  `cp $data->{'allsummitamehtml'}->{'path'} $folder`;
+  my $newpath = (fileparse($data->{'statsfile'}->{'path'}))[1];
+  `mkdir -p $folder/Peaks-ALL $folder/Peaks-AUTO $folder/Peaks-NM`;
+  `cp -rf $newpath/ROSE_out $folder`;
+  `cp -rf $newpath/SICER_out $folder`;
+  `cp -rf $newpath/ame_out $newpath/meme_out $newpath/memechip_out $folder`;
+  `cp -rf $newpath/metagenes_out $folder`;
+  `cp -rf $newpath/*stats.out $newpath/*stats.html $folder/STATS_out`;
+  `cp -rf $newpath/*_p9_kd-all* $folder/Peaks-ALL`;
+  `cp -rf $newpath/*p9_kd-auto* $folder/Peaks-AUTO`;
+  `cp -rf $newpath/*_nm_* $folder/Peaks-NM`;
 }

@@ -5,16 +5,18 @@ class: CommandLineTool
 
 label: MACS - Model based Analysis from ChiP-Seq
 doc: |
-  macs14 -t $file.bam -w -p 1e-9 --keep-dup=auto -n $file\_p9_kd-auto
+  macs14 -t $file.bam -w -S --space=50 -p 1e-9 --keep-dup=auto -n $file\_p9_kd-auto
 
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement
-
   expressionLib:
   - var var_output_name = function() {
-      return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_p9_kd-'+inputs.keep_dup+'_nm';
+      return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_p9_kd-'+inputs.keep_dup;
    };
+- class: InitialWorkDirRequirement
+  listing: [ $(inputs.treatmentfile) ]
+
 
 inputs:
   treatmentfile:
@@ -23,26 +25,6 @@ inputs:
       prefix: -t
       position: 1
 
-  space:
-    type: int?
-    default: 50
-    inputBinding:
-      prefix: --space=
-      separate: false
-
-  nomodel:
-    type: boolean?
-    default: true
-    inputBinding:
-      prefix: --nomodel
-
-  shiftsize:
-    type: int?
-    default: 200
-    inputBinding:
-      prefix: --shiftsize=
-      separate: false
-  
   pvalue:
     type: string?
     default: '1e-9'
@@ -61,12 +43,19 @@ inputs:
     default: true
     inputBinding:
       prefix: -w
-  
+
   single_profile:
     type: boolean?
     default: true
     inputBinding:
       prefix: -S
+
+  space:
+    type: int?
+    default: 50
+    inputBinding:
+      prefix: --space=
+      separate: false
 
   outputname:
     type: string?
@@ -103,6 +92,11 @@ outputs:
     type: File
     outputBinding:
       glob: '*_treat_afterfiting_all.wig.gz'
+
+  modelR:
+    type: File
+    outputBinding:
+      glob: '*model.r'
 
 
 doc: |
