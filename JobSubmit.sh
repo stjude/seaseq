@@ -17,8 +17,8 @@ NEW_UUID=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 13 | head -n 1) #temp
 #temporary output & error files
 out="$(pwd)/outdir"
 tmp="$(pwd)/tmpdir"
-logout="chipseqoutfile_out"
-logerr="chipseqoutfile_err"
+logout="chromatinSEoutfile_out"
+logerr="chromatinSEoutfile_err"
 
 #------
 ###Modules & PATH update
@@ -63,7 +63,7 @@ then
   cp -f $parameters $NEW_UUID.yml
 
   ##extracting relevant files from 1st step to the next step & to outputfolder
-  OUTPUTFOLDER=$(chipseqreadjson.pl -i $logout -o $NEW_UUID.yml -s 1)
+  OUTPUTFOLDER=$(chromatinSEreadjson.pl -i $logout -o $NEW_UUID.yml -s 1)
 
   echo "UPDATE:  STEP2 in progress"; 
 
@@ -74,7 +74,7 @@ then
   ##extract require files into folder
   if [ -s $logout.2 ]
   then
-    chipseqreadjson.pl -i $logout.2 -s 2 -f $OUTPUTFOLDER
+    chromatinSEreadjson.pl -i $logout.2 -s 2 -f $OUTPUTFOLDER
     rm -rf $NEW_UUID.yml $logerr $logerr.2 $logout $logout.2
 
     echo "UPDATE:  CHIPSEQ - SE Pipeline Completed"

@@ -27,6 +27,11 @@ inputs:
     inputBinding:
       prefix: -g
 
+  chromsizes: 
+    type: File
+    inputBinding:
+      prefix: -c
+
   feature:
     type: string?
     default: "gene"
@@ -52,7 +57,7 @@ inputs:
     inputBinding:
       position: 1000
       shellQuote: false
-      prefix: '&& mkdir -p metagenes_out && mv *txt *png *pdf metagenes_out'
+      prefix: '&& mkdir -p bamdensity_out && mv *txt *png *pdf bamdensity_out'
     default: ""
 
 
@@ -60,7 +65,7 @@ outputs:
   metagenesDir:
     type: Directory
     outputBinding:
-      glob: "metagenes_out"
+      glob: "bamdensity_out"
 
   promoters:
     type: File

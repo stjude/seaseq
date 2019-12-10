@@ -11,7 +11,7 @@ use File::Basename;
 my ($help, $manual, $infile, $outfile, $json, $step, $folder);
 
 GetOptions ("i|in=s"=>\$infile,"o|out=s"=>\$outfile, "s|step=s"=>\$step, "f|folder=s"=>\$folder);
-my $usage = "perl $0 -i <log output file> -o <output file> -s <step>\n";
+my $usage = "perl $0 -i <log output file> -o <output file> -s <step> -f <folder>\n";
 unless ( $infile && $step ) { die $usage; }
 
 local $/; #Enable 'slurp' mode
@@ -44,12 +44,12 @@ if ($step == 1) {
 
   my $newpath = (fileparse($data->{'bklist_bam'}->{'path'}))[1];
   #print "This is the path $newpath\n"; 
-  `mkdir -p $folder $folder/FASTQC_out $folder/BAM_out $folder/STATS_out`;
+  `mkdir -p $folder/QC_files/STATS $folder/QC_files/FASTQC $folder/BAM_files`;
 
   #copy the relevant files to the specified folder
-  `cp -rf $newpath/*fastqc* $folder/FASTQC_out`;
-  `cp -rf $newpath/*bam $newpath/*bai $folder/BAM_out`;
-  `cp -rf $newpath/*metrics.txt $folder/STATS_out`;
+  `mv $newpath/*fastqc* $folder/QC_files/FASTQC`;
+  `mv $newpath/*bam $newpath/*bai $folder/BAM_files`;
+  `mv $newpath/*metrics.txt $folder/QC_files/STATS`;
  
   print $folder;
 }
@@ -57,13 +57,14 @@ if ($step == 1) {
 elsif ($step == 2 && $folder) {
   #output to desired folder
   my $newpath = (fileparse($data->{'statsfile'}->{'path'}))[1];
-  `mkdir -p $folder/Peaks-ALL $folder/Peaks-AUTO $folder/Peaks-NM`;
-  `cp -rf $newpath/ROSE_out $folder`;
-  `cp -rf $newpath/SICER_out $folder`;
-  `cp -rf $newpath/ame_out $newpath/meme_out $newpath/memechip_out $folder`;
-  `cp -rf $newpath/metagenes_out $folder`;
-  `cp -rf $newpath/*stats.out $newpath/*stats.html $folder/STATS_out`;
-  `cp -rf $newpath/*_p9_kd-all* $folder/Peaks-ALL`;
-  `cp -rf $newpath/*p9_kd-auto* $folder/Peaks-AUTO`;
-  `cp -rf $newpath/*_nm_* $folder/Peaks-NM`;
+  `mkdir -p $folder/PEAKS_files/NARROW_peaks $folder/PEAKS_files/BROAD_peaks $folder/PEAKS_files/ENHANCERS`;
+  `mkdir -p $folder/PEAKSDisplay_files $folder/BAMDensity_files $folder/MOTIFS_files $folder/QC_files/STATS`;
+  `mv $newpath/ROSE_out/* $folder/PEAKS_files/ENHANCERS/`;
+  `mv $newpath/SICER_out/* $folder/PEAKS_files/BROAD_peaks`;
+  `mv $newpath/ame_out $folder/MOTIFS_files`;
+  `mv $newpath/memechip_out/* $folder/MOTIFS_files`;
+  `mv $newpath/bamdensity_out/* $folder/BAMDensity_files`;
+  `mv $newpath/*-stats* $folder/QC_files/STATS`;
+  `mv $newpath/*.wig* $newpath/*.bw $newpath/*.tdf $folder/PEAKSDisplay_files`;
+  `mv $newpath/*_p9_kd-all* $newpath/*p9_kd-auto* $newpath/*_nm* $folder/PEAKS_files/NARROW_peaks`;
 }

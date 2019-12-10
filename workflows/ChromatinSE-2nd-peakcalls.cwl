@@ -154,10 +154,6 @@ outputs:
     type: Directory
     outputSource: MEMECHIP/outDir
 
-  memeoutdir:
-    type: Directory
-    outputSource: MEMECHIP/memeDir
-
   ameoutdir:
     type: Directory
     outputSource: AME/outDir
@@ -256,7 +252,7 @@ steps:
     run: ../tools/meme-chip.cwl
     in:
       convertfasta: BEDfasta/outfile
-    out: [ outDir, memeDir ]
+    out: [ outDir ]
 
   AME:
     run: ../tools/ame.cwl
@@ -270,6 +266,7 @@ steps:
     in:
       bamfile: rmdupbamfile
       gtffile: gtffile
+      chromsizes: chromsizes
     out:  [ metagenesDir ] 
     run: ../tools/bamtogff.cwl
 

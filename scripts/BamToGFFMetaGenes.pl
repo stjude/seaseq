@@ -7,11 +7,11 @@ use File::Basename;
 use Getopt::Long;
 
 my $PATH = "/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/software";
-my ($help, $manual, $rmdupbam, $gtffile, $outfile, $samplename, $feature);
+my ($help, $manual, $rmdupbam, $gtffile, $outfile, $samplename, $feature, $chromsizes);
 my (%HASH, %CONTENT);
-my $usage = "perl $0 -g <gtf file> -b <bam file> -f <feature type> [-outfile <outputfile>] [-sample <samplename>]\n";
+my $usage = "perl $0 -g <gtf file> -c <chrom sizes tab> -b <bam file> -f <feature type> [-outfile <outputfile>] [-sample <samplename>]\n";
 
-GetOptions ("b|bam=s"=>\$rmdupbam,"g|gtf=s"=>\$gtffile,"feature|f=s"=>\$feature,"outfile|o=s"=>\$outfile, "sample|s=s"=>\$samplename);
+GetOptions ("b|bam=s"=>\$rmdupbam, "g|gtf=s"=>\$gtffile, "chrom|c=s"=>\$chromsizes, "feature|f=s"=>\$feature, "outfile|o=s"=>\$outfile, "sample|s=s"=>\$samplename);
 unless ($rmdupbam && $gtffile) { die $usage; }
 unless ($outfile) { $outfile = fileparse($rmdupbam, qr/(\.bam)?$/); } 
 else { $outfile = fileparse($outfile, qr/(\.[\d\w]+)?$/); }
@@ -56,8 +56,8 @@ if ($gtffile =~ /\.gtf$/) { #if file is a gtf file
 
 #generating the gff regions files.
 `flanking.pl -i genes.gff -f 2000 > promoters.gff`;
-`bedtools flank -i genes.gff -g ~/.genomes/hg19/UCSC_CHROMSIZES/UCSC_hg19_chromInfo.tab -l 2000 -r 0 -s > upstream.gff`;
-`bedtools flank -i genes.gff -g ~/.genomes/hg19/UCSC_CHROMSIZES/UCSC_hg19_chromInfo.tab -l 0 -r 2000 -s > downstream.gff`;
+`bedtools flank -i genes.gff -g $chromsizes -l 2000 -r 0 -s > upstream.gff`;
+`bedtools flank -i genes.gff -g $chromsizes -l 0 -r 2000 -s > downstream.gff`;
 
 #creating bamliquidator files
 print "running bam2GFF\n";
