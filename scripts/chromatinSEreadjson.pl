@@ -47,9 +47,9 @@ if ($step == 1) {
   `mkdir -p $folder/QC_files/STATS $folder/QC_files/FASTQC $folder/BAM_files`;
 
   #copy the relevant files to the specified folder
-  `mv $newpath/*fastqc* $folder/QC_files/FASTQC`;
-  `mv $newpath/*bam $newpath/*bai $folder/BAM_files`;
-  `mv $newpath/*metrics.txt $folder/QC_files/STATS`;
+  `cp -rf $newpath/*fastqc* $folder/QC_files/FASTQC`;
+  `cp -rf $newpath/*bam $newpath/*bai $folder/BAM_files`;
+  `cp -rf $newpath/*metrics.txt $folder/QC_files/STATS`;
  
   print $folder;
 }
