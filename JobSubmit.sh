@@ -78,6 +78,7 @@ then
     rm -rf $NEW_UUID.yml $logerr $logerr.2 $logout $logout.2
 
     echo "UPDATE:  CHIPSEQ - SE Pipeline Completed"
+    rm -rf $tmp $out
 
   else
     echo "ERROR:   STEP2 for ChipSeq workflow terminated with errors"
