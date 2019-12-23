@@ -25,7 +25,6 @@ inputs:
     label: "Output File"
     inputBinding:
       position: 2
-      prefix: '>'
       valueFrom: |
         ${
             if (self == ""){

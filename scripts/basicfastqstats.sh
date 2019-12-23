@@ -10,8 +10,9 @@ if [ $# -lt 1 ]; then
   exit 1
 fi
 
-#Fastq file
-fastqfile=$1;
+#File handling
+fastqfile=$1
+outputfile=$2
 
 # Processing fastqfile
 zcat $fastqfile | awk 'NR%4==2' | awk '{print length}' | sort -n > values.dat
@@ -35,8 +36,8 @@ Q3=$(awk 'BEGIN{c=0} {total[c]=$1; c++;} END{print total[int(NR*0.75 - 0.5)]}' v
 IQR=$(echo "$Q3-$Q1" | bc)
 
 
-echo Min.$'\t'1st Qu.$'\t'Median$'\t'Mean$'\t'3rd Qu.$'\t'Max.$'\t'StdDev.$'\t'IQR
-echo $minimum$'\t'$Q1$'\t'$median$'\t'$average$'\t'$Q3$'\t'$maximum$'\t'$stddev$'\t'$IQR
+echo Min.$'\t'1st Qu.$'\t'Median$'\t'Mean$'\t'3rd Qu.$'\t'Max.$'\t'StdDev.$'\t'IQR > $outputfile
+echo $minimum$'\t'$Q1$'\t'$median$'\t'$average$'\t'$Q3$'\t'$maximum$'\t'$stddev$'\t'$IQR >> $outputfile
 
 rm -rf values.dat
 
