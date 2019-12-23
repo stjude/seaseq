@@ -94,7 +94,7 @@ outputs:
       glob: '*_treat_afterfiting_all.wig.gz'
 
   modelR:
-    type: File
+    type: File?
     outputBinding:
       glob: '*model.r'
 

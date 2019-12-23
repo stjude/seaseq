@@ -20,7 +20,7 @@ inputs:
     inputBinding:
       position: 1
 
-  outputresults:
+  outfile:
     type: string?
     label: "Output File"
     inputBinding:
@@ -41,4 +41,11 @@ outputs:
   metrics_out:
     type: File
     outputBinding:
-      glob: '*metrics.txt'
+      glob: |
+        ${
+          if (inputs.outfile == "") {
+            return var_output_name();
+          } else {
+            return inputs.outfile;
+          }
+        }

@@ -11,7 +11,7 @@ doc: |
 
 requirements:
 - class: InitialWorkDirRequirement
-  listing: [ $(inputs.peaksbedfile) ]
+  listing: [ $(inputs.treatmentbedfile) ]
 
 inputs:
   inputdir:
@@ -20,7 +20,7 @@ inputs:
     inputBinding:
       position: 1
   
-  peaksbedfile:
+  treatmentbedfile:
     type: File
     inputBinding:
       position: 2

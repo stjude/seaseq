@@ -121,7 +121,14 @@ outputs:
   samfile:
     type: File
     outputBinding:
-      glob: '*sam'
+      glob: |
+        ${
+          if (inputs.samfile == "") {
+            return var_output_name();
+          } else {
+            return inputs.samfile;
+          } 
+        }
 
 
 

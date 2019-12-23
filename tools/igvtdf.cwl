@@ -50,4 +50,11 @@ outputs:
   outfile:
     type: File
     outputBinding:
-      glob: '*.tdf'
+      glob: |
+        ${
+          if (inputs.totdffile == "") {
+            return var_output_name();
+          } else {
+            return inputs.totdffile;
+          } 
+        }

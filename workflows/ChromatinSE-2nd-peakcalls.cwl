@@ -145,19 +145,31 @@ outputs:
     outputSource: WIG-NM/outtdf
     type: File
 
-# MOTIFs output
+# MOTIFs & Summits output
   bedfasta:
     type: File
-    outputSource: BEDfasta/outfile
+    outputSource: MOTIFS/bedfasta
 
+  flankbed:
+    type: File
+    outputSource: FlankBED/outfile
+    
   memechipdir:
     type: Directory
-    outputSource: MEMECHIP/outDir
+    outputSource: MOTIFS/memechipdir
 
-  ameoutdir:
+  summitmemechipdir:
     type: Directory
-    outputSource: AME/outDir
+    outputSource: SummitMOTIFS/memechipdir
 
+  amedir:
+    type: Directory
+    outputSource: MOTIFS/amedir
+
+  summitamedir:
+    type: Directory
+    outputSource: SummitMOTIFS/amedir
+    
 # METAGENE output
   metagenesDir:
     type: Directory
@@ -241,26 +253,30 @@ steps:
     run: ../subworkflows/visualization.cwl
 
 # MOTIF analysis
-  BEDfasta:
+  MOTIFS:
     in:
       reference: reference
       bedfile: MACS-Auto/peaksbedfile
-    out: [ outfile ]
-    run: ../tools/bedfasta.cwl
-
-  MEMECHIP:
-    run: ../tools/meme-chip.cwl
-    in:
-      convertfasta: BEDfasta/outfile
-    out: [ outDir ]
-
-  AME:
-    run: ../tools/ame.cwl
-    in:
-      convertfasta: BEDfasta/outfile
       motifdatabases: motifdatabases
-    out: [ outDir ]
+    out: [memechipdir, amedir, bedfasta]
+    run: ../subworkflows/motifs.cwl
 
+#SUMMIT-MOTIF analysis
+  FlankBED:
+    in:
+      bedfile: MACS-Auto/summitsfile
+      flank: flank
+    out: [outfile]
+    run: ../tools/flankbed.cwl
+  
+  SummitMOTIFS:
+    in:
+      reference: reference
+      bedfile: FlankBED/outfile
+      motifdatabases: motifdatabases
+    out: [memechipdir, amedir, bedfasta]
+    run: ../subworkflows/motifs.cwl
+    
 # METAGENE analysis
   MetaGene:
     in:
@@ -286,7 +302,7 @@ steps:
       genome_fraction: genome_fraction
       gapsize: gapsize
       evalue: evalue
-      peaksbedfile: B2Bed/outfile
+      treatmentbedfile: B2Bed/outfile
     run: ../tools/sicerRB.cwl
     out: [ sicerDir ]
 

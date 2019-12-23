@@ -1,5 +1,9 @@
 #!/usr/bin/perl
 #summary stats of all files provided
+#module needed:
+#      bedtools
+#      bedops
+#      run_spp.R
 
 use Pod::Usage;
 use strict; 
@@ -21,6 +25,7 @@ my ($Uniquecnt, $Totalcnt, $Fripcnt, $FRIP, $peaks, $PBC, $NRF, $PhantomQual) = 
 my (%HASH, %OvQual, $alignedpercent, $totalreads);
 my $prev = "NA";
 
+#output file name
 unless ($outfile) {
   if ($peaksbed) { $statsout = fileparse($peaksbed, qr/(\.[\w\d]+)?$/)."-stats.out"; } 
   else { $statsout = fileparse($inputbam, qr/(\.[\w\d]+)?$/)."-stats.out"; }
@@ -28,6 +33,7 @@ unless ($outfile) {
   unless ($outfile =~ /\-stats.out$/) { $statsout = fileparse($outfile, qr/(\.[\w\d]+)$/)."-stats.out"; }
   else { $statsout = $outfile; }
 }
+#html output file name
 $htmlfile = $statsout; $htmlfile =~ s/stats.out/stats.html/; #creating html file
 open (OUT, ">$statsout"); #opening outputfile
 
@@ -236,11 +242,7 @@ foreach (keys %OvQual){
 #color names
 my %color = ( "-2" => "#FF0000", "-1" => "#FF8C00", "0" => "#FFFF00", "1" => "#ADFF2F", "2" => "#008000" ); #red #orangered #yellow #greenyellow #green
 
-my $OverallQuality = sprintf ("%.4f", ($totalscore/$count)); my $color = $color{-2};
-if ($OverallQuality >= 0.4) { $color = $color{-1}; }
-if ($OverallQuality >= 0.8) { $color = $color{0}; }
-if ($OverallQuality >= 1.2) { $color = $color{1}; }
-if ($OverallQuality >= 1.6) { $color = $color{2}; }
+my $OverallQuality = sprintf ("%.4f", ($totalscore/$count)); my $color = $color{(sprintf ("%.0f", ($totalscore/$count)))};
 
 my $header = "<table border='1' cellpadding='5'><tr><th>"."Overall Quality";
 my $values = "<tr><td bgcolor='$color'><center>".$OverallQuality."</center></td>";

@@ -61,10 +61,10 @@ elsif ($step == 2 && $folder) {
   `mkdir -p $folder/PEAKSDisplay_files $folder/BAMDensity_files $folder/MOTIFS_files $folder/QC_files/STATS`;
   `cp -rf $newpath/ROSE_out/* $folder/PEAKS_files/ENHANCERS/`;
   `cp -rf $newpath/SICER_out/* $folder/PEAKS_files/BROAD_peaks`;
-  `cp -rf $newpath/ame_out $folder/MOTIFS_files`;
-  `cp -rf $newpath/memechip_out/* $folder/MOTIFS_files`;
+  `cp -rf $newpath/*ame_out $folder/MOTIFS_files`;
+  `cp -rf $newpath/*memechip_out $folder/MOTIFS_files`;
   `cp -rf $newpath/bamdensity_out/* $folder/BAMDensity_files`;
   `cp -rf $newpath/*-stats* $folder/QC_files/STATS`;
   `cp -rf $newpath/*_p9_kd-all* $newpath/*p9_kd-auto* $newpath/*_nm* $folder/PEAKS_files/NARROW_peaks`;
-  `mv $folder/*.wig* $folder/*.bw $folder/*.tdf $folder/PEAKSDisplay_files`;
+  `mv $folder/*/*.wig* $folder/*/*.bw $folder/*/*.tdf $folder/PEAKSDisplay_files`;
 }

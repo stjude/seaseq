@@ -56,4 +56,11 @@ outputs:
   RoseDir:
     type: Directory
     outputBinding:
-      glob: $(inputs.outputdir)
+      glob: |
+        ${
+          if (inputs.outputdir == "") {
+            return var_output_name();
+          } else {
+            return inputs.outputdir;
+          } 
+        }

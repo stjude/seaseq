@@ -10,9 +10,6 @@
     "SICER": {
       "res_req": "rusage[mem=10000]",
     },
-    "MetaGene": {
-      "res_req": "rusage[mem=10000]",
-    },
     "PeaksQC": {
       "res_req": "rusage[mem=10000]",
     },

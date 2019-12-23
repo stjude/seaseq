@@ -40,5 +40,12 @@ inputs:
 outputs:
   outfile:
     type: File
-    outputBinding: 
-      glob: '*rmdup.bam'
+    outputBinding:
+      glob: |
+        ${
+          if (inputs.outfile == "") {
+            return var_output_name();
+          } else {
+            return inputs.outfile;
+          } 
+        }
