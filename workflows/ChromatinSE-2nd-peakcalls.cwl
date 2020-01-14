@@ -5,7 +5,6 @@ class: Workflow
 requirements:
   - class: SubworkflowFeatureRequirement
 
-
 inputs:
 # main files & directorys
   reference: Directory
@@ -50,63 +49,19 @@ inputs:
 
 outputs:
 # MACS-AUTO
-  peaksbed:
-    outputSource: MACS-Auto/peaksbedfile
-    type: File
-
-  summits:
-    outputSource: MACS-Auto/summitsfile
-    type: File
-
-  peaksxls:
-    outputSource: MACS-Auto/peaksxlsfile
-    type: File
-
-  treatwig:
-    outputSource: MACS-Auto/wigfile
-    type: File
-
-  modelR:
-    type: File
-    outputSource: MACS-Auto/modelR
+  macsDir:
+    type: Directory
+    outputSource: MACS-Auto/macsDir
 
 # MACS-ALL
-  allpeaksbed:
-    outputSource: MACS-All/peaksbedfile
-    type: File
-
-  allsummits:
-    outputSource: MACS-All/summitsfile
-    type: File
-
-  allpeaksxls:
-    outputSource: MACS-All/peaksxlsfile
-    type: File
-
-  alltreatwig:
-    outputSource: MACS-All/wigfile
-    type: File
-
-  allmodelR:  
-    type: File  
-    outputSource: MACS-All/modelR  
+  allmacsDir:
+    type: Directory
+    outputSource: MACS-All/macsDir
 
 # MACS-NM
-  nmpeaksbed:
-    outputSource: MACS-NM/peaksbedfile
-    type: File
-
-  nmsummits:
-    outputSource: MACS-NM/summitsfile
-    type: File
-
-  nmpeaksxls:
-    outputSource: MACS-NM/peaksxlsfile
-    type: File
-
-  nmtreatwig:
-    outputSource: MACS-NM/wigfile
-    type: File
+  nmmacsDir:
+    type: Directory
+    outputSource: MACS-NM/macsDir
 
 #VISUAL
   rpmwig:
@@ -204,7 +159,7 @@ steps:
       pvalue: pvalue
       wiggle: wiggle
       single_profile: single_profile
-    out: [ peaksbedfile, peaksxlsfile, summitsfile, wigfile, modelR ]
+    out: [ peaksbedfile, peaksxlsfile, summitsfile, wigfile, macsDir ]
     run: ../tools/macs1call.cwl
 
   WIG-Auto:
@@ -223,7 +178,7 @@ steps:
       pvalue: pvalue
       wiggle: wiggle
       single_profile: single_profile
-    out: [ peaksbedfile, peaksxlsfile, summitsfile, wigfile, modelR ]
+    out: [ peaksbedfile, peaksxlsfile, summitsfile, wigfile, macsDir ]
     run: ../tools/macs1call.cwl
 
   WIG-All:
@@ -241,7 +196,7 @@ steps:
       pvalue: pvalue
       wiggle: wiggle
       single_profile: single_profile
-    out: [ peaksbedfile, peaksxlsfile, summitsfile, wigfile ]
+    out: [ peaksbedfile, peaksxlsfile, summitsfile, wigfile, macsDir ]
     run: ../tools/macs1nm.cwl
 
   WIG-NM:

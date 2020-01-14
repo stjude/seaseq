@@ -11,7 +11,7 @@ use warnings;
 use File::Basename;
 use Getopt::Long;
 
-my ($help, $manual, $inputbam, $peaksbed, $peaksxls, $bamflag, $rmdupflag, $bkflag, $outfile, $fastqmetrics, $fastqczip, $rosedir);
+my ($help, $manual, $inputbam, $peaksbed, $peaksxls, $bamflag, $rmdupflag, $bkflag, $outfile, $fastqmetrics, $fastqczip, $rosedir, $samplename);
 my $usage = "perl $0 -b <bam file> -p <peaks bed> -px <peaks xls> -fmetric <fastq metrics> -rose <rose directory> -bamflag <bamflagstat> -rmdupflag <rmdupflagstat> -bkflag <bklistflagstat> -outfile <outputfile> -fqc <fastqczipfile>\n";
 
 GetOptions ("b|bam=s"=>\$inputbam,"p|peak=s"=>\$peaksbed,"px|peakxls=s"=>\$peaksxls,"bamflag=s"=>\$bamflag,"rmdupflag=s"=>\$rmdupflag,"bkflag=s"=>\$bkflag,"fqc|fastqczip=s"=>\$fastqczip,"fmetric|fx=s"=>\$fastqmetrics, "rose|r=s"=>\$rosedir, "outfile|o=s"=>\$outfile);
@@ -27,7 +27,7 @@ my $prev = "NA";
 
 #output file name
 unless ($outfile) {
-  if ($peaksbed) { $statsout = fileparse($peaksbed, qr/(\.[\w\d]+)?$/)."-stats.out"; } 
+  if ($peaksbed) { $statsout = fileparse($peaksbed, qr/(\.[\w\d]+)?$/)."-stats.out"; }
   else { $statsout = fileparse($inputbam, qr/(\.[\w\d]+)?$/)."-stats.out"; }
 } else {
   unless ($outfile =~ /\-stats.out$/) { $statsout = fileparse($outfile, qr/(\.[\w\d]+)$/)."-stats.out"; }
@@ -36,7 +36,7 @@ unless ($outfile) {
 #html output file name
 $htmlfile = $statsout; $htmlfile =~ s/stats.out/stats.html/; #creating html file
 open (OUT, ">$statsout"); #opening outputfile
-
+$samplename = (split('\.', $statsout))[0];
 # - - - - - - - - -
 # Values
 # - - - - - - - - -
@@ -244,8 +244,9 @@ my %color = ( "-2" => "#FF0000", "-1" => "#FF8C00", "0" => "#FFFF00", "1" => "#A
 
 my $OverallQuality = sprintf ("%.4f", ($totalscore/$count)); my $color = $color{(sprintf ("%.0f", ($totalscore/$count)))};
 
-my $header = "<table border='1' cellpadding='5'><tr><th>"."Overall Quality";
-my $values = "<tr><td bgcolor='$color'><center>".$OverallQuality."</center></td>";
+my $header = "<table border='1' cellpadding='5'><tr><th>Sample Name</th><th>"."Overall Quality";
+my $values = "<tr><td><center>".$samplename."</center></td>";
+$values .= "<td bgcolor='$color'><center>".$OverallQuality."</center></td>";
 foreach (sort keys %OvQual){
   $header .= "</th><th>".$_;
   $values .="<td bgcolor='".$color{$OvQual{$_}{'score'}}."'><center>".$OvQual{$_}{'value'}."</center></td>";

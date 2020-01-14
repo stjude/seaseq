@@ -7,10 +7,10 @@
 ##############################################################
 # ##### Please replace PATHTO with your own directory ###### #
 ##############################################################
-PATHTO=/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/software/ROSE_V1
+PATHTO=/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/software/NEW/ROSE
 PYTHONPATH=$PATHTO/lib
 export PYTHONPATH
-export PATH=$PATH:$PATHTO/src
+export PATH=$PATH:$PATHTO/bin
 
 if [ $# -lt 7 ]; then
   echo ""
