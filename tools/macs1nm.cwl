@@ -14,6 +14,9 @@ requirements:
   - var var_output_name = function() {
       return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_nm';
    };
+  - var var_output_folder = function() {
+      return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'-nm';
+   };
 - class: InitialWorkDirRequirement 
   listing: [ $(inputs.treatmentfile) ]
 
@@ -71,6 +74,38 @@ inputs:
         }
     default: ""
 
+  movefiles:
+    type: string?
+    inputBinding:
+      position: 999
+      shellQuote: false
+      prefix: '&& mkdir -p '
+      valueFrom: |
+        ${
+            if (self == ""){
+              return var_output_folder();
+            } else {
+              return self;
+            }
+        }
+    default: ""
+
+  movefiles2:
+    type: string?
+    inputBinding:
+      position: 1000
+      shellQuote: false
+      prefix: '&& mv *_nm* '
+      valueFrom: |
+        ${
+            if (self == ""){
+              return var_output_folder();
+            } else {
+              return self;
+            }
+        }
+    default: ""
+
 
 outputs:
   peaksbedfile:
@@ -92,6 +127,18 @@ outputs:
     type: File
     outputBinding:
       glob: '*_treat_afterfiting_all.wig.gz'
+
+  macsDir:
+    type: Directory
+    outputBinding:
+      glob: |
+        ${
+          if (inputs.movefiles == "") {
+            return var_output_folder();
+          } else {
+            return inputs.movefiles;
+          }
+        }
 
 
 doc: |

@@ -1,6 +1,6 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
-baseCommand: [ROSE-call_custom.sh]
+baseCommand: [ROSE-local.sh]
 class: CommandLineTool
 label: ROSE - calling Enhancers and Super-enhancers
 doc: |

@@ -27,10 +27,10 @@ logerr="chromatinSE-"$NEW_UUID"-outfile_err"
 #------
 module load /rgs01/project_space/zhanggrp/MethodDevelopment/common/CWL/modulefiles/cwlexec/latest
 module unload python #unloading all python versions
+module load python/3.5.2
 module load node
 module load igvtools/2.3.2
 module load fastqc/0.11.5
-module load python/2.7.2
 module load bowtie/1.2.2
 module load samtools/1.9
 module load macs/041014
@@ -40,6 +40,8 @@ module load bedtools/2.25.0
 module load meme/4.11.2
 module load bedops/2.4.2
 module load java/1.8.0_60
+#module load BAM2GFF/1.1.0
+#module load ROSE/1.1.0
  
 export PATH=$PATH:$location/scripts
 
@@ -47,6 +49,7 @@ export PATH=$PATH:$location/scripts
 ###WORKFLOW
 #------
 ##cwlexec 1st step
+echo "STATUS:  Temporary files named with $NEW_UUID"
 echo "UPDATE:  STEP1 in progress"
 if [ ! -f $NEW_UUID.yml ] 
 then
@@ -77,7 +80,7 @@ then
   ##extract require files into folder
   if [ -s $logout.2 ]
   then
-
+    echo "UPDATE:  STEP2 Successfully completed"
     chromatinSEreadjson.pl -i $logout.2 -s 2 -f $OUTPUTFOLDER
 
     #log and error files are saved

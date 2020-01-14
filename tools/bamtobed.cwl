@@ -26,29 +26,18 @@ inputs:
       position: 1
   
   outfile:
-    type: string
-    inputBinding:
-      position: 2
-      prefix: '>'
-      valueFrom: |
-        ${
-            if (self == ""){
-              return var_output_name();
-            } else {
-              return self;
-            }
-        }
+    type: string?
     default: ""
+
+stdout: |
+  ${
+    if (inputs.outfile == "") {
+      return var_output_name();
+    } else {
+      return inputs.outfile;
+    }
+  }
 
 outputs:
   outfile:
-    type: File
-    outputBinding:
-      glob: |
-        ${
-          if (inputs.outfile == "") {
-            return var_output_name();
-          } else {
-            return inputs.outfile;
-          }
-        }
+    type: stdout

@@ -1,6 +1,6 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
-baseCommand: [BAM2GFF-call_custom.sh]
+baseCommand: [BAM2GFF-local.sh]
 class: CommandLineTool
 label: BAM to GFF for MetaGenes calculation v1 on bam file for all metagenes
 doc: |

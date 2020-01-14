@@ -16,6 +16,7 @@ requirements:
   expressionLib:
   - var var_output_name = function() {
       if (inputs.output_prefix != null) { return inputs.output_prefix+'.sam'; } 
+      else if (inputs.fastqfile.basename.split('_').length < 2) { return inputs.fastqfile.basename.split('.fastq').slice(0,-1)+'.sam'; }
       else { return inputs.fastqfile.basename.split('_').slice(0,-2).join('_')+'.sam'; }
    };
   - var var_readLength = function() {
@@ -103,32 +104,21 @@ inputs:
       position: 8
 
   samfile:
-    type: string
-    inputBinding:
-      prefix: '>'
-      position: 9
-      valueFrom: |
-        ${
-            if (self == ""){
-              return var_output_name();
-            } else {
-              return self;
-            }
-        }
+    type: string?
     default: ""
+
+stdout: |
+  ${
+    if (inputs.samfile == "") {
+      return var_output_name();
+    } else {
+      return inputs.samfile;
+    }
+  }
 
 outputs:
   samfile:
-    type: File
-    outputBinding:
-      glob: |
-        ${
-          if (inputs.samfile == "") {
-            return var_output_name();
-          } else {
-            return inputs.samfile;
-          } 
-        }
+    type: stdout
 
 
 

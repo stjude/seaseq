@@ -11,7 +11,7 @@ requirements:
 - class: InlineJavascriptRequirement
   expressionLib:
   - var var_output_name = function() {
-      return inputs.convertfasta.nameroot+'-ame_out';
+      return 'bklist'+inputs.convertfasta.nameroot.split('bklist').slice(-1)+'-ame_out';
    };
 
 inputs:
