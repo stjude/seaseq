@@ -52,20 +52,3 @@ outputs:
             return inputs.outfile;
           } 
         }
-
-
-doc: |
-  Convert ascii format wig file to binary big wig format
-    Usage: wigtobigwig.cwl [-h] --infile INFILE --chromsizes CHROMSIZES --outfile OUTFILE
-
-    Options: --infile		FILE 	peak calling file in wiggle format
-             --chromsizes	FILE	chromosome sizes in a two-column file
-             --outfile		INT	outputfilename (optional)
-                
- 
-$namespaces:
-  s: http://schema.org/
- 
- 
-$schemas:
- - https://schema.org/docs/schema_org_rdfa.html

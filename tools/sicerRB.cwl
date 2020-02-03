@@ -10,6 +10,8 @@ doc: |
   mkdir sicer5; ~/.software/SICER_V1.1/SICER/SICER-rb.sh ./ KOPTK1_DMSO.bam2bed.bed sicer5 hg19 1 200 150 0.86 200 100
 
 requirements:
+- class: ShellCommandRequirement
+- class: InlineJavascriptRequirement
 - class: InitialWorkDirRequirement
   listing: [ $(inputs.treatmentbedfile) ]
 
@@ -74,24 +76,36 @@ inputs:
     inputBinding:
       position: 10
 
-  outfile_txt:
+  gzip_graph:
+    type: boolean?
+    inputBinding:
+      position: 998
+      shellQuote: false
+      prefix: '&& gzip *graph'
+    default: true
+
+  outputfolder:
     type: string?
     inputBinding:
       position: 999
       shellQuote: false
-      prefix: '&& gzip *graph'
-    default: ""
+      separate: false
+      prefix: ' && nameoffolder="'
+    default: "SICER_out"
 
-  outdir:
-    type: string?
+  verifymove:
+    type: boolean?
     inputBinding:
-      position: 1000
+      position: 1000 
       shellQuote: false
-      prefix: '&& mkdir -p SICER_out && mv *W200* SICER_out'
-    default: ""
+      prefix: '" && mkdir -p $nameoffolder && mv *W200* $nameoffolder' 
+    default: true
 
 outputs:
   sicerDir:
     type: Directory
     outputBinding:
-      glob: "SICER_out"
+      glob: |
+        ${
+          return inputs.outputfolder;
+        }

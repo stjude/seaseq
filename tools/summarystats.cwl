@@ -18,15 +18,11 @@ requirements:
       }
    };
 
-- class: InitialWorkDirRequirement
-  listing: [ $(inputs.bamfile) ]
-
 inputs:
   bamfile:
     type: File?
     inputBinding:
       prefix: -b
-      valueFrom: $(self.basename)
 
   peaksbed:
     type: File?

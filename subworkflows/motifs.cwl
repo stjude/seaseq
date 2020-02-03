@@ -32,6 +32,10 @@ steps:
     out: [outDir]
 
   AME:
+    requirements:
+      ResourceRequirement:
+        ramMax: 10000
+        coresMin: 1
     run: ../tools/ame.cwl
     in:
       convertfasta: BEDfasta/outfile

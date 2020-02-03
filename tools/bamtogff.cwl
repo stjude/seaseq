@@ -11,17 +11,18 @@ requirements:
 - class: InlineJavascriptRequirement
   expressionLib:
   - var var_output_name = function() {
-      if (inputs.outfile == ""){
-        if (inputs.bamfile != null) { return inputs.bamfile.nameroot; }
+      if (inputs.samplename == ""){
+        return inputs.bamfile.nameroot;
       }
     };
 
 inputs:
   bamfile:
     type: File
-    secondaryFiles: $(self.basename+".bai")
     inputBinding:
       position: 3
+    secondaryFiles: 
+      - .bai
 
   gtffile:
     type: File
@@ -53,17 +54,28 @@ inputs:
         }
     default: ""
 
-  savedDir:
+  outputfolder:
     type: string?
     inputBinding:
-      position: 1000
+      position: 999
       shellQuote: false
-      prefix: '&& mkdir -p bamdensity_out && mv matrix *png *pdf bamdensity_out'
-    default: ""
+      separate: false
+      prefix: ' && nameoffolder="'
+    default: "bamdensity_out"
 
+  verifymove:
+    type: boolean?
+    inputBinding:
+      position: 1000 
+      shellQuote: false
+      prefix: '" && mkdir -p $nameoffolder && mv matrix *png *pdf $nameoffolder' 
+    default: true
 
 outputs:
   metagenesDir:
     type: Directory
     outputBinding:
-      glob: "bamdensity_out"
+      glob: |
+        ${
+          return inputs.outputfolder;
+        }

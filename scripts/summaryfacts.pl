@@ -117,8 +117,10 @@ if ($inputbam) {
   } close (IN);
  
   my $Oneread = $Uniquecnt - scalar keys %HASH;
-  $NRF = $Uniquecnt/$Totalcnt;
-  $PBC = $Oneread/$Uniquecnt;
+  if ($Uniquecnt >= 0 && $Totalcnt >= 0 && $Oneread >= 0) {
+    $NRF = $Uniquecnt/$Totalcnt;
+    $PBC = $Oneread/$Uniquecnt;
+  } else { $NRF = 0; $PBC = 0; }
   print OUT "Unique Genomic Locations = $Uniquecnt\nNRF score = $NRF\nPCR Bottleneck Coefficient = $PBC\n";
   print ".. Done\n";
 
@@ -213,6 +215,8 @@ if ($rosedir){
   print "Processing ROSE counts ...";
   my $enhancers = `wc -l $rosedir/unionpeaks_AllEnhancers.table.txt | awk '{print \$1-6}'`; chop $enhancers;
   my $superenhancers = `wc -l $rosedir/unionpeaks_SuperEnhancers.table.txt | awk '{print \$1-6}'`; chop $superenhancers;
+  unless ($enhancers > 0 ) { $enhancers = 0; }  #making sure enhancers  is numeric
+  unless ($superenhancers > 0 ) { $superenhancers = 0; } #making sure superenhancers is numeric
   print OUT "Total number of Enhancers = ", $enhancers;
   print OUT "Total number of Superenhancers = ", $superenhancers;
   print ".. Done\n";

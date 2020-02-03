@@ -25,18 +25,10 @@ outputs:
     type: File
 
   rmdup_bam:
-    outputSource: SamRMDup/outfile
-    type: File
-
-  rmdup_index:
     outputSource: SamIndex/outfile
     type: File
 
-  bklist_bam:
-    outputSource: BkList/outfile
-    type: File
-
-  bklist_index: 
+  bklist_bam: 
     outputSource: BkIndex/outfile
     type: File
 
@@ -71,6 +63,10 @@ outputs:
 
 steps:
   BasicMetrics:
+    requirements:
+      ResourceRequirement:
+        ramMax: 20000
+        coresMin: 1
     in: 
       fastqfile: fastqfile
     out: [metrics_out]
@@ -89,6 +85,10 @@ steps:
     run: ../tools/fastqc.cwl
 
   Bowtie:
+    requirements:
+      ResourceRequirement:
+        ramMax: 10000
+        coresMin: 20
     run: ../tools/bowtie.cwl
     in:
       readLengthFile: TagLen/tagLength
@@ -128,7 +128,7 @@ steps:
   BkIndex:
     in:
       infile: BkList/outfile
-    out: [bam2file, outfile]
+    out: [outfile]
     run: ../tools/samtools-index.cwl
 
   SamRMDup:
@@ -140,7 +140,7 @@ steps:
   SamIndex:
     in:
       infile: SamRMDup/outfile
-    out: [bam2file, outfile]
+    out: [outfile]
     run: ../tools/samtools-index.cwl
 
   STATbam:

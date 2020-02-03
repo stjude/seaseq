@@ -7,10 +7,10 @@
 ##############################################################
 # ##### Please replace PATHTO with your own directory ###### #
 ##############################################################
-PATHTO=/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/software/NEW/BAM2GFF
-PYTHONPATH=$PATHTO/lib
-export PYTHONPATH
-export PATH=$PATH:$PATHTO/bin
+#PATHTO=/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/software/NEW/BAM2GFF
+#PYTHONPATH=$PATHTO/lib
+#export PYTHONPATH
+#export PATH=$PATH:$PATHTO/bin
 
 if [ $# -lt 4 ]; then
   echo ""

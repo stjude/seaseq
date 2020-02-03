@@ -120,27 +120,3 @@ outputs:
   samfile:
     type: stdout
 
-
-
-doc: |
-  Reference mapping of ChiP-Seq single-end fastq reads using bowtie v1.2.2
-    Usage: bowtie.cwl --fastqfile FASTQFILE  --reference REFERENCE --readLength READLENGTH 
-                  [--best_alignments] [--good_alignments GOOD_ALIGNMENTS] 
-                  [--limit_alignments LIMIT_ALIGNMENTS] [--processors PROCESSORS] [--samfile SAMFILE]
-
-    Options: --fastqfile	FILE 	input fastq file
-             --reference	FILE	reference genome name
-             --samfile		FILE	output file name [sam format]
-             --good_alignments	INT	maximum good alignments per read
-             --limit_alignments INT	suppress all ambiguous alignments ( if > <int> )
-             --processors 	INT	number of alignment threads
-             --readLength 	INT 	seed length
-             --best_alignments 	BOOLEAN	guaranteed best hits
-                
- 
-$namespaces:
-  s: http://schema.org/
- 
- 
-$schemas:
- - https://schema.org/docs/schema_org_rdfa.html
