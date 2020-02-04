@@ -27,7 +27,7 @@ inputs:
   species: string?
   
   # SICER
-  redundancy: string?
+  redundancy: int?
   window: int?
   fragment_size: int?
   genome_fraction: double?
@@ -38,9 +38,14 @@ inputs:
   feature: string?
 
 # addendum from ChipSeq-1st-mapping step
-  rmdupbamfile: File
-  bklistbamfile: File
-  bklistbamindex: File
+  rmdupbamfile: 
+    type: File
+    secondaryFiles:
+      - .bai
+  bklistbamfile: 
+    type: File
+    secondaryFiles:
+      - .bai
   readzipfile: File
   STATbamoutfile: File
   STATrmdupoutfile: File
@@ -193,7 +198,6 @@ steps:
     in:
       treatmentfile: bklistbamfile
       space: space
-      pvalue: pvalue
       wiggle: wiggle
       single_profile: single_profile
     out: [ peaksbedfile, peaksxlsfile, summitsfile, wigfile, macsDir ]
@@ -249,6 +253,10 @@ steps:
     run: ../tools/bamtobed.cwl
 
   SICER:
+    requirements:
+      ResourceRequirement:
+        ramMax: 10000
+        coresMin: 1
     in:
       species: species
       redundancy: redundancy
@@ -263,12 +271,15 @@ steps:
 
 # ROSE enhancer caller
   ROSE:
+    requirements:
+      ResourceRequirement:
+        ramMax: 20000
+        coresMin: 1
     in:
       species: species
       feature: feature
       gtffile: gtffile
       bamfile: bklistbamfile
-      bamindex: bklistbamindex
       fileA: MACS-All/peaksbedfile
       fileB: MACS-Auto/peaksbedfile
     out: [ RoseDir ]
@@ -276,6 +287,10 @@ steps:
 
 # Quality Control & Statistics
   PeaksQC:
+    requirements:
+      ResourceRequirement:
+        ramMax: 10000
+        coresMin: 1
     in:
       fastqmetrics: fastqmetricsfile
       fastqczip: readzipfile

@@ -17,10 +17,25 @@ requirements:
   - var var_output_folder = function() {
       return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'-nm';
    };
-- class: InitialWorkDirRequirement 
-  listing: [ $(inputs.treatmentfile) ]
-
-
+  - var var_output_prefix = function() {
+      if (inputs.outputfolder == "") {
+        if (inputs.outputname == "") {
+          return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'-nm'+'/'+inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_nm';
+        }
+        else {
+          return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'-nm'+'/'+inputs.outputname;
+        }
+      }
+      else {
+        if (inputs.outputname == "") {
+          return inputs.outputfolder+'/'+inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_nm';
+        }
+        else {
+          return inputs.outputfolder+'/'+inputs.outputname;
+        }
+      }
+   };
+  
 inputs:
   treatmentfile:
     type: File
@@ -74,12 +89,13 @@ inputs:
         }
     default: ""
 
-  movefiles:
+  outputfolder:
     type: string?
     inputBinding:
       position: 999
       shellQuote: false
-      prefix: '&& mkdir -p '
+      separate: false
+      prefix: ' && nameoffolder="'
       valueFrom: |
         ${
             if (self == ""){
@@ -90,68 +106,56 @@ inputs:
         }
     default: ""
 
-  movefiles2:
-    type: string?
+  verifymove:
+    type: boolean?
     inputBinding:
-      position: 1000
+      position: 1000 
       shellQuote: false
-      prefix: '&& mv *_nm* '
-      valueFrom: |
-        ${
-            if (self == ""){
-              return var_output_folder();
-            } else {
-              return self;
-            }
-        }
-    default: ""
+      prefix: '" && mkdir -p $nameoffolder && mv *_nm* $nameoffolder' 
+    default: true
 
 
 outputs:
   peaksbedfile:
     type: File
     outputBinding:
-      glob: '*peaks.bed'
+      glob: |
+        ${
+          return var_output_prefix() + '_peaks.bed';
+        }
 
   peaksxlsfile:
     type: File
     outputBinding:
-      glob: '*peaks.xls'
+      glob: |
+        ${
+          return var_output_prefix() + '_peaks.xls';
+        }
 
   summitsfile:
     type: File
     outputBinding:
-      glob: '*summits.bed'
+      glob: |
+        ${
+          return var_output_prefix() + '_summits.bed';
+        }
 
   wigfile:
     type: File
     outputBinding:
-      glob: '*_treat_afterfiting_all.wig.gz'
+      glob: |
+        ${
+          return var_output_prefix() + '_MACS_wiggle/treat/*_treat_afterfiting_all.wig.gz';
+        }
 
   macsDir:
     type: Directory
     outputBinding:
       glob: |
         ${
-          if (inputs.movefiles == "") {
+          if (inputs.outputfolder == "") {
             return var_output_folder();
           } else {
-            return inputs.movefiles;
+            return inputs.outputfolder;
           }
         }
-
-
-doc: |
-  Model-based Analysis for ChIP-Sequencing
-    Usage: macs1nm.cwl [-h] [--outputname OUTPUTNAME]
-
-    Options: --outputname	STRING	experiment outfile file name
-             --treatmentfile	FILE	input CHIP bam file
-                
- 
-$namespaces:
-  s: http://schema.org/
- 
- 
-$schemas:
- - https://schema.org/docs/schema_org_rdfa.html

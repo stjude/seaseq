@@ -7,8 +7,7 @@ doc: |
   ROSE_call.sh <gtf file> <bam file> ROSE_out genes hg19 <bed file 1> <bed file 2>
 
 requirements:
-  InitialWorkDirRequirement:
-    listing: [ $(inputs.bamfile) ]
+- class: InlineJavascriptRequirement
 
 inputs:
   gtffile:
@@ -20,12 +19,11 @@ inputs:
     type: File
     inputBinding:
       position: 2
-
-  bamindex:
-    type: File
+    secondaryFiles: 
+      - .bai
     
   outputdir:
-    type: string?
+    type: string
     default: "ROSE_out"
     inputBinding:
       position: 3
@@ -58,9 +56,5 @@ outputs:
     outputBinding:
       glob: |
         ${
-          if (inputs.outputdir == "") {
-            return var_output_name();
-          } else {
-            return inputs.outputdir;
-          } 
+          return inputs.outputdir;
         }
