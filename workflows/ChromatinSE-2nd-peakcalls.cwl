@@ -158,6 +158,10 @@ outputs:
 steps:
 # PEAK CALLING & VISUALS
   MACS-Auto:
+    requirements:
+      ResourceRequirement:
+        ramMax: 10000
+        coresMin: 1
     in:
       treatmentfile: bklistbamfile
       space: space
@@ -176,6 +180,10 @@ steps:
     run: ../subworkflows/visualization.cwl
 
   MACS-All:
+    requirements:
+      ResourceRequirement:
+        ramMax: 10000
+        coresMin: 1
     in:
       treatmentfile: bklistbamfile
       keep_dup: keep_dup
@@ -195,6 +203,10 @@ steps:
     run: ../subworkflows/visualization.cwl
 
   MACS-NM:
+    requirements:
+      ResourceRequirement:
+        ramMax: 10000
+        coresMin: 1
     in:
       treatmentfile: bklistbamfile
       space: space
