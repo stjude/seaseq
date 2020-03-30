@@ -21,8 +21,8 @@ NEW_UUID=${NEW_UUID:=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head 
 #temporary output & error files
 out="$(pwd)/exec-"$NEW_UUID"-outdir"
 tmp="$(pwd)/exec-"$NEW_UUID"-tmpdir"
-logout="exec-"$NEW_UUID"-log_out"
-logerr="exec-"$NEW_UUID"-log_err"
+logout="chromatinSE-"$NEW_UUID"-log_out"
+logerr="chromatinSE-"$NEW_UUID"-log_err"
 
 #------
 ###Modules & PATH update
