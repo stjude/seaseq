@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #------
 ###SYNTAX to run
-#bsub -R "rusage[mem=10000]" -P watcher -q compbio -J dev-cwl -o dev-cwl_out -e dev-cwl_err -N ./JobSubmit.sh
+#bsub -R "rusage[mem=10000]" -P watcher -q compbio -J exec-cwl -o exec-cwl_out -e exec-cwl_err -N ./JobSubmit.sh
 ####
 
 #------
@@ -19,10 +19,10 @@ NEW_UUID=${NEW_UUID:=${OLD_UUID%%.yml}} #reuse old file
 NEW_UUID=${NEW_UUID:=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)"_"`date +%s`} #temporary file for the 2nd step
 
 #temporary output & error files
-out="$(pwd)/dev-"$NEW_UUID"-outdir"
-tmp="$(pwd)/dev-"$NEW_UUID"-tmpdir"
-logout="dev-"$NEW_UUID"-log_out"
-logerr="dev-"$NEW_UUID"-log_err"
+out="$(pwd)/exec-"$NEW_UUID"-outdir"
+tmp="$(pwd)/exec-"$NEW_UUID"-tmpdir"
+logout="exec-"$NEW_UUID"-log_out"
+logerr="exec-"$NEW_UUID"-log_err"
 
 #------
 ###Modules & PATH update
