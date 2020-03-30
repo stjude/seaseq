@@ -19,8 +19,8 @@ NEW_UUID=${NEW_UUID:=${OLD_UUID%%.yml}} #reuse old file
 NEW_UUID=${NEW_UUID:=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)"_"`date +%s`} #temporary file for the 2nd step
 
 #temporary output & error files
-out="$(pwd)/exec-"$NEW_UUID"-outdir"
-tmp="$(pwd)/exec-"$NEW_UUID"-tmpdir"
+out="$(pwd)/chromatinSE-"$NEW_UUID"-outdir"
+tmp="$(pwd)/chromatinSE-"$NEW_UUID"-tmpdir"
 logout="chromatinSE-"$NEW_UUID"-log_out"
 logerr="chromatinSE-"$NEW_UUID"-log_err"
 
