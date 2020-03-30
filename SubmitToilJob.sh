@@ -1,17 +1,15 @@
 #!/usr/bin/env bash
 #------
 ###SYNTAX to run
-#bsub -P watcher -q compbio -J devtoil -o devtoil_out -e devtoil_err -N ./SubmitToilJob.sh
+#bsub -P watcher -q compbio -J toil-cwl -o toil-cwl_out -e toil-cwl_err -N ./SubmitToilJob.sh
 ####
 
 #------
 ###FILES
 #------
-#location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/ChipSeqPipeline"
-location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/SEQ2"
+location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/ChipSeqPipeline"
 parameters="$location/inputparameters.yml"
-config="$location/LSFconfig.json"
-firstscript="$location/workflows/ChromatinSE-1st-mapping.cwl"
+config="$location/LSFconfig.json"firstscript="$location/workflows/ChromatinSE-1st-mapping.cwl"
 secondscript="$location/workflows/ChromatinSE-2nd-peakcalls.cwl"
 
 OLD_UUID=$1
@@ -19,12 +17,12 @@ NEW_UUID=${NEW_UUID:=${OLD_UUID%%.yml}} #reuse old file
 NEW_UUID=${NEW_UUID:=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)"_"`date +%s`} #temporary file for the 2nd step
 
 #temporary output & error files
-out="$(pwd)/dev-"$NEW_UUID"-outdir"
-tmp="$(pwd)/dev-"$NEW_UUID"-tmpdir"
-jobstore="dev-"$NEW_UUID"-jobstore"
-logtxt="dev-"$NEW_UUID"-log.txt"
-logout="dev-"$NEW_UUID"-log_out"
-logerr="dev-"$NEW_UUID"-log_err"
+out="$(pwd)/toil-"$NEW_UUID"-outdir"
+tmp="$(pwd)/toil-"$NEW_UUID"-tmpdir"
+jobstore="toil-"$NEW_UUID"-jobstore"
+logtxt="chromatinSE-"$NEW_UUID"-log.txt"
+logout="chromatinSE-"$NEW_UUID"-log_out"
+logerr="chromatinSE-"$NEW_UUID"-log_err"
 
 #------
 ###Modules & PATHS update
