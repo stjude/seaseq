@@ -15,12 +15,12 @@ script="$location/workflows/ChromatinSE.cwl"
 NEW_UUID=${NEW_UUID:=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)"_"`date +%s`} #temporary file for the 2nd step
 
 #temporary output & error files
-out="$(pwd)/all-"$NEW_UUID"-outdir"
-tmp="$(pwd)/all-"$NEW_UUID"-tmpdir"
-jobstore="all-"$NEW_UUID"-jobstore"
-logtxt="all-"$NEW_UUID"-log.txt"
-logout="all-"$NEW_UUID"-log_out"
-logerr="all-"$NEW_UUID"-log_err"
+out="$(pwd)/chromatinSE-"$NEW_UUID"-outdir"
+tmp="$(pwd)/chromatinSE-"$NEW_UUID"-tmpdir"
+jobstore="chromatinSE-"$NEW_UUID"-jobstore"
+logtxt="chromatinSE-"$NEW_UUID"-log.txt"
+logout="chromatinSE-"$NEW_UUID"-log_out"
+logerr="chromatinSE-"$NEW_UUID"-log_err"
 
 #------
 ###Modules & PATH update
