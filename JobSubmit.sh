@@ -1,32 +1,33 @@
 #!/usr/bin/env bash
 #------
 ###SYNTAX to run
-#bsub -R "rusage[mem=10000]" -P watcher -q compbio -J exec-cwl -o exec-cwl_out -e exec-cwl_err -N ./JobSubmit.sh
-###
+#bsub -R "rusage[mem=10000]" -P watcher -q compbio -J dev-cwl -o dev-cwl_out -e dev-cwl_err -N ./JobSubmit.sh
+####
 
 #------
 ###FILES
 #------
-location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/ChipSeqPipeline"
-config="$location/LSFconfig.json"
+#location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/ChipSeqPipeline"
+location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/SEQ2"
 parameters="$location/inputparameters.yml"
+config="$location/LSFconfig.json"
 firstscript="$location/workflows/ChromatinSE-1st-mapping.cwl"
 secondscript="$location/workflows/ChromatinSE-2nd-peakcalls.cwl"
+
 OLD_UUID=$1
 NEW_UUID=${NEW_UUID:=${OLD_UUID%%.yml}} #reuse old file
 NEW_UUID=${NEW_UUID:=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)"_"`date +%s`} #temporary file for the 2nd step
 
 #temporary output & error files
-out="$(pwd)/exec-"$NEW_UUID"-outdir"
-tmp="$(pwd)/exec-"$NEW_UUID"-tmpdir"
-logout="chromatinSE-"$NEW_UUID"-log_out"
-logerr="chromatinSE-"$NEW_UUID"-log_err"
+out="$(pwd)/dev-"$NEW_UUID"-outdir"
+tmp="$(pwd)/dev-"$NEW_UUID"-tmpdir"
+logout="dev-"$NEW_UUID"-log_out"
+logerr="dev-"$NEW_UUID"-log_err"
 
 #------
 ###Modules & PATH update
 #------
 module load /rgs01/project_space/zhanggrp/MethodDevelopment/common/CWL/modulefiles/cwlexec/latest
-module load python/2.7.2
 module load node
 module load igvtools/2.3.2
 module load fastqc/0.11.5
@@ -41,8 +42,10 @@ module load bedops/2.4.2
 module load java/1.8.0_60
 module load BAM2GFF/1.1.0
 module load ROSE/1.1.0
- 
+module load SICER2/1.0.1
+
 export PATH=$PATH:$location/scripts
+export R_LIBS_USER=$R_LIBS_USER:/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/R #to find SPP local package
 
 #------
 ###WORKFLOW
