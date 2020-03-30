@@ -9,7 +9,7 @@
 #------
 location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/ChipSeqPipeline"
 parameters="$location/inputparameters.yml"
-config="$location/LSFconfig.json"firstscript="$location/workflows/ChromatinSE-1st-mapping.cwl"
+firstscript="$location/workflows/ChromatinSE-1st-mapping.cwl"
 secondscript="$location/workflows/ChromatinSE-2nd-peakcalls.cwl"
 
 OLD_UUID=$1
