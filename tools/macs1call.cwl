@@ -12,29 +12,30 @@ requirements:
 - class: InlineJavascriptRequirement
   expressionLib:
   - var var_output_name = function() {
-      return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_p9_kd-'+inputs.keep_dup;
+      return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_p'+inputs.pvalue.split('-').slice(1)+'_kd-'+inputs.keep_dup;
    };
   - var var_output_folder = function() {
-      return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'-p9_kd-'+inputs.keep_dup;
+      return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'-p'+inputs.pvalue.split('-').slice(1)+'_kd-'+inputs.keep_dup;
    };
   - var var_output_prefix = function() {
       if (inputs.outputfolder == "") {
         if (inputs.outputname == "") {
-          return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'-p9_kd-'+inputs.keep_dup+'/'+inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_p9_kd-'+inputs.keep_dup;
+          return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'-p'+inputs.pvalue.split('-').slice(1)+'_kd-'+inputs.keep_dup+'/'+inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_p'+inputs.pvalue.split('-').slice(1)+'_kd-'+inputs.keep_dup;
         }
         else {
-          return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'-p9_kd-'+inputs.keep_dup+'/'+inputs.outputname;
+          return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'-p'+inputs.pvalue.split('-').slice(1)+'_kd-'+inputs.keep_dup+'/'+inputs.outputname;
         }
       }
       else {
         if (inputs.outputname == "") {
-          return inputs.outputfolder+'/'+inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_p9_kd-'+inputs.keep_dup;
+          return inputs.outputfolder+'/'+inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_p'+inputs.pvalue.split('-').slice(1)+'_kd-'+inputs.keep_dup;
         }
         else {
           return inputs.outputfolder+'/'+inputs.outputname;
         }
       }
-   };
+    };
+
 
 inputs:
   treatmentfile:
@@ -111,9 +112,25 @@ inputs:
     inputBinding:
       position: 1000 
       shellQuote: false
-      prefix: '" && mkdir -p $nameoffolder && mv *_p9_kd-* $nameoffolder' 
+      prefix: '" && mkdir -p $nameoffolder &&'
     default: true
 
+  verifymove2:
+    type: string?
+    inputBinding:
+      position: 1001
+      shellQuote: false
+      separate: false
+      prefix: 'mv '
+      valueFrom: |
+        ${
+            if (self == ""){
+              return inputs.treatmentfile.basename.split('.').slice(0,-1).join('.')+'_p'+inputs.pvalue.split('-').slice(1)+'_kd-'+inputs.keep_dup+'* $nameoffolder';
+            } else {
+              return self;
+            }
+        }
+    default: ""
 
 outputs:
   peaksbedfile:

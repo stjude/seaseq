@@ -10,9 +10,18 @@ inputs:
   reference: Directory
   chromsizes: File
   gtffile: File
+  fastqfile: File
+  chromsizes: File
+  blacklistfile: File
   motifdatabases: string[]
 
 # optional parameters
+  #BOWTIE
+  best_alignments: boolean?
+  good_alignments: int?
+  limit_alignments: int?
+  processors: int?
+  
   # MACS
   nomodel: boolean?
   wiggle: boolean?
@@ -37,22 +46,39 @@ inputs:
   # ROSE
   feature: string?
 
-# addendum from ChipSeq-1st-mapping step
-  rmdupbamfile: 
-    type: File
-    secondaryFiles:
-      - .bai
-  bklistbamfile: 
-    type: File
-    secondaryFiles:
-      - .bai
-  readzipfile: File
-  STATbamoutfile: File
-  STATrmdupoutfile: File
-  STATbkoutfile: File
-  fastqmetricsfile: File
-
 outputs:
+  sam_sort:
+    outputSource: SamSort/outfile
+    type: File
+
+  fastq_metrics:
+    outputSource: BasicMetrics/metrics_out
+    type: File
+
+  rmdup_bam:
+    outputSource: SamIndex/outfile
+    type: File
+
+  bklist_bam: 
+    outputSource: BkIndex/outfile
+    type: File
+
+  bamqc_html:
+    outputSource: BamQC/htmlfile
+    type: File
+
+  bamqc_zip:
+    outputSource: BamQC/zipfile
+    type: File
+
+  readqc_zip:
+    outputSource: ReadQC/zipfile
+    type: File
+
+  readqc_html:
+    outputSource: ReadQC/htmlfile
+    type: File
+ 
 # MACS-AUTO
   macsDir:
     type: Directory
@@ -153,12 +179,111 @@ outputs:
   htmlfile:
     type: File
     outputSource: PeaksQC/htmlfile
-
+    
   textfile:
     type: File
     outputSource: PeaksQC/textfile
 
 steps:
+  BasicMetrics:
+    requirements:
+      ResourceRequirement:
+        ramMax: 20000
+        coresMin: 1
+    in: 
+      fastqfile: fastqfile
+    out: [metrics_out]
+    run: ../tools/basicfastqstats.cwl
+
+  TagLen:
+    in: 
+      datafile: BasicMetrics/metrics_out
+    out: [tagLength]
+    run: ../tools/taglength.cwl
+   
+  ReadQC:
+    in:
+      infile: fastqfile
+    out: [htmlfile, zipfile]
+    run: ../tools/fastqc.cwl
+
+  Bowtie:
+    requirements:
+      ResourceRequirement:
+        ramMax: 10000
+        coresMin: 20
+    run: ../tools/bowtie.cwl
+    in:
+      readLengthFile: TagLen/tagLength
+      best_alignments: best_alignments
+      good_alignments: good_alignments
+      fastqfile: fastqfile
+      limit_alignments: limit_alignments
+      processors: processors
+      reference: reference
+    out: [samfile]
+
+  SamView:
+    in:
+      infile: Bowtie/samfile
+    out: [outfile]
+    run: ../tools/samtools-view.cwl
+
+  BamQC:
+    in:
+      infile: SamView/outfile
+    out: [htmlfile, zipfile]
+    run: ../tools/fastqc.cwl
+
+  SamSort:
+    in:
+      infile: SamView/outfile
+    out: [outfile]
+    run: ../tools/samtools-sort.cwl
+
+  BkList:
+    in:
+      infile: SamSort/outfile
+      blacklistfile: blacklistfile
+    out: [outfile]
+    run: ../tools/blacklist.cwl
+
+  BkIndex:
+    in:
+      infile: BkList/outfile
+    out: [outfile]
+    run: ../tools/samtools-index.cwl
+
+  SamRMDup:
+    in:
+      infile: BkList/outfile
+    out: [outfile]
+    run: ../tools/samtools-mkdupr.cwl
+
+  SamIndex:
+    in:
+      infile: SamRMDup/outfile
+    out: [outfile]
+    run: ../tools/samtools-index.cwl
+
+  STATbam:
+    in:
+      infile: SamView/outfile
+    out: [outfile]
+    run: ../tools/samtools-flagstat.cwl
+
+  STATrmdup:
+    in:
+      infile: SamRMDup/outfile
+    out: [outfile]
+    run: ../tools/samtools-flagstat.cwl
+
+  STATbk:
+    in:
+      infile: BkList/outfile
+    out: [outfile]
+    run: ../tools/samtools-flagstat.cwl
+
 # PEAK CALLING & VISUALS
   MACS-Auto:
     requirements:
@@ -166,7 +291,7 @@ steps:
         ramMax: 10000
         coresMin: 1
     in:
-      treatmentfile: bklistbamfile
+      treatmentfile: BkIndex/outfile
       space: space
       pvalue: pvalue
       wiggle: wiggle
@@ -188,7 +313,7 @@ steps:
         ramMax: 10000
         coresMin: 1
     in:
-      treatmentfile: bklistbamfile
+      treatmentfile: BkIndex/outfile
       keep_dup: keep_dup
       space: space
       pvalue: pvalue
@@ -211,7 +336,7 @@ steps:
         ramMax: 10000
         coresMin: 1
     in:
-      treatmentfile: bklistbamfile
+      treatmentfile: BkIndex/outfile
       space: space
       wiggle: wiggle
       single_profile: single_profile
@@ -254,16 +379,16 @@ steps:
 # METAGENE analysis
   MetaGene:
     in:
-      bamfile: rmdupbamfile
+      bamfile: SamIndex/outfile
       gtffile: gtffile
       chromsizes: chromsizes
     out:  [ metagenesDir ] 
-    run: ../tools/bamtogff.cwl
+    run: ../tools/bamtogff-ALL.cwl
 
 # SICER broad peaks caller
   B2Bed:
     in:
-      infile: rmdupbamfile
+      infile: SamIndex/outfile
     out: [ outfile ]
     run: ../tools/bamtobed.cwl
 
@@ -294,16 +419,16 @@ steps:
       species: species
       feature: feature
       gtffile: gtffile
-      bamfile: bklistbamfile
+      bamfile: BkIndex/outfile
       fileA: MACS-All/peaksbedfile
       fileB: MACS-Auto/peaksbedfile
     out: [ RoseDir ]
-    run: ../tools/roseNC.cwl
+    run: ../tools/roseNC-ALL.cwl
 
 # Quality Control & Statistics
   Bklist2Bed:
     in:
-      infile: bklistbamfile
+      infile: BkIndex/outfile
     out: [ outfile ]
     run: ../tools/bamtobed.cwl
 
@@ -323,7 +448,7 @@ steps:
         ramMax: 10000
         coresMin: 1
     in:
-      infile: bklistbamfile
+      infile: BkIndex/outfile
     out: [spp_out]
     run: ../tools/runSPP.cwl
 
@@ -344,15 +469,15 @@ steps:
         ramMax: 10000
         coresMin: 1
     in:
-      fastqmetrics: fastqmetricsfile
-      fastqczip: readzipfile
+      fastqmetrics: BasicMetrics/metrics_out
+      fastqczip: ReadQC/zipfile
       sppfile: runSPP/spp_out
       bambed: Bklist2Bed/outfile
       countsfile: CountIntersectBed/outfile
       peaksxls: MACS-Auto/peaksxlsfile
-      bamflag: STATbamoutfile
-      rmdupflag: STATrmdupoutfile
-      bkflag: STATbkoutfile
+      bamflag: STATbam/outfile
+      rmdupflag: STATrmdup/outfile
+      bkflag: STATbk/outfile
       rosedir: ROSE/RoseDir
     out: [ statsfile, htmlfile, textfile ]
     run: ../tools/summarystatsv2.cwl

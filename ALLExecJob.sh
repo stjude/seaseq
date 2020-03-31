@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #------
 ###SYNTAX to run
-#bsub -R "rusage[mem=10000]" -P watcher -q compbio -J exec-cwl -o exec-cwl_out -e exec-cwl_err -N ./JobSubmit.sh
+#bsub -P watcher -q compbio -J allexec -o allexec_out -e allexec_err -N ./ALLExecJob.sh
 ####
 
 #------
@@ -11,11 +11,8 @@
 location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/SEQ2"
 parameters="$location/inputparameters.yml"
 config="$location/LSFconfig.json"
-firstscript="$location/workflows/ChromatinSE-1st-mapping.cwl"
-secondscript="$location/workflows/ChromatinSE-2nd-peakcalls.cwl"
+script="$location/workflows/ChromatinSE.cwl"
 
-OLD_UUID=$1
-NEW_UUID=${NEW_UUID:=${OLD_UUID%%.yml}} #reuse old file
 NEW_UUID=${NEW_UUID:=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)"_"`date +%s`} #temporary file for the 2nd step
 
 #temporary output & error files
@@ -50,52 +47,28 @@ export R_LIBS_USER=$R_LIBS_USER:/rgs01/project_space/abrahgrp/Software_Dev_Sandb
 #------
 ###WORKFLOW
 #------
-##cwlexec 1st step
 echo "STATUS:  Temporary files named with $NEW_UUID"
-echo "UPDATE:  STEP1 in progress"
-
-if [ ! -f $NEW_UUID.yml ] 
-then
-  ##removing work and out files
-  mkdir -p $tmp $out
-  
-  ##excuting step one
-  cwlexec -p -w $tmp -o $out -c $config -p $firstscript $parameters 1>$logout 2>$logerr
-else
-  echo "NOTICE:  STEP1 initially completed with temp yml $NEW_UUID.yml"
-fi
+mkdir -p $tmp $out
+ 
+##excuting step one
+cwlexec -p -w $tmp -o $out -c $config -p $script $parameters 1>$logout 2>$logerr
 
 ##extract 1st section
 if [ -s $logout ]
 then
-  echo "UPDATE:  STEP1 Successfully completed"
   cp -f $parameters $NEW_UUID.yml
 
   ##extracting relevant files from 1st step to the next step & to outputfolder
   OUTPUTFOLDER=$(chromatinSEreadjson.pl -i $logout -o $NEW_UUID.yml -s 1)
 
-  echo "UPDATE:  STEP2 in progress"
+  chromatinSEreadjson.pl -i $logout -s 2 -f $OUTPUTFOLDER
 
+  mkdir -p $OUTPUTFOLDER/Log_files
+  mv $NEW_UUID.yml $logerr $logout $OUTPUTFOLDER/Log_files
 
-  ##cwlexec 2nd step
-  cwlexec -p -w $tmp -o $out -c $config -p $secondscript $NEW_UUID.yml 1>$logout.2 2>$logerr.2
+  echo "UPDATE:  CHIPSEQ - SE Pipeline Completed"
 
-  ##extract require files into folder
-  if [ -s $logout.2 ]
-  then
-    echo "UPDATE:  STEP2 Successfully completed"
-    chromatinSEreadjson.pl -i $logout.2 -s 2 -f $OUTPUTFOLDER
-
-    #log and error files are saved
-    mkdir -p $OUTPUTFOLDER/Log_files
-    mv $NEW_UUID.yml $logerr $logerr.2 $logout $logout.2 $OUTPUTFOLDER/Log_files
-
-    echo "UPDATE:  CHIPSEQ - SE Pipeline Completed"
-
-  else
-    echo "ERROR:   STEP2 for ChipSeq workflow terminated with errors"
-  fi
 else
-  echo "ERROR:   STEP1 for ChipSeq workflow terminated with errors"
+  echo "ERROR:   ChipSeq-ALL workflow terminated with errors"
 fi
 
