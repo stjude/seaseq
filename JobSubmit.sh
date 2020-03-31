@@ -7,7 +7,6 @@
 #------
 ###FILES
 #------
-#location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/ChipSeqPipeline"
 location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/SEQ2"
 parameters="$location/inputparameters.yml"
 config="$location/LSFconfig.json"
