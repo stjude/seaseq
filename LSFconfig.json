@@ -7,6 +7,15 @@
       "processors" : "20",
       "res_req": "rusage[mem=10000]",
     },
+    "MACS-Auto": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "MACS-All": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "MACS-NM": {
+      "res_req": "rusage[mem=10000]",
+    },
     "SICER": {
       "res_req": "rusage[mem=10000]",
     },
@@ -23,6 +32,15 @@
       "res_req": "rusage[mem=10000]",
     },
     "SummitMOTIFS/AME": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "SortBed": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "runSPP": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "CountIntersectBed": {
       "res_req": "rusage[mem=10000]",
     },
   },
