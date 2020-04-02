@@ -7,7 +7,7 @@
 #------
 ###FILES
 #------
-location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/SEQ2"
+location="/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/ChipSeqPipeline"
 parameters="$location/inputparameters.yml"
 config="$location/LSFconfig.json"
 firstscript="$location/workflows/ChromatinSE-1st-mapping.cwl"
