@@ -355,4 +355,4 @@ steps:
       bkflag: STATbkoutfile
       rosedir: ROSE/RoseDir
     out: [ statsfile, htmlfile, textfile ]
-    run: ../tools/summarystatsv2.cwl
+    run: ../tools/summarystats.cwl

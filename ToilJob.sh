@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #------
 ###SYNTAX to run
-#bsub -P watcher -q compbio -J toil-cwl -o toil-cwl_out -e toil-cwl_err -N ./SubmitToilJob.sh
+#bsub -P watcher -q compbio -J toil-cwl -o toil-cwl_out -e toil-cwl_err -N ./ToilJob.sh
 ####
 
 #------
