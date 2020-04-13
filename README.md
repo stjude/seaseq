@@ -7,11 +7,11 @@
 
 Three workflows are available to run SEASEQ pipeline.
 
-1. BAM mappings & Peak Calling
+1. BAM mapping & Peak Calling.
 
-1. All in one pipeline
+1. All in one pipeline.
 
-1. All in one pipeline for multiple files.
+1. All in one pipeline for multiple fastQ.
 
 
 ## To RUN:
