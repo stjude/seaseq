@@ -17,12 +17,14 @@ requirements:
 
 inputs:
   infile:
+    label: "BAM file"
     type: File
     inputBinding:
       position: 1
 
-  outfile:
+  outputfile:
     type: string
+    label: "Output file name"
     inputBinding:
       prefix: '-o'
       valueFrom: |
@@ -38,12 +40,13 @@ inputs:
 outputs:
   outfile:
     type: File
+    label: "Sorted BAM output file"
     outputBinding:
       glob: |
         ${
-          if (inputs.outfile == "") {
+          if (inputs.outputfile == "") {
             return var_output_name();
           } else {
-            return inputs.outfile;
+            return inputs.outputfile;
           } 
         }

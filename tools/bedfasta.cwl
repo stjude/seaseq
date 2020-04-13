@@ -20,6 +20,7 @@ requirements:
 
 inputs:
   reference:
+    label: "Genome reference directory"
     type: Directory
     inputBinding:
       prefix: -fi
@@ -36,12 +37,14 @@ inputs:
 
   bedfile:
     type: File
+    label: "BED file"
     inputBinding:
       position: 2
       prefix: -bed
   
-  outfile:
+  outputfile:
     type: string
+    label: "Output FASTA file name"
     inputBinding:
       position: 3
       prefix: -fo
@@ -58,12 +61,13 @@ inputs:
 outputs:
   outfile:
     type: File
+    label: "Output FASTA"
     outputBinding:
       glob: |
         ${
-          if (inputs.outfile == "") {
+          if (inputs.outputfile == "") {
             return var_output_name();
           } else {
-            return inputs.outfile;
+            return inputs.outputfile;
           }
         }

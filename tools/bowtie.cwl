@@ -28,9 +28,11 @@ requirements:
 inputs:
   output_prefix:
     type: string?
+    label: "Output prefix name"
 
   processors:
     type: int?
+    label: "number of alignment threads"
     default: 20
     inputBinding:
       prefix: -p
@@ -38,6 +40,7 @@ inputs:
 
   good_alignments:
     type: int?
+    label: "minimum good alignments per read"
     default: 2
     inputBinding:
       prefix: -k
@@ -45,6 +48,7 @@ inputs:
 
   limit_alignments:
     type: int?
+    label: "maximum number of alignemnts"
     default: 2
     inputBinding:
       prefix: -m
@@ -52,6 +56,7 @@ inputs:
 
   readLength:
     type: int
+    label: "read length"
     inputBinding:
       prefix: -l
       position: 4
@@ -67,9 +72,11 @@ inputs:
 
   readLengthFile:
     type: File?
+    label: "read length"
 
   best_alignments:
     type: boolean?
+    label: "guaranteed best hits"
     default: true
     inputBinding:
       prefix: --best
@@ -77,6 +84,7 @@ inputs:
 
   reference:
     type: Directory
+    label: "Genome reference directory"
     inputBinding:
       position: 6
       valueFrom: |
@@ -93,23 +101,26 @@ inputs:
 
   fastqfile:
     type: File
+    label: "FastQ file"
     inputBinding:
       position: 7
 
   samoutput:
     type: boolean?
+    label: "write hits in SAM format"
     default: true
     inputBinding:
       prefix: -S
       position: 8
 
-  samfile:
+  samfilename:
     type: string?
+    label: "SAM file name"
     default: ""
 
 stdout: |
   ${
-    if (inputs.samfile == "") {
+    if (inputs.samfilename == "") {
       return var_output_name();
     } else {
       return inputs.samfile;
@@ -119,4 +130,5 @@ stdout: |
 outputs:
   samfile:
     type: stdout
+    label: "output file"
 

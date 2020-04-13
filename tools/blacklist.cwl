@@ -21,30 +21,34 @@ requirements:
 inputs:
   infile:
     type: File
+    label: "BAM file"
     inputBinding:
       prefix: '-a'
       position: 1
   
   blacklistfile:
     type: File
+    label: "Blacklist file"
     inputBinding:
       prefix: '-b'
       position: 2
 
 
-  outfile:
+  outputfile:
     type: string?
+    label: "Output file name"
     default: ""
 
 stdout: |
   ${
-    if (inputs.outfile == "") {
+    if (inputs.outputfile == "") {
       return var_output_name();
     } else {
-      return inputs.outfile;
+      return inputs.outputfile;
     }
   }
 
 outputs:
   outfile:
     type: stdout
+    label: "Output BAM file"

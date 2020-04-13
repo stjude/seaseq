@@ -18,23 +18,26 @@ requirements:
 inputs:
   infile:
     type: File
+    label: "SAM file"
     inputBinding:
       prefix: -b
 
-  outfile:
+  outputfile:
+    label: "Output file name"
     type: string?
     default: ""
 
 stdout: |
   ${
-    if (inputs.outfile == "") {
+    if (inputs.outputfile == "") {
       return var_output_name();
     } else {
-      return inputs.outfile;
+      return inputs.outputfile;
     }
   }
 
 outputs:
   outfile:
     type: stdout
+    label: "BAM file"
 

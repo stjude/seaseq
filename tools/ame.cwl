@@ -16,11 +16,13 @@ requirements:
 
 inputs:
   convertfasta:
+    label: "BED converted FASTA file"
     type: File
     inputBinding:
       position: 999
   
   motifdatabases:
+    label: "MEME motif databases to identify motif enrichment"
     type: 
       type: array
       items: string
@@ -28,6 +30,7 @@ inputs:
       position: 1000
 
   outputdir:
+    label: "AME output directory name"
     type: string?
     inputBinding:
       position: 1
@@ -46,6 +49,7 @@ inputs:
 
 outputs:
   outDir:
+    label: "Output directory"
     type: Directory
     outputBinding:
       glob: |

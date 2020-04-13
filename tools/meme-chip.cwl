@@ -16,11 +16,13 @@ requirements:
 
 inputs:
   convertfasta:
+    label: "BED converted FASTA file"
     type: File
     inputBinding:
       position: 1000
 
   spamo-skip:
+    label: "remove SPAced MOtif analysis"
     type: boolean?
     default: false
     inputBinding:
@@ -28,6 +30,7 @@ inputs:
       prefix: '-spamo-skip'
 
   fimo-skip:
+    label: "remove Find Individual Motif Occurences"
     type: boolean?
     default: false
     inputBinding:
@@ -35,6 +38,7 @@ inputs:
       prefix: '-fimo-skip'
     
   outputdir:
+    label: "MEME-chip output directory name"
     type: string?
     inputBinding:
       position: 3
@@ -51,6 +55,7 @@ inputs:
 
 outputs:
   outDir:
+    label: "Output directory"
     type: Directory
     outputBinding:
       glob: |

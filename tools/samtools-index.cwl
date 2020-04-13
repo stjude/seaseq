@@ -11,6 +11,7 @@ requirements:
 inputs:
   infile:
     type: File
+    label: "BAM file"
     inputBinding:
       position: 1
       valueFrom: $(self.basename)
@@ -18,6 +19,7 @@ inputs:
 outputs:
   outfile:
     type: File
+    label: "BAM index output file name"
     secondaryFiles: .bai
     outputBinding:
      glob: $(inputs.infile.basename)

@@ -3,7 +3,7 @@ cwlVersion: v1.0
 baseCommand: [macs14]
 class: CommandLineTool
 
-label: MACS - Model based Analysis from ChiP-Seq
+label: MACS1 - Model based Analysis from ChiP-Seq
 doc: |
   macs14 -t $file.bam -w -S --space=50 -p 1e-9 --keep-dup=auto -n $file\_p9_kd-auto
 
@@ -40,18 +40,21 @@ requirements:
 inputs:
   treatmentfile:
     type: File
+    label: "BAM file"
     inputBinding:
       prefix: -t
       position: 1
 
   pvalue:
     type: string?
+    label: "Pvalue cutoff for peak detection"
     default: '1e-9'
     inputBinding:
       prefix: -p
 
   keep_dup:
     type: string?
+    label: "Control towards duplicate tags"
     default: auto
     inputBinding:
       prefix: --keep-dup=
@@ -59,11 +62,13 @@ inputs:
 
   wiggle:
     type: boolean?
+    label: "Generate wiggle file"
     default: true
     inputBinding:
       prefix: -w
 
   single_profile:
+    label: "Only one file for the whole genome is saved"
     type: boolean?
     default: true
     inputBinding:
@@ -71,6 +76,7 @@ inputs:
 
   space:
     type: int?
+    label: "Resolution for saving wiggle files"
     default: 50
     inputBinding:
       prefix: --space=
@@ -78,6 +84,7 @@ inputs:
 
   outputname:
     type: string?
+    label: "Output file prefix"
     inputBinding:
       prefix: -n
       valueFrom: |
@@ -92,6 +99,7 @@ inputs:
 
   outputfolder:
     type: string?
+    label: "Output directory name"
     inputBinding:
       position: 999
       shellQuote: false
@@ -109,6 +117,7 @@ inputs:
 
   verifymove:
     type: boolean?
+    label: "Move files to new directory"
     inputBinding:
       position: 1000 
       shellQuote: false
@@ -117,6 +126,7 @@ inputs:
 
   verifymove2:
     type: string?
+    label: "Continuation of verifymove"
     inputBinding:
       position: 1001
       shellQuote: false
@@ -135,6 +145,7 @@ inputs:
 outputs:
   peaksbedfile:
     type: File
+    label: "Peaks BED file"
     outputBinding:
       glob: |
         ${
@@ -143,6 +154,7 @@ outputs:
 
   peaksxlsfile:
     type: File
+    label: "Peaks XLS file"
     outputBinding:
       glob: |
         ${
@@ -151,6 +163,7 @@ outputs:
 
   summitsfile:
     type: File
+    label: "Peaks Summit BED file"
     outputBinding:
       glob: |
         ${
@@ -159,6 +172,7 @@ outputs:
 
   wigfile:
     type: File
+    label: "Peaks WIG file"
     outputBinding:
       glob: |
         ${
@@ -167,6 +181,7 @@ outputs:
 
   macsDir:
     type: Directory
+    label: "Output directory"
     outputBinding:
       glob: |
         ${

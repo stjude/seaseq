@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 #
-# get the file
+# Reorganize output directory from ChipSEQ pipeline into preferred directory structure.
+# ["final outdir"]
 #
 
 if [ $# -lt 2 ]; then

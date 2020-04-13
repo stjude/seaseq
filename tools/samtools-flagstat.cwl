@@ -19,22 +19,25 @@ requirements:
 inputs:
   infile:
     type: File
+    label: "BAM file"
     inputBinding:
       position: 1
   
-  outfile:
+  outputfile:
     type: string?
+    label: "Output file name"
     default: ""
 
 stdout: |
   ${
-    if (inputs.outfile == "") {
+    if (inputs.outputfile == "") {
       return var_output_name();
     } else {
-      return inputs.outfile;
+      return inputs.outputfile;
     }
   }
 
 outputs:
   outfile:
     type: stdout
+    label: "FlagStats standard output"

@@ -12,11 +12,13 @@ requirements:
 inputs:
   infile:
     type: File
+    label: "Input file"
     inputBinding:
       position: 1
   
   outputdirectory:
     type: string?
+    label: "Output directory location"
     inputBinding:
       position: 2
       prefix: '-o'
@@ -25,10 +27,12 @@ inputs:
 outputs:
   htmlfile:
     type: File
+    label: "FastQC HTML file"
     outputBinding: 
       glob: '*_fastqc.html'
 
   zipfile:
     type: File
+    label: "FastQC ZIP file"
     outputBinding:
       glob: '*_fastqc.zip'

@@ -80,7 +80,8 @@ then
   reorganize.sh $out $OUTPUTFOLDER
   rm -rf *$NEW_UUID*
 
-  echo "UPDATE:  CHIPSEQ - SE Pipeline Completed"
+  echo "Results stored in $OUTPUTFOLDER"
+  echo "SUCCESS:  CHIPSEQ - SE Pipeline Completed"
 
 else
   echo "ERROR:   ChipSeq-ALL workflow terminated with errors"
