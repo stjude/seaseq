@@ -16,7 +16,7 @@ inputs:
     label: "peaks bed file"
 
   motifdatabases:
-    type:  string[]
+    type:  File[]
     label: "MEME motif databases to identify motif enrichment"
 
 

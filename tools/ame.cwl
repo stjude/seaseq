@@ -25,7 +25,7 @@ inputs:
     label: "MEME motif databases to identify motif enrichment"
     type: 
       type: array
-      items: string
+      items: File
     inputBinding:
       position: 1000
 

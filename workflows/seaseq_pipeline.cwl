@@ -1,6 +1,13 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
 class: Workflow
+doc: |
+  - seaseq_pipeline.cwl is a complete analysis pipeline for CHiP 
+      sequencing single-end data.
+  - analysis pipeline includes mapping using bowtie, peak-calls 
+      using MACS1 and SICER, motif analysis using meme suite, 
+      enhancers & super-enhancers using ROSE, bam density plots 
+      using BAM2GFF.
 
 requirements:
   - class: SubworkflowFeatureRequirement
@@ -9,12 +16,11 @@ requirements:
 inputs:
 # main files & directorys
   reference: Directory
-  chromsizes: File
   gtffile: File
   fastqfile: File[]
   chromsizes: File
   blacklistfile: File
-  motifdatabases: string[]
+  motifdatabases: File[]
 
 # optional parameters
   #BOWTIE
@@ -50,6 +56,7 @@ inputs:
 outputs:
   finalDir:
     type: Directory[]
+    label: "output directory of the analysis result for each fastqfile"
     outputSource: MoveFiles/finalDir
 
 steps:

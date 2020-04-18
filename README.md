@@ -1,39 +1,80 @@
-# Chromatin SE analysis pipeline.
-- Currently designed as ChipSeq
-
 # (S)ingle (E)nd (A)ntibody (SEQ)uencing pipeline
 
-## USAGE:
+Chromatin Single-End analysis pipeline
 
-Three workflows are available to run SEASEQ pipeline.
+The SEASEQ Pipeline is a complete analysis pipeline for CHiP 
+sequencing single-end data.
 
-1. BAM mappings & Peak Calling
+The analysis pipeline includes mapping using bowtie, peak-calls 
+using MACS and SICER, motif analysis using meme suite,
+enhancers & super-enhancers using ROSE, bam density plots 
+using BAM2GFF.
 
-1. All in one pipeline
 
-1. All in one pipeline for multiple files.
+## INSTRUCTIONS
+
+To run SEASEQ pipeline, you will need Linux, or some compatible 
+container technology, CWL (Common Workflow Language), 
+and about 30GB of supplemental data. 
 
 
-## To RUN:
+## PROGRAMS & VERSIONS
 
-1. Using CWLExec:
+* bowtie v. 1.2.2
+* fastqc v. 0.11.5
+* samtools v. 1.9
+* R v. 3.6.1
+* macs v. 041014
+* SICER2 v. 1.0.1
+* meme v. 4.11.2
+* phantompeakqualtools v. 1.2.1.1
+* bedtools/2.25.0
+* python v. 3.7.0
+* java v. 1.8.0_60
+* perl v. 5.10.1
+* wigToBigWig v. 4
+* bedops v. 2.4.2
+* igvtools v. 2.3.2
+* ROSE v. 1.1.0
+* BAM2GFF v. 1.1.0
 
-	JobSubmit.sh
-		bsub -R -P watcher -q compbio -J exec-cwl -o exec-cwl_out -e exec-cwl_err -N ./JobSubmit.sh
 
-	ALLExecJob.sh [
-		bsub -P watcher -q compbio -J allexec -o allexec_out -e allexec_err -N ./ALLExecJob.sh
+## REQUIREMENTS
 
-1. Using Toil:
+INPUT YML
 
-	ToilJob.sh
-		bsub -P watcher -q compbio -J toil-cwl -o toil-cwl_out -e toil-cwl_err -N ./ToilJob.sh
+```
+reference: 
+  class: Directory
+  location: /path/to/genome_reference+index
 
-	ALToilJob.shL
-		bsub -P watcher -q compbio -J alltoil -o alltoil_out -e alltoil_err -N ./ALLToilJob.sh
+fastqfile: 
+  - { class: File, path: /path/to/fastqfile1 }
+  - { class: File, path: /path/to/fastqfile2 }
 
-1. For multiple fastq files using Toil
+keep_dup: all
 
-	ScatterToil.sh
-		bsub -P watcher -q compbio -J scattertoil -o scattertoil_out -e scattertoil_err -N ./ScatterToil.sh < input YAML File > < OUTPUTFOLDER >
+chromsizes: 
+  class: File
+  path: /path/to/chromsizes_file
+
+blacklistfile:
+  class: File
+  path: /path/to/blacklist_file
+
+gtffile:
+  class: File
+  path: /path/to/gtf_file
+
+motifdatabases:
+  - { class: File, path: /path/to/meme_motif1 }
+  - { class: File, path: /path/to/meme_motif2 }
+```
+
+
+## EXAMPLE
+
+We provided example instructions for running under [Toil]
+(https://toil.readthedocs.io/en/latest/) on our St. Jude HPC LSF cluster.
+
 
