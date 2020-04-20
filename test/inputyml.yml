@@ -1,0 +1,28 @@
+#Files and Directories
+
+reference: 
+  class: Directory
+  location: ./hg19/CHR21INDEX
+
+fastqfile: 
+  - { class: File, path: ./fastqfiles/H3K27Ac-AB5_R1_001.fastq.gz }
+  - { class: File, path: ./fastqfiles/H3K27me3-AB4_R1_001.fastq.gz }
+
+keep_dup: all
+
+chromsizes: 
+  class: File
+  path: ./hg19/UCSC_hg19_chromInfo_chr21.tab
+
+blacklistfile:
+  class: File
+  path: ./hg19/hg19-blacklist.v2_chr21.bed
+
+gtffile:
+  class: File
+  path: ./hg19/GRCh37_latest_genomic_chr21.gtf
+
+motifdatabases:
+  - { class: File, path: ./hg19/motifs/JASPAR2018_CORE_vertebrates_redundant.meme }
+  - { class: File, path: ./hg19/motifs/CIS-BP.Homo_sapiens.meme }
+  
