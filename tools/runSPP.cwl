@@ -16,6 +16,7 @@ requirements:
 inputs:
   infile:
     type: File
+    label: "BAM file"
     inputBinding:
       prefix: '-c='
       separate: false
@@ -23,6 +24,7 @@ inputs:
 
   crosscorr:
     type: boolean?
+    label: "save cross-correlation plot"
     inputBinding:
       position: 2
       prefix: '-savp'
@@ -30,6 +32,7 @@ inputs:
 
   outfile:
     type: string?
+    label: "output file name"
     default: ""
     inputBinding:
       prefix: '-out='
@@ -47,6 +50,7 @@ inputs:
 outputs:
   spp_out:
     type: File
+    label: "output file"
     outputBinding:
       glob: |
         ${

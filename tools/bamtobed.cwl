@@ -20,24 +20,27 @@ requirements:
 
 inputs:
   infile:
+    label: "BAM file"
     type: File
     inputBinding:
       prefix: '-i'
       position: 1
   
-  outfile:
+  outputfile:
     type: string?
+    label: "Output BED file name"
     default: ""
 
 stdout: |
   ${
-    if (inputs.outfile == "") {
+    if (inputs.outputfile == "") {
       return var_output_name();
     } else {
-      return inputs.outfile;
+      return inputs.outputfile;
     }
   }
 
 outputs:
   outfile:
     type: stdout
+    label: "Output BED file"

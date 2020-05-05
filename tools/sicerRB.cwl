@@ -18,66 +18,77 @@ requirements:
 inputs:
   inputdir:
     type: string?
+    label: "input files directory"
     default: "./"
     inputBinding:
       position: 1
   
   treatmentbedfile:
     type: File
+    label: "BED file"
     inputBinding:
       position: 2
       valueFrom: $(self.basename)
 
   outputdir:
     type: string?
+    label: "Output directory"
     default: "./"
     inputBinding:
       position: 3
 
   species: 
     type: string?
+    label: "Genome name"
     default: "hg19"
     inputBinding:
       position: 4
   
   redundancy:
     type: int?
+    label: "Number of identical reads allowed"
     default: 1
     inputBinding:
       position: 5 
 
   window:
     type: int?
+    label: "Resolution of SICER"
     default: 200
     inputBinding:
       position: 6
 
   fragment_size:
     type: int?
+    label: "Fragment shift size"
     default: 150
     inputBinding:
       position: 7
 
   genome_fraction:
     type: double?
+    label: "Effective Genome Fraction"
     default: 0.86
     inputBinding:
       position: 8
 
   gapsize:
     type: int?
+    label: "Gap size"
     default: 200
     inputBinding:
       position: 9
 
   evalue:
     type: int?
+    label: "E-value"
     default: 100
     inputBinding:
       position: 10
 
   gzip_graph:
     type: boolean?
+    label: "GZIP wig files"
     inputBinding:
       position: 998
       shellQuote: false
@@ -86,6 +97,7 @@ inputs:
 
   outputfolder:
     type: string?
+    label: "Output directory name"
     inputBinding:
       position: 999
       shellQuote: false
@@ -95,6 +107,7 @@ inputs:
 
   verifymove:
     type: boolean?
+    label: "Move files to new directory"
     inputBinding:
       position: 1000 
       shellQuote: false
@@ -104,6 +117,7 @@ inputs:
 outputs:
   sicerDir:
     type: Directory
+    label: "Output directory"
     outputBinding:
       glob: |
         ${

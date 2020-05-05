@@ -21,28 +21,32 @@ requirements:
 inputs:
   flank:
     type: int?
+    label: "bp distance from summit"
     default: 50
     inputBinding:
       prefix: -f
 
   bedfile:
     type: File
+    label: "Summit BED file"
     inputBinding:
       prefix: -i
   
-  outfile:
+  outputfile:
     type: string?
+    label: "Output file name"
     default: ""
 
 stdout: |
   ${
-    if (inputs.outfile == "") {
+    if (inputs.outputfile == "") {
       return var_output_name();
     } else {
-      return inputs.outfile;
+      return inputs.outputfile;
     }
   }
 
 outputs:
   outfile:
     type: stdout
+    label: "Output BED file"

@@ -38,7 +38,7 @@ FEATURE=${FEATURE:=gene}
 
 # Species
 SPECIES=$5
-SPECIES=${SPECIES:=hg_19}
+SPECIES=${SPECIES:=hg19}
 
 # Bed File A
 FILEA=$6

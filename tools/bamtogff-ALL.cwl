@@ -18,6 +18,7 @@ requirements:
 
 inputs:
   bamfile:
+    label: "BAM file"
     type: File
     inputBinding:
       position: 3
@@ -26,22 +27,26 @@ inputs:
 
   gtffile:
     type: File
+    label: "GTF file"
     inputBinding:
       position: 1
 
   chromsizes:
     type: File
+    label: "Chromosome sizes tab file"
     inputBinding:
       position: 4
 
   feature:
     type: string?
+    label: "Feature Type"
     default: "gene"
     inputBinding:
       position: 2
 
   samplename:
     type: string?
+    label: "Output file prefix"
     inputBinding:
       position: 5
       valueFrom: |
@@ -56,6 +61,7 @@ inputs:
 
   outputfolder:
     type: string?
+    label: "Output directory name"
     inputBinding:
       position: 999
       shellQuote: false
@@ -65,6 +71,7 @@ inputs:
 
   verifymove:
     type: boolean?
+    label: "Move files to new directory"
     inputBinding:
       position: 1000 
       shellQuote: false
@@ -74,6 +81,7 @@ inputs:
 outputs:
   metagenesDir:
     type: Directory
+    label: "Output directory"
     outputBinding:
       glob: |
         ${

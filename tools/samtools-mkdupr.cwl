@@ -18,12 +18,14 @@ requirements:
 inputs:
   infile:
     type: File
+    label: "BAM file"
     inputBinding:
       prefix: '-s'
       position: 1
 
-  outfile:
-    type: string
+  outputfile:
+    type: string?
+    label: "Output file name"
     inputBinding:
       position: 2
       valueFrom: |
@@ -40,12 +42,13 @@ inputs:
 outputs:
   outfile:
     type: File
+    label: "Remove duplicates BAM output file"
     outputBinding:
       glob: |
         ${
-          if (inputs.outfile == "") {
+          if (inputs.outputfile == "") {
             return var_output_name();
           } else {
-            return inputs.outfile;
+            return inputs.outputfile;
           } 
         }

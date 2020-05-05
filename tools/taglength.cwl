@@ -5,6 +5,7 @@ class: CommandLineTool
 
 inputs:
   datafile:
+    label: "Basic Metric file"
     type: File
     inputBinding:
       position: 1

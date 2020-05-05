@@ -7,23 +7,36 @@ requirements:
   - class: InlineJavascriptRequirement
 
 inputs: 
-  reference: Directory
-  bedfile: File
-  motifdatabases: string[]
+  reference:
+    type: Directory
+    label: "Genome reference directory"
+
+  bedfile:
+    type: File
+    label: "peaks bed file"
+
+  motifdatabases:
+    type:  File[]
+    label: "MEME motif databases to identify motif enrichment"
+
 
 outputs:
   memechipdir:
     type: Directory
     outputSource: MEMECHIP/outDir
+    label: "MEMECHIP output directory"
 
   amedir:
     type: Directory
     outputSource: AME/outDir
+    label: "AME output directory"
  
   bedfasta:
     type: File
     outputSource: BEDfasta/outfile
+    label: "BED converted FASTA file"
     
+
 steps:  
   MEMECHIP:
     run: ../tools/meme-chip.cwl
@@ -48,6 +61,7 @@ steps:
       bedfile: bedfile
     out: [outfile]
     run: ../tools/bedfasta.cwl
+
 
 doc: |
   Workflow calls MOTIFS both enriched and discovered using the MEME-suite (AME & MEME-chip).

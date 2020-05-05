@@ -21,18 +21,21 @@ requirements:
 inputs:
   peaksbed:
     type: File
+    label: "Peaks BED file"
     inputBinding:
       prefix: '-a'
       position: 1
 
   bamtobed:
     type: File
+    label: "Peaks BAM to BED file"
     inputBinding:
       prefix: '-b'
       position: 1
   
   countoverlap:
     type: boolean?
+    label: "Number of overlap with bamtobed file"
     inputBinding:
       prefix: '-c'
       position: 1
@@ -40,24 +43,27 @@ inputs:
 
   sorted:
     type: boolean?
+    label: "Sort bed files"
     inputBinding: 
       prefix: '-sorted'
       position: 1
     default: true
 
-  outfile:
+  outputfile:
     type: string?
+    label: "Output file name"
     default: ""
 
 stdout: |
   ${
-    if (inputs.outfile == "") {
+    if (inputs.outputfile == "") {
       return var_output_name();
     } else {
-      return inputs.outfile;
+      return inputs.outputfile;
     }
   }
 
 outputs:
   outfile:
     type: stdout
+    label: "Output file"

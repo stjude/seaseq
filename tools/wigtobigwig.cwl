@@ -18,16 +18,19 @@ requirements:
 inputs:
   infile:
     type: File
+    label: "Wig file"
     inputBinding:
       position: 1
 
   chromsizes:
     type: File
+    label: "Chromosome sizes tab file"
     inputBinding:
       position: 2
 
-  outfile:
+  outputfile:
     type: string
+    label: "BigWig output file name"
     inputBinding:
       position: 3
       valueFrom: |
@@ -43,12 +46,13 @@ inputs:
 outputs:
   outfile:
     type: File
+    label: "Output file"
     outputBinding:
       glob: |
         ${
-          if (inputs.outfile == "") {
+          if (inputs.outputfile == "") {
             return var_output_name();
           } else {
-            return inputs.outfile;
+            return inputs.outputfile;
           } 
         }

@@ -22,11 +22,13 @@ requirements:
 
 inputs:
   wigfile:
+    label: "Wig file"
     type: File
     inputBinding:
       position: 1
   
   totdffile:
+    label: "TDF file name"
     type: string
     inputBinding:
       position: 2
@@ -41,13 +43,16 @@ inputs:
     default: ""
 
   genome:
+    label: "Genome name"
     type: string?
     default: "hg19"
     inputBinding:
       position: 3
 
+
 outputs:
   outfile:
+    label: "Output directory"
     type: File
     outputBinding:
       glob: |

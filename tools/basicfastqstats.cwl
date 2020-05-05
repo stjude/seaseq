@@ -16,13 +16,13 @@ requirements:
 inputs:
   fastqfile:
     type: File
-    label: "FastQfiles"
+    label: "FastQ file"
     inputBinding:
       position: 1
 
   outfile:
     type: string?
-    label: "Output File"
+    label: "Output file name"
     inputBinding:
       position: 2
       valueFrom: |
@@ -39,6 +39,7 @@ inputs:
 outputs:
   metrics_out:
     type: File
+    label: "Output file"
     outputBinding:
       glob: |
         ${
