@@ -27,43 +27,50 @@ my $data = decode_json($json);
 if ($step == 1) {
   #output to tempfile: bamfile, zipfile, STATbkoutfile, STATbamoutfile, STATrmdupoutfile
   unless ($folder) { $folder = (split("\_fastq", $data->{'readqc_zip'}->{'nameroot'}))[0];  }
-  open my $fh, ">>", $outfile;
+  if ($outfile) {
+    open my $fh, ">>", $outfile;
 
-  if ($toil) {
-    print $fh "\nbklistbamfile: \n  class: File\n  path: " .
-        (split("file://", $data->{'bklist_bam'}->{'location'}))[1] . "\n";
-    print $fh "\nrmdupbamfile: \n  class: File\n  path: " .
-        (split("file://", $data->{'rmdup_bam'}->{'location'}))[1] . "\n";
-    print $fh "\nreadzipfile: \n  class: File\n  path: " .
-        (split("file://", $data->{'readqc_zip'}->{'location'}))[1] . "\n";
-    print $fh "\nSTATbkoutfile: \n  class: File\n  path: " .
-        (split("file://", $data->{'stat_bk'}->{'location'}))[1] . "\n";
-    print $fh "\nSTATbamoutfile: \n  class: File\n  path: " .
-        (split("file://", $data->{'stat_bam'}->{'location'}))[1] . "\n";
-    print $fh "\nSTATrmdupoutfile: \n  class: File\n  path: " .
-        (split("file://", $data->{'stat_rmdup'}->{'location'}))[1] . "\n";
-    print $fh "\nfastqmetricsfile: \n  class: File\n  path: " .
-        (split("file://", $data->{'fastq_metrics'}->{'location'}))[1] . "\n";
-    close $fh;
+    if ($toil) {
+      print $fh "\nbklistbamfile: \n  class: File\n  path: " .
+          (split("file://", $data->{'bklist_bam'}->{'location'}))[1] . "\n";
+      print $fh "\nrmdupbamfile: \n  class: File\n  path: " .
+          (split("file://", $data->{'rmdup_bam'}->{'location'}))[1] . "\n";
+      print $fh "\nreadzipfile: \n  class: File\n  path: " .
+          (split("file://", $data->{'readqc_zip'}->{'location'}))[1] . "\n";
+      print $fh "\nSTATbkoutfile: \n  class: File\n  path: " .
+          (split("file://", $data->{'stat_bk'}->{'location'}))[1] . "\n";
+      print $fh "\nSTATbamoutfile: \n  class: File\n  path: " .
+          (split("file://", $data->{'stat_bam'}->{'location'}))[1] . "\n";
+      print $fh "\nSTATrmdupoutfile: \n  class: File\n  path: " .
+          (split("file://", $data->{'stat_rmdup'}->{'location'}))[1] . "\n";
+      print $fh "\nfastqmetricsfile: \n  class: File\n  path: " .
+          (split("file://", $data->{'fastq_metrics'}->{'location'}))[1] . "\n";
+      close $fh;
+    }
+    else { #if $exec or nothing is specified 
+      print $fh "\nbklistbamfile: \n  class: File\n  path: " .
+          $data->{'bklist_bam'}->{'path'} . "\n";
+      print $fh "\nrmdupbamfile: \n  class: File\n  path: " .
+          $data->{'rmdup_bam'}->{'path'} . "\n";
+      print $fh "\nreadzipfile: \n  class: File\n  path: " .
+          $data->{'readqc_zip'}->{'path'} . "\n";
+      print $fh "\nSTATbkoutfile: \n  class: File\n  path: " .
+          $data->{'stat_bk'}->{'path'} . "\n";
+      print $fh "\nSTATbamoutfile: \n  class: File\n  path: " .
+          $data->{'stat_bam'}->{'path'} . "\n";
+      print $fh "\nSTATrmdupoutfile: \n  class: File\n  path: " .
+          $data->{'stat_rmdup'}->{'path'} . "\n";
+      print $fh "\nfastqmetricsfile: \n  class: File\n  path: " .
+          $data->{'fastq_metrics'}->{'path'} . "\n";
+      close $fh;
+    }
+  }
+  #get the new file path.
+  if ($toil){
     $newpath = (fileparse((split("file://", $data->{'bklist_bam'}->{'location'}))[1]))[1];
   }
-  else { #if $exec or nothing is specified 
-    print $fh "\nbklistbamfile: \n  class: File\n  path: " .
-        $data->{'bklist_bam'}->{'path'} . "\n";
-    print $fh "\nrmdupbamfile: \n  class: File\n  path: " .
-        $data->{'rmdup_bam'}->{'path'} . "\n";
-    print $fh "\nreadzipfile: \n  class: File\n  path: " .
-        $data->{'readqc_zip'}->{'path'} . "\n";
-    print $fh "\nSTATbkoutfile: \n  class: File\n  path: " .
-        $data->{'stat_bk'}->{'path'} . "\n";
-    print $fh "\nSTATbamoutfile: \n  class: File\n  path: " .
-        $data->{'stat_bam'}->{'path'} . "\n";
-    print $fh "\nSTATrmdupoutfile: \n  class: File\n  path: " .
-        $data->{'stat_rmdup'}->{'path'} . "\n";
-    print $fh "\nfastqmetricsfile: \n  class: File\n  path: " .
-        $data->{'fastq_metrics'}->{'path'} . "\n";
-    close $fh;
-    $newpath = (fileparse($data->{'bklist_bam'}->{'path'}))[1];    
+  else {
+    $newpath = (fileparse($data->{'bklist_bam'}->{'path'}))[1];
   }
   `mkdir -p $folder/QC_files/STATS $folder/QC_files/FASTQC $folder/BAM_files`;
 

@@ -1,13 +1,12 @@
 #Files and Directories
-#not scatter
 
 reference: 
   class: Directory
   location: ./hg19/CHR21INDEX
 
 fastqfile: 
-  class: File
-  path: ./fastqfiles/H3K27Ac-AB5_R1_001.fastq.gz
+  - { class: File, path: ./fastqfiles/H3K27Ac-AB5_R1_001.fastq.gz }
+  - { class: File, path: ./fastqfiles/H3K27me3-AB4_R1_001.fastq.gz }
 
 keep_dup: all
 
