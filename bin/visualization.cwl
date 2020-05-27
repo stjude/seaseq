@@ -45,18 +45,18 @@ steps:
       wigfile: wigfile
       peaksxls: peaksxls
     out: [RPMwig]
-    run: ../tools/normalize.cwl
+    run: normalize.cwl
 
   WIG:
     in:
       infile: RPM/RPMwig
       chromsizes: chromsizes
     out: [outfile]
-    run: ../tools/wigtobigwig.cwl
+    run: wigtobigwig.cwl
 
   TDF:
     in:
       wigfile: wigfile
     out: [outfile]
-    run: ../tools/igvtdf.cwl
+    run: igvtdf.cwl
 

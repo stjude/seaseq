@@ -11,13 +11,12 @@ doc: |
 
 requirements:
   - class: SubworkflowFeatureRequirement
-  - class: ScatterFeatureRequirement
 
 inputs:
 # main files & directorys
   reference: Directory
   gtffile: File
-  fastqfile: File[]
+  fastqfile: File
   chromsizes: File
   blacklistfile: File
   motifdatabases: File[]
@@ -54,10 +53,142 @@ inputs:
   feature: string?
 
 outputs:
-  finalDir:
-    type: Directory[]
-    label: "output directory of the analysis result for each fastqfile"
-    outputSource: MoveFiles/finalDir
+  sam_sort:
+    outputSource: SamSort/outfile
+    type: File
+
+  fastq_metrics:
+    outputSource: BasicMetrics/metrics_out
+    type: File
+
+  rmdup_bam:
+    outputSource: SamIndex/outfile
+    type: File
+
+  bklist_bam: 
+    outputSource: BkIndex/outfile
+    type: File
+
+  bamqc_html:
+    outputSource: BamQC/htmlfile
+    type: File
+
+  bamqc_zip:
+    outputSource: BamQC/zipfile
+    type: File
+
+  readqc_zip:
+    outputSource: ReadQC/zipfile
+    type: File
+
+  readqc_html:
+    outputSource: ReadQC/htmlfile
+    type: File
+ 
+# MACS-AUTO
+  macsDir:
+    type: Directory
+    outputSource: MACS-Auto/macsDir
+
+# MACS-ALL
+  allmacsDir:
+    type: Directory
+    outputSource: MACS-All/macsDir
+
+# MACS-NM
+  nmmacsDir:
+    type: Directory
+    outputSource: MACS-NM/macsDir
+
+#VISUAL
+  rpmwig:
+    type: File
+    outputSource: WIG-Auto/rpmwig
+
+  outBW:
+    outputSource: WIG-Auto/outBW
+    type: File
+
+  outtdf:
+    outputSource: WIG-Auto/outtdf
+    type: File
+
+  allrpmwig:
+    type: File
+    outputSource: WIG-All/rpmwig
+
+  alloutBW:
+    outputSource: WIG-All/outBW
+    type: File
+
+  allouttdf:
+    outputSource: WIG-All/outtdf
+    type: File
+
+  nmrpmwig:
+    type: File
+    outputSource: WIG-NM/rpmwig
+
+  nmoutBW:
+    outputSource: WIG-NM/outBW
+    type: File
+
+  nmouttdf:
+    outputSource: WIG-NM/outtdf
+    type: File
+
+# MOTIFs & Summits output
+  bedfasta:
+    type: File
+    outputSource: MOTIFS/bedfasta
+
+  flankbed:
+    type: File
+    outputSource: FlankBED/outfile
+    
+  memechipdir:
+    type: Directory
+    outputSource: MOTIFS/memechipdir
+
+  summitmemechipdir:
+    type: Directory
+    outputSource: SummitMOTIFS/memechipdir
+
+  amedir:
+    type: Directory
+    outputSource: MOTIFS/amedir
+
+  summitamedir:
+    type: Directory
+    outputSource: SummitMOTIFS/amedir
+    
+# METAGENE output
+  metagenesDir:
+    type: Directory
+    outputSource: MetaGene/metagenesDir
+
+# SICER output
+  sicerDir:
+    type: Directory
+    outputSource: SICER/sicerDir
+
+# ROSE output
+  roseoutput:
+    type: Directory
+    outputSource: ROSE/RoseDir
+
+# QC Control & Statistics output
+  statsfile:
+    type: File
+    outputSource: PeaksQC/statsfile
+
+  htmlfile:
+    type: File
+    outputSource: PeaksQC/htmlfile
+    
+  textfile:
+    type: File
+    outputSource: PeaksQC/textfile
 
 steps:
   BasicMetrics:
@@ -68,29 +199,26 @@ steps:
     in: 
       fastqfile: fastqfile
     out: [metrics_out]
-    run: ../tools/basicfastqstats.cwl
-    scatter: fastqfile
+    run: basicfastqstats.cwl
 
   TagLen:
     in: 
       datafile: BasicMetrics/metrics_out
     out: [tagLength]
-    run: ../tools/taglength.cwl
-    scatter: datafile
+    run: taglength.cwl
    
   ReadQC:
     in:
       infile: fastqfile
     out: [htmlfile, zipfile]
-    run: ../tools/fastqc.cwl
-    scatter: infile
+    run: fastqc.cwl
 
   Bowtie:
     requirements:
       ResourceRequirement:
         ramMax: 10000
         coresMin: 20
-    run: ../tools/bowtie.cwl
+    run: bowtie.cwl
     in:
       readLengthFile: TagLen/tagLength
       best_alignments: best_alignments
@@ -100,79 +228,67 @@ steps:
       processors: processors
       reference: reference
     out: [samfile]
-    scatter: [readLengthFile, fastqfile]
-    scatterMethod: dotproduct
 
   SamView:
     in:
       infile: Bowtie/samfile
     out: [outfile]
-    run: ../tools/samtools-view.cwl
-    scatter: infile
+    run: samtools-view.cwl
 
   BamQC:
     in:
       infile: SamView/outfile
     out: [htmlfile, zipfile]
-    run: ../tools/fastqc.cwl
-    scatter: infile
+    run: fastqc.cwl
 
   SamSort:
     in:
       infile: SamView/outfile
     out: [outfile]
-    run: ../tools/samtools-sort.cwl
-    scatter: infile
+    run: samtools-sort.cwl
 
   BkList:
     in:
       infile: SamSort/outfile
       blacklistfile: blacklistfile
     out: [outfile]
-    run: ../tools/blacklist.cwl
-    scatter: infile
+    run: blacklist.cwl
 
   BkIndex:
     in:
       infile: BkList/outfile
     out: [outfile]
-    run: ../tools/samtools-index.cwl
-    scatter: infile
+    run: samtools-index.cwl
 
   SamRMDup:
     in:
       infile: BkList/outfile
     out: [outfile]
-    run: ../tools/samtools-mkdupr.cwl
-    scatter: infile
+    run: samtools-mkdupr.cwl
 
   SamIndex:
     in:
       infile: SamRMDup/outfile
     out: [outfile]
-    run: ../tools/samtools-index.cwl
-    scatter: infile
+    run: samtools-index.cwl
 
   STATbam:
     in:
       infile: SamView/outfile
     out: [outfile]
-    run: ../tools/samtools-flagstat.cwl
-    scatter: infile
+    run: samtools-flagstat.cwl
 
   STATrmdup:
     in:
       infile: SamRMDup/outfile
     out: [outfile]
-    run: ../tools/samtools-flagstat.cwl
-    scatter: infile
+    run: samtools-flagstat.cwl
 
   STATbk:
     in:
       infile: BkList/outfile
     out: [outfile]
-    run: ../tools/samtools-flagstat.cwl
-    scatter: infile
+    run: samtools-flagstat.cwl
 
 # PEAK CALLING & VISUALS
   MACS-Auto:
@@ -187,8 +303,7 @@ steps:
       wiggle: wiggle
       single_profile: single_profile
     out: [ peaksbedfile, peaksxlsfile, summitsfile, wigfile, macsDir ]
-    run: ../tools/macs1call.cwl
-    scatter: treatmentfile
+    run: macs1call.cwl
 
   WIG-Auto:
     in:
@@ -196,9 +311,7 @@ steps:
       peaksxls: MACS-Auto/peaksxlsfile
       chromsizes: chromsizes
     out: [ rpmwig, outBW, outtdf ]
-    run: ../subworkflows/visualization.cwl
-    scatter: [wigfile, peaksxls]
-    scatterMethod: dotproduct
+    run: visualization.cwl
 
   MACS-All:
     requirements:
@@ -213,8 +326,7 @@ steps:
       wiggle: wiggle
       single_profile: single_profile
     out: [ peaksbedfile, peaksxlsfile, summitsfile, wigfile, macsDir ]
-    run: ../tools/macs1call.cwl
-    scatter: treatmentfile
+    run: macs1call.cwl
 
   WIG-All:
     in:
@@ -222,9 +334,7 @@ steps:
       peaksxls: MACS-All/peaksxlsfile
       chromsizes: chromsizes
     out: [ rpmwig, outBW, outtdf ]
-    run: ../subworkflows/visualization.cwl
-    scatter: [wigfile, peaksxls]
-    scatterMethod: dotproduct
+    run: visualization.cwl
 
   MACS-NM:
     requirements:
@@ -237,8 +347,7 @@ steps:
       wiggle: wiggle
       single_profile: single_profile
     out: [ peaksbedfile, peaksxlsfile, summitsfile, wigfile, macsDir ]
-    run: ../tools/macs1nm.cwl
-    scatter: treatmentfile
+    run: macs1nm.cwl
 
   WIG-NM:
     in:
@@ -246,9 +355,7 @@ steps:
       peaksxls: MACS-NM/peaksxlsfile
       chromsizes: chromsizes
     out: [ rpmwig, outBW, outtdf ]
-    run: ../subworkflows/visualization.cwl
-    scatter: [wigfile, peaksxls]
-    scatterMethod: dotproduct
+    run: visualization.cwl
 
 # MOTIF analysis
   MOTIFS:
@@ -257,8 +364,7 @@ steps:
       bedfile: MACS-Auto/peaksbedfile
       motifdatabases: motifdatabases
     out: [memechipdir, amedir, bedfasta]
-    run: ../subworkflows/motifs.cwl
-    scatter: bedfile
+    run: motifs.cwl
 
 #SUMMIT-MOTIF analysis
   FlankBED:
@@ -266,8 +372,7 @@ steps:
       bedfile: MACS-Auto/summitsfile
       flank: flank
     out: [outfile]
-    run: ../tools/flankbed.cwl
-    scatter: bedfile
+    run: flankbed.cwl
   
   SummitMOTIFS:
     in:
@@ -275,8 +380,7 @@ steps:
       bedfile: FlankBED/outfile
       motifdatabases: motifdatabases
     out: [memechipdir, amedir, bedfasta]
-    run: ../subworkflows/motifs.cwl
-    scatter: bedfile
+    run: motifs.cwl
     
 # METAGENE analysis
   MetaGene:
@@ -285,16 +389,14 @@ steps:
       gtffile: gtffile
       chromsizes: chromsizes
     out:  [ metagenesDir ] 
-    run: ../tools/bamtogff-ALL.cwl
-    scatter: bamfile
+    run: bamtogff-scatter.cwl
 
 # SICER broad peaks caller
   B2Bed:
     in:
       infile: SamIndex/outfile
     out: [ outfile ]
-    run: ../tools/bamtobed.cwl
-    scatter: infile
+    run: bamtobed.cwl
 
   SICER:
     requirements:
@@ -310,9 +412,8 @@ steps:
       gapsize: gapsize
       evalue: evalue
       treatmentbedfile: B2Bed/outfile
-    run: ../tools/sicer.cwl
+    run: sicer.cwl
     out: [ sicerDir ]
-    scatter: treatmentbedfile
 
 # ROSE enhancer caller
   ROSE:
@@ -328,17 +429,14 @@ steps:
       fileA: MACS-All/peaksbedfile
       fileB: MACS-Auto/peaksbedfile
     out: [ RoseDir ]
-    run: ../tools/roseNC-ALL.cwl
-    scatter: [bamfile, fileA, fileB]
-    scatterMethod: dotproduct
+    run: roseNC-scatter.cwl
 
 # Quality Control & Statistics
   Bklist2Bed:
     in:
       infile: BkIndex/outfile
     out: [ outfile ]
-    run: ../tools/bamtobed.cwl
-    scatter: infile
+    run: bamtobed.cwl
 
   SortBed:
     requirements:
@@ -348,8 +446,7 @@ steps:
     in:
       infile: Bklist2Bed/outfile
     out: [outfile]
-    run: ../tools/sortbed.cwl
-    scatter: infile
+    run: sortbed.cwl
 
   runSPP:
     requirements:
@@ -359,8 +456,7 @@ steps:
     in:
       infile: BkIndex/outfile
     out: [spp_out]
-    run: ../tools/runSPP.cwl
-    scatter: infile
+    run: runSPP.cwl
 
   CountIntersectBed:
     requirements:
@@ -371,9 +467,7 @@ steps:
       peaksbed: MACS-Auto/peaksbedfile
       bamtobed: SortBed/outfile
     out: [outfile]
-    run: ../tools/intersectbed.cwl
-    scatter: [peaksbed, bamtobed]
-    scatterMethod: dotproduct
+    run: intersectbed.cwl
 
   PeaksQC:
     requirements:
@@ -392,49 +486,4 @@ steps:
       bkflag: STATbk/outfile
       rosedir: ROSE/RoseDir
     out: [ statsfile, htmlfile, textfile ]
-    run: ../tools/summarystats.cwl
-    scatter: [fastqmetrics, fastqczip, sppfile, bambed, countsfile, peaksxls, bamflag, rmdupflag, bkflag, rosedir]
-    scatterMethod: dotproduct
-
-  MoveFiles:
-    requirements:
-      ResourceRequirement:
-        ramMax: 10000
-        coresMin: 1
-    in:
-      sam_sort: SamSort/outfile
-      fastq_metrics: BasicMetrics/metrics_out
-      rmdup_bam: SamIndex/outfile
-      bklist_bam: BkIndex/outfile
-      bamqc_html: BamQC/htmlfile
-      bamqc_zip: BamQC/zipfile
-      readqc_zip: ReadQC/zipfile
-      readqc_html: ReadQC/htmlfile
-      macsDir: MACS-Auto/macsDir
-      allmacsDir: MACS-All/macsDir
-      nmmacsDir: MACS-NM/macsDir
-      rpmwig: WIG-Auto/rpmwig
-      outBW: WIG-Auto/outBW
-      outtdf: WIG-Auto/outtdf
-      allrpmwig: WIG-All/rpmwig
-      alloutBW: WIG-All/outBW
-      allouttdf: WIG-All/outtdf
-      nmrpmwig: WIG-NM/rpmwig
-      nmoutBW: WIG-NM/outBW
-      nmouttdf: WIG-NM/outtdf
-      bedfasta: MOTIFS/bedfasta
-      flankbed: FlankBED/outfile
-      memechipdir: MOTIFS/memechipdir
-      summitmemechipdir: SummitMOTIFS/memechipdir
-      amedir: MOTIFS/amedir
-      summitamedir: SummitMOTIFS/amedir
-      metagenesDir: MetaGene/metagenesDir
-      sicerDir: SICER/sicerDir
-      roseoutput: ROSE/RoseDir
-      statsfile: PeaksQC/statsfile
-      htmlfile: PeaksQC/htmlfile
-      textfile: PeaksQC/textfile
-    out: [ finalDir ]
-    run: ../tools/movealloutput.cwl
-    scatter: [ sam_sort, fastq_metrics, rmdup_bam, bklist_bam, bamqc_html, bamqc_zip, readqc_zip, readqc_html, macsDir, allmacsDir, nmmacsDir, rpmwig, outBW, outtdf, allrpmwig, alloutBW, allouttdf, nmrpmwig, nmoutBW, nmouttdf, bedfasta, flankbed, memechipdir, summitmemechipdir, amedir, summitamedir, metagenesDir, sicerDir, roseoutput, statsfile, htmlfile, textfile ]
-    scatterMethod: dotproduct
+    run: summarystats.cwl

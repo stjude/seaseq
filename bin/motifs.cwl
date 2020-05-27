@@ -39,7 +39,7 @@ outputs:
 
 steps:  
   MEMECHIP:
-    run: ../tools/meme-chip.cwl
+    run: meme-chip.cwl
     in:
       convertfasta: BEDfasta/outfile
     out: [outDir]
@@ -49,7 +49,7 @@ steps:
       ResourceRequirement:
         ramMax: 10000
         coresMin: 1
-    run: ../tools/ame.cwl
+    run: ame.cwl
     in:
       convertfasta: BEDfasta/outfile
       motifdatabases: motifdatabases
@@ -60,7 +60,7 @@ steps:
       reference: reference
       bedfile: bedfile
     out: [outfile]
-    run: ../tools/bedfasta.cwl
+    run: bedfasta.cwl
 
 
 doc: |
