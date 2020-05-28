@@ -109,14 +109,4 @@ else
   echo "ERROR:   ChipSeq-ALL workflow terminated with errors"
 fi
 
-# if [ -s $logout ]
-# then
-#   reorganize.sh $out $outputfolder
-#   echo "STATUS:  Results stored in $outputfolder"
-#   rm -rf *$NEW_UUID*
-#   echo "STATUS:  Cleaned Up All files with $NEW_UUID"
-#   echo "SUCCESS: CHIPSEQ - SE Pipeline Completed"
-# else
-#   echo "ERROR:   ChipSeq-ALL workflow terminated with errors"
-# fi
 # ======
