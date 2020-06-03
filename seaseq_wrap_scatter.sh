@@ -51,7 +51,7 @@ outputfolder=$2
 # ------ 
 # Permanent Args
 # ------
-seaseqworkflow="$seaseqroot/bin/seaseq_pipeline_scatter.cwl"
+seaseqworkflow="$seaseqroot/cwl/seaseq_pipeline_scatter.cwl"
 NEW_UUID=${NEW_UUID:=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)"_"`date +%s`} #temporary file for the 2nd step
 
 out="$(pwd)/seaseq-"$NEW_UUID"-outdir"
@@ -61,7 +61,7 @@ logtxt="seaseq-"$NEW_UUID"-log.txt"
 logout="seaseq-"$NEW_UUID"-log_out"
 logerr="seaseq-"$NEW_UUID"-log_err"
 
-export PATH=$PATH:$seaseqroot/scripts
+export PATH=$PATH:$seaseqroot/bin
 # ------
 # Loading St. Jude HPC cluster programs
 # ------
