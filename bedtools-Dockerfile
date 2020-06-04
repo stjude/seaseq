@@ -1,0 +1,27 @@
+#################################################################
+# Dockerfile
+#
+# Software:         bedtools
+# Software Version: 2.25.0
+# Description:      BEDtools image
+# Website:          http://bedtools.sourceforge.net/
+# Provides:         bedtools
+# Base Image:       madetunj/seaseq:v0.0.1
+# Build Cmd:        docker build --rm -t madetunj/bedtools:v2.25.0 -f bedtools-Dockerfile .
+# Pull Cmd:         docker pull madetunj/bedtools:v2.25.0
+# Run Cmd:          docker run --rm -ti madetunj/bedtools:v2.25.0 
+#################################################################
+
+## BASE IMAGE
+FROM madetunj/seaseq:v0.0.1
+MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
+WORKDIR /tmp
+
+##INSTALL BEDTOOLS
+ENV BEDTOOLS_VERSION 2.25.0
+ENV BEDTOOLS_NAME bedtools
+ENV BEDTOOLS_URL "https://github.com/arq5x/bedtools2/releases/download/v${BEDTOOLS_VERSION}/${BEDTOOLS_NAME}-${BEDTOOLS_VERSION}.tar.gz"
+RUN cd /opt && wget $BEDTOOLS_URL; \
+    tar -zxf ${BEDTOOLS_NAME}-${BEDTOOLS_VERSION}.tar.gz; \
+    cd ${BEDTOOLS_NAME}2; \
+    make && make install

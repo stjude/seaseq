@@ -1,0 +1,29 @@
+#################################################################
+# Dockerfile
+#
+# Software:         bowtie
+# Software Version: 1.2.3
+# Description:      Bowtie image
+# Website:          http://bowtie-bio.sourceforge.net
+# Provides:         bowtie
+# Base Image:       madetunj/seaseq:v0.0.1
+# Build Cmd:        docker build --rm -t madetunj/bowtie:v1.2.3 -f bowtie-Dockerfile .
+# Pull Cmd:         docker pull madetunj/bowtie:v1.2.3
+# Run Cmd:          docker run --rm -ti madetunj/bowtie:v1.2.3 
+#################################################################
+
+## BASE IMAGE
+FROM madetunj/seaseq:v0.0.1
+MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
+WORKDIR /tmp
+
+## INSTALL BOWTIE
+ENV BOWTIE_VERSION 1.2.3
+ENV BOWTIE_NAME bowtie
+ENV BOWTIE_URL "https://github.com/BenLangmead/bowtie/archive/v${BOWTIE_VERSION}.zip"
+
+RUN cd /opt && wget $BOWTIE_URL && unzip v${BOWTIE_VERSION}.zip && \
+    cd ${BOWTIE_NAME}-${BOWTIE_VERSION} && \
+    make -j $(nproc) && make install
+RUN rm -rf /opt/v${BOWTIE_VERSION}.zip /opt/${BOWTIE_NAME}-${BOWTIE_VERSION};
+
