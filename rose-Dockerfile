@@ -32,5 +32,5 @@ RUN cd /opt && wget $ROSE_URL && unzip ${ROSE_VERSION}.zip
 ENV PATH /opt/${ROSE_NAME}-${ROSE_VERSION}/bin:${PATH}
 ENV PYTHONPATH /opt/${ROSE_NAME}-${ROSE_VERSION}/lib:${PYTHONPATH} 
 
-COPY --from=fromsam /usr/local/bin/samtools /usr/local/bin/samtools
+## ADD DEPENDENCIES TO BASE IMAGE
 COPY --from=frombed /opt/bedtools2/bin /usr/local/bin

@@ -33,5 +33,4 @@ ENV PATH /opt/${B2G_NAME}-${B2G_VERSION}/bin:${PATH}
 ENV PYTHONPATH /opt/${B2G_NAME}-${B2G_VERSION}/lib:${PYTHONPATH} 
 
 ## ADD DEPENDENCIES TO BASE IMAGE
-COPY --from=fromsam /usr/local/bin/samtools /usr/local/bin/samtools
 COPY --from=frombed /opt/bedtools2/bin /usr/local/bin
