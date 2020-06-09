@@ -17,7 +17,6 @@ FROM madetunj/seaseq:v0.0.1
 MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
 WORKDIR /tmp
 
-#https://github.com/bedops/bedops/archive/v2.4.37.zip
 ##INSTALL BEDOPS
 ENV BEDOPS_VERSION 2.4.37
 ENV BEDOPS_NAME bedops
@@ -27,7 +26,3 @@ RUN cd /opt && wget $BEDOPS_URL && \
     cd ${BEDOPS_NAME}-${BEDOPS_VERSION} && \
     make && make install
 ENV PATH /opt/${BEDOPS_NAME}-${BEDOPS_VERSION}/bin:${PATH}
-
-    #tar -zxf ${BEDOPS_NAME}-${BEDOPS_VERSION}.tar.gz; \
-    #cd ${BEDOPS_NAME}; \
-    #make && make install

@@ -6,28 +6,25 @@
 # Description:      BAM2GFF image
 # Website:          https://github.com/stjude/BAM2GFF
 # Provides:         BAM2GFF suite
-# Base Image:       madetunj/madetunj/spp:v1.16.0
+# Base Image:       madetunj/spp:v1.16.0
 # Build Cmd:        docker build --rm -t madetunj/bam2gff:v1.1.0 -f bam2gff-Dockerfile .
 # Pull Cmd:         docker pull madetunj/bam2gff:v1.1.0
 # Run Cmd:          docker run --rm -ti madetunj/bam2gff:v1.1.0 
 #################################################################
 
-
-FROM madetunj/samtools:v1.9 as fromsam
-FROM madetunj/bedtools:v2.25.0 as frombed
-
-## BASE IMAGE
-
-FROM madetunj/spp:v1.16.0
-MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
-WORKDIR /tmp
-
-# Dependencies:
+## DEPENDENCIES
 #   bedtools
 #   samtools
 #   R
 
-## INSTALL SICER
+FROM madetunj/bedtools:v2.25.0 as frombed
+
+## BASE IMAGE
+FROM madetunj/spp:v1.16.0
+MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
+WORKDIR /tmp
+
+## INSTALL BAM2GFF
 ENV B2G_VERSION 1.1.0
 ENV B2G_NAME BAM2GFF
 ENV B2G_URL https://github.com/stjude/${B2G_NAME}/archive/${B2G_VERSION}.zip
@@ -35,5 +32,6 @@ RUN cd /opt && wget $B2G_URL && unzip ${B2G_VERSION}.zip
 ENV PATH /opt/${B2G_NAME}-${B2G_VERSION}/bin:${PATH}
 ENV PYTHONPATH /opt/${B2G_NAME}-${B2G_VERSION}/lib:${PYTHONPATH} 
 
+## ADD DEPENDENCIES TO BASE IMAGE
 COPY --from=fromsam /usr/local/bin/samtools /usr/local/bin/samtools
 COPY --from=frombed /opt/bedtools2/bin /usr/local/bin

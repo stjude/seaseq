@@ -4,16 +4,19 @@
 # Software:         SPP
 # Software Version: 1.16.0
 # Description:      SPP image
-# Website:          
+# Website:          http://www.encodeproject.org/software/spp/
 # Provides:         SPP
-# Base Image:       madetunj/seaseq:v0.0.1
+# Base Image:       madetunj/samtools:v1.9
 # Build Cmd:        docker build --rm -t madetunj/spp:v1.16.0 -f runSPP-Dockerfile .
 # Pull Cmd:         docker pull madetunj/spp:v1.16.0
 # Run Cmd:          docker run --rm -ti madetunj/spp:v1.16.0
 #################################################################
 
+## DEPENDENCIES
+#   samtools
+
 ## BASE IMAGE
-FROM madetunj/seaseq:v0.0.1
+FROM madetunj/samtools:v1.9
 MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
 WORKDIR /tmp
 

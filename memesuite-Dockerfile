@@ -23,7 +23,7 @@ ENV MEME_DIR /opt/meme
 
 ENV PATH ${MEME_DIR}/bin:${MEME_DIR}/libexec/meme-${MEME_VERSION}:$PATH
 
-### Install required packages
+### INSTALL required packages
 RUN apt-get update && \
     apt-get install -y wget build-essential zlib1g-dev libexpat-dev libxml2-dev mpich ghostscript imagemagick && \
     cpan File::Which && \
@@ -38,7 +38,7 @@ RUN apt-get update && \
     cpan XML::Compile::WSDL11 && \
     cpan XML::Compile::Transport::SOAPHTTP
 
-### Installing MEME Suite
+### INSTALL MEME Suite
 RUN cd /opt && wget $MEME_URL && \
     tar -xf meme-${MEME_VERSION}.tar.gz && \
     cd meme-${MEME_VERSION} && \
@@ -48,7 +48,7 @@ RUN cd /opt && wget $MEME_URL && \
     cd .. && \
     rm -rf meme-${MEME_VERSION}
 
-#### Cleaning
+#### CLEANING TMP FILES
 RUN apt-get clean && \
     apt-get purge && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* && \
