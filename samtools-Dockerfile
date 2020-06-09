@@ -20,10 +20,10 @@ WORKDIR /tmp
 ##INSTALL SAMTOOLS
 ENV SAMTOOLS_VERSION 1.9
 ENV SAMTOOLS_NAME samtools
-ENV SAMTOOLS_URL "https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VERSION}/${SAMTOOLS_NAME}-${SAMTOOLS_VERSION}.tar.bz2"
+ENV SAMTOOLS_URL "http://github.com/samtools/samtools/releases/download/${SAMTOOLS_VERSION}/${SAMTOOLS_NAME}-${SAMTOOLS_VERSION}.tar.bz2"
 RUN cd /opt && wget ${SAMTOOLS_URL}; \
     tar xf ${SAMTOOLS_NAME}-${SAMTOOLS_VERSION}.tar.bz2; \
     cd ${SAMTOOLS_NAME}-${SAMTOOLS_VERSION}; \
     ./configure \
-    --prefix /usr/local --disable-bz2 --disable-lzma --without-curses \
+    --prefix /usr/local --without-curses \
     && make -j $(nproc) && make install

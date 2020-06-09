@@ -1,0 +1,26 @@
+#################################################################
+# Dockerfile
+#
+# Software:         macs
+# Software Version: 1.4.2
+# Description:      MACS v1 image
+# Website:          http://github.com/macs3-project/MACS
+# Provides:         macs14
+# Base Image:       madetunj/seaseq:v0.0.1
+# Build Cmd:        docker build --rm -t madetunj/macs:v1.4.2 -f macs-Dockerfile .
+# Pull Cmd:         docker pull madetunj/macs:v1.4.2
+# Run Cmd:          docker run --rm -ti madetunj/macs:v1.4.2 
+#################################################################
+
+## BASE IMAGE
+FROM madetunj/seaseq:v0.0.1
+MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
+WORKDIR /tmp
+
+ENV MACS_VERSION 1.4.2
+ENV MACS_URL http://github.com/taoliu/MACS/archive/v${MACS_VERSION}.tar.gz
+RUN apt-get update && apt-get install -y python2.7
+RUN cd /opt && wget $MACS_URL && \
+    tar -xf v${MACS_VERSION}.tar.gz; \
+    cd MACS-${MACS_VERSION}; \
+    python2.7 setup.py install
