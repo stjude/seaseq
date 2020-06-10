@@ -1,0 +1,47 @@
+{ 
+  "queue": "standard",
+  "project": "ChiPpipeline",
+  "res_req": "span[hosts=1] select[rhel7]",
+  "steps": {
+    "Bowtie": {
+      "processors" : "20",
+      "res_req": "rusage[mem=10000]",
+    },
+    "MACS-Auto": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "MACS-All": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "MACS-NM": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "SICER": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "PeaksQC": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "BasicMetrics": {
+      "res_req": "rusage[mem=20000]",
+    },
+    "ROSE": {
+      "res_req": "rusage[mem=20000]",
+    },
+    "MOTIFS/AME": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "SummitMOTIFS/AME": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "SortBed": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "runSPP": {
+      "res_req": "rusage[mem=10000]",
+    },
+    "CountIntersectBed": {
+      "res_req": "rusage[mem=10000]",
+    },
+  },
+}

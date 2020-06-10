@@ -12,6 +12,8 @@ requirements:
   - var var_output_name = function() {
       return inputs.infile.nameroot.split('.bam')[0]+'-spp.out';
    };
+- class: InitialWorkDirRequirement
+  listing: [ $(inputs.infile) ]
 
 inputs:
   infile:
