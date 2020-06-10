@@ -16,9 +16,9 @@
 #   samtools v. 1.9
 #   R v. 3.6.1
 #   macs v. 041014
-#   SICER2
+#   SICER2 v. 1.0.2
 #   meme v. 4.11.2
-#   phantompeakqualtools v. 1.2.1.1
+#   spp v. 1.16.0
 #   bedtools/2.25.0
 #   python v. 3.7.0
 #   java v. 1.8.0_60
@@ -45,7 +45,8 @@ if [ $# -lt 2 ]; then
   exit 1
 fi
 
-seaseqroot="/research/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/ChipSeqPipeline" 
+actualpath=$(realpath $0)
+seaseqroot=${actualpath%/*}
 inputyml=$1
 outputfolder=$2
 # ------ 
@@ -96,7 +97,7 @@ if [ -s $logout ]
 then
   reorganize.sh $out $outputfolder
   echo "STATUS:  Results stored in $outputfolder"
-  rm -rf *$NEW_UUID*
+#  rm -rf *$NEW_UUID*
   echo "STATUS:  Cleaned Up All files with $NEW_UUID"
   echo "SUCCESS: CHIPSEQ - SE Pipeline Completed"
 else

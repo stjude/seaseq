@@ -220,8 +220,8 @@ if ($rosedir){
   my $superenhancers = `wc -l $rosedir/unionpeaks_SuperEnhancers.table.txt | awk '{print \$1-6}'`; chop $superenhancers;
   unless ($enhancers > 0 ) { $enhancers = 0; }  #making sure enhancers  is numeric
   unless ($superenhancers > 0 ) { $superenhancers = 0; } #making sure superenhancers is numeric
-  print OUT "Total number of Enhancers = ", $enhancers;
-  print OUT "Total number of Superenhancers = ", $superenhancers;
+  print OUT "Total number of Enhancers = ", $enhancers,"\n";
+  print OUT "Total number of Superenhancers = ", $superenhancers,"\n";
   print ".. Done\n";
   
   #QCdash
@@ -231,11 +231,15 @@ if ($rosedir){
   if ($OvQual{'Enhancers'}{'value'} > 2000) {$OvQual{'Enhancers'}{'score'} = 0;}
   if ($OvQual{'Enhancers'}{'value'} > 5000) {$OvQual{'Enhancers'}{'score'} = 1;}
   if ($OvQual{'Enhancers'}{'value'} >= 10000) {$OvQual{'Enhancers'}{'score'} = 2;}
-  if (($OvQual{'Super Enhancers'}{'value'}/$OvQual{'Enhancers'}{'value'}) > 0.02) {$OvQual{'Super Enhancers'}{'score'} = 1;}
-  if (($OvQual{'Super Enhancers'}{'value'}/$OvQual{'Enhancers'}{'value'}) > 0.05) {$OvQual{'Super Enhancers'}{'score'} = 0;}
-  if (($OvQual{'Super Enhancers'}{'value'}/$OvQual{'Enhancers'}{'value'}) > 0.1) {$OvQual{'Super Enhancers'}{'score'} = -1;}
-  if (($OvQual{'Super Enhancers'}{'value'}/$OvQual{'Enhancers'}{'value'}) >= 0.2) {$OvQual{'Super Enhancers'}{'score'} = -2;}
-  if ($OvQual{'Super Enhancers'}{'value'} <= 1) {$OvQual{'Super Enhancers'}{'score'} = -2;}
+
+  if (($OvQual{'Enhancers'}{'value'} == 0) || ($OvQual{'Super Enhancers'}{'value'} == 0)) { $OvQual{'Super Enhancers'}{'score'} = -2 }
+  else {
+    if (($OvQual{'Super Enhancers'}{'value'}/$OvQual{'Enhancers'}{'value'}) > 0.02) {$OvQual{'Super Enhancers'}{'score'} = 1;}
+    if (($OvQual{'Super Enhancers'}{'value'}/$OvQual{'Enhancers'}{'value'}) > 0.05) {$OvQual{'Super Enhancers'}{'score'} = 0;}
+    if (($OvQual{'Super Enhancers'}{'value'}/$OvQual{'Enhancers'}{'value'}) > 0.1) {$OvQual{'Super Enhancers'}{'score'} = -1;}
+    if (($OvQual{'Super Enhancers'}{'value'}/$OvQual{'Enhancers'}{'value'}) >= 0.2) {$OvQual{'Super Enhancers'}{'score'} = -2;}
+    if ($OvQual{'Super Enhancers'}{'value'} <= 1) {$OvQual{'Super Enhancers'}{'score'} = -2;}
+  }
 } # end if rosedir
 
 close(OUT);
