@@ -17,15 +17,5 @@ FROM madetunj/seaseq:v0.0.1
 MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
 WORKDIR /tmp
 
-# ## INSTALL BOWTIE
-# ENV BOWTIE_VERSION 1.2.3
-# ENV BOWTIE_NAME bowtie
-# ENV BOWTIE_URL "http://github.com/BenLangmead/bowtie/archive/v${BOWTIE_VERSION}.zip"
-
-# RUN cd /opt && wget $BOWTIE_URL && unzip v${BOWTIE_VERSION}.zip && \
-#     cd ${BOWTIE_NAME}-${BOWTIE_VERSION} && \
-#     make -j $(nproc) && make install
-# RUN rm -rf /opt/v${BOWTIE_VERSION}.zip /opt/${BOWTIE_NAME}-${BOWTIE_VERSION};
-
-#install wigtobigwig
+## INSTALL wigToBigWig
 RUN rsync -aP rsync://hgdownload.soe.ucsc.edu/genome/admin/exe/linux.x86_64/wigToBigWig /usr/local/bin

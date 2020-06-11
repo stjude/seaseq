@@ -17,6 +17,7 @@ FROM madetunj/seaseq:v0.0.1
 MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
 WORKDIR /tmp
 
+## INSTALL MACS14
 ENV MACS_VERSION 1.4.2
 ENV MACS_URL http://github.com/taoliu/MACS/archive/v${MACS_VERSION}.tar.gz
 RUN apt-get update && apt-get install -y python2.7
