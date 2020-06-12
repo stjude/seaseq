@@ -4,6 +4,10 @@ baseCommand: [igvtools, toTDF]
 #[java, -jar, /research/rgs01/project_space/abrahgrp/Software_Dev_Sandbox/common/madetunj/software/igvtools/igvtools_2.3.2.jar, toTDF]
 class: CommandLineTool
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/igvtools:v2.8.2
+
 label: IGVTOOLS - convert to TDF
 doc: |
   java -jar igvtools/igvtools_2.3.2.jar toTDF <wig> <tdf> hg19

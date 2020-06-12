@@ -4,6 +4,10 @@ baseCommand: [wigToBigWig, -clip]
 class: CommandLineTool
 label: convert ascii format wig file to binary big wig format
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/wigtobigwig:v4
+
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement

@@ -3,6 +3,10 @@ cwlVersion: v1.0
 baseCommand: [tagLength.sh]
 class: CommandLineTool
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/seaseq:v0.0.1
+
 inputs:
   datafile:
     label: "Basic Metric file"

@@ -4,6 +4,10 @@ baseCommand: [samtools, index]
 class: CommandLineTool
 label: index bam file
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/samtools:v1.9
+
 requirements:
   InitialWorkDirRequirement:
     listing: [ $(inputs.infile) ]

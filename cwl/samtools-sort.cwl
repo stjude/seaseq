@@ -4,6 +4,10 @@ baseCommand: [samtools, sort]
 class: CommandLineTool
 label: sort bam file
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/samtools:v1.9
+
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement

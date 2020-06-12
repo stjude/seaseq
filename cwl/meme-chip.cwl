@@ -3,6 +3,10 @@ cwlVersion: v1.0
 baseCommand: meme-chip
 class: CommandLineTool
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/memesuite:v5.1.1 
+
 label: MEME-ChIP performs comprehensive motif analysis (including motif discovery) 
 doc: |
   meme-chip <convert fasta>

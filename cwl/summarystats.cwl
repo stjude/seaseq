@@ -3,6 +3,11 @@ cwlVersion: v1.0
 baseCommand: [ summaryfacts.pl ]
 class: CommandLineTool
 
+
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/seaseq:v0.0.1
+
 label: QC on the peaks file
 doc: |
   perl summaryfacts.pl -b <bam file> -p <peaks bed> -bamflag <bamflagstat> -rmdupflag <rmdupflagstat> -bkflag <bklistflagstat> -fqc <fastqczipfile> -outfile <outputfilename>

@@ -6,6 +6,10 @@ label: Quality metrics using PhantomPeaksQual tool
 doc: |
   run_spp.R -c=<bam> -savp -out=<outfile name> 
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/spp:v1.16.0
+
 requirements:
 - class: InlineJavascriptRequirement
   expressionLib:

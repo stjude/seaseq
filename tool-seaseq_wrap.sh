@@ -1,8 +1,7 @@
 #!/usr/bin/bash
 # seaseq_wrap.sh
-
 # ====== README
-# This is the seaseq wrapper script written for 
+# This is the seaseq wrapper script written for
 #   St. Jude, Abraham's Lab.
 # This script works with St. Jude, HPC LSF cluster.
 # ------
@@ -40,19 +39,18 @@
 # ------
 if [ $# -lt 2 ]; then
   echo ""
-  echo 1>&2 Usage: $0 ["YML"] ["OUTPUT FOLDER"] 
+  echo 1>&2 Usage: $0 ["YML"] ["OUTPUT FOLDER"]
   echo ""
   exit 1
 fi
-
 actualpath=$(realpath $0)
 seaseqroot=${actualpath%/*}
 inputyml=$1
 outputfolder=$2
-# ------ 
+# ------
 # Permanent Args
 # ------
-seaseqworkflow="$seaseqroot/cwl/seaseq_pipeline_scatter.cwl"
+seaseqworkflow="$seaseqroot/cwl/seaseq_pipeline.cwl"
 NEW_UUID=${NEW_UUID:=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)"_"`date +%s`} #temporary file for the 2nd step
 
 out="$(pwd)/seaseq-"$NEW_UUID"-outdir"
@@ -75,18 +73,15 @@ source $seaseqroot/sjhpc_modules.ml
 # ------
 echo "STATUS:  Temporary files named with $NEW_UUID"
 
-mkdir -p $tmp $out 
+mkdir -p $tmp $out
 rm -rf $jobstore $logtxt
 
-toil-cwl-runner --batchSystem=lsf \
+cwltool \
 --no-container \
 --preserve-entire-environment \
---disableCaching \
---logFile $logtxt \
---jobStore $jobstore \
---clean never \
---workDir $tmp \
---cleanWorkDir never \
+--copy-outputs \
+--leave-tmpdir \
+--tmpdir-prefix $tmp \
 --outdir $out \
 $seaseqworkflow $inputyml 1>$logout 2>$logerr
 # ------
@@ -96,12 +91,19 @@ $seaseqworkflow $inputyml 1>$logout 2>$logerr
 # ------
 if [ -s $logout ]
 then
-  reorganize.sh $out $outputfolder
-  echo "STATUS:  Results stored in $outputfolder"
-#  rm -rf *$NEW_UUID*
+
+  ##extracting relevant files from 1st step to the next step & to outputfolder
+  OUTPUTFOLDER=$(chromatinSEreadjson.pl -i $logout -s 1)
+  chromatinSEreadjson.pl -i $logout -s 2 -f $OUTPUTFOLDER
+
+  #rm -rf *$NEW_UUID*
+  mkdir -p $outputfolder
+  mv $OUTPUTFOLDER $outputfolder
+
   echo "STATUS:  Cleaned Up All files with $NEW_UUID"
   echo "SUCCESS: CHIPSEQ - SE Pipeline Completed"
 else
   echo "ERROR:   ChipSeq-ALL workflow terminated with errors"
 fi
+
 # ======

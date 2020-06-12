@@ -3,6 +3,10 @@ cwlVersion: v1.0
 baseCommand: ame
 class: CommandLineTool
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/memesuite:v5.1.1 
+
 label: AME - Analysis of Motif Enrichment
 doc: |
   ame <convert fasta> <motif-databases>
