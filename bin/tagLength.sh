@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 #extracting mean from basic metrics file
 

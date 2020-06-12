@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 #
 # Reorganize output directory from ChipSEQ pipeline into preferred directory structure.
 # ["final outdir"]
