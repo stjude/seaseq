@@ -3,6 +3,10 @@ cwlVersion: v1.0
 baseCommand: [intersectBed]
 class: CommandLineTool
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/bedtools:v2.25.0
+
 label: number of overlap of A with B
 doc: |
   intersectBed -sorted -a <peaksbed> -b <sorted bamtobed> -c > <output countfile>

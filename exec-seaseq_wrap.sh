@@ -1,4 +1,6 @@
 #!/usr/bin/bash
+echo 'CWLEXEC does not have the no-docker option'
+exit;
 # seaseq_wrap.sh
 # ====== README
 # This is the seaseq wrapper script written for

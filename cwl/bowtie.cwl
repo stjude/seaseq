@@ -3,6 +3,10 @@ cwlVersion: v1.0
 baseCommand: bowtie
 class: CommandLineTool
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/bowtie:v1.2.3
+
 #INITIAL SYNTAX
 label: Bowtie on ChipSeq reads
 doc: |

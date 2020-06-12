@@ -3,6 +3,11 @@ cwlVersion: v1.0
 baseCommand: [BAM2GFF-local.sh]
 class: CommandLineTool
 label: BAM to GFF for MetaGenes calculation v1 on bam file for all metagenes
+
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/bam2gff:v1.1.0 
+
 doc: |
   BAM2GFF_call.sh <gtf file> <feature type> <bam file> <chromsizes file> <samplename>
 

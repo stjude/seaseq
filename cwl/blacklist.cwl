@@ -3,6 +3,10 @@ cwlVersion: v1.0
 baseCommand: [intersectBed, -v]
 class: CommandLineTool
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/bedtools:v2.25.0
+
 label: bedtools intersect, to remove blacklist
 doc: |
   intersectBed -v -a KOPTK1_DMSO.rmdup.bam -b ~/.genomes/hg19/hg19-blacklist.v2.bed > ooo

@@ -5,6 +5,10 @@ class: CommandLineTool
 
 label: move files
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/seaseq:v0.0.1
+
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement

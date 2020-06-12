@@ -3,6 +3,10 @@ cwlVersion: v1.0
 baseCommand: [bamToBed]
 class: CommandLineTool
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/bedtools:v2.25.0
+
 label: convert bam to bed
 doc: |
   bamToBed -i <bam file> > <bed file>

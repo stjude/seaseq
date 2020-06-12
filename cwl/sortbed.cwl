@@ -3,6 +3,10 @@ cwlVersion: v1.0
 baseCommand: [sort-bed]
 class: CommandLineTool
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/bedops:v2.4.37
+
 label: Using bedops to sort bed file
 doc: |
   sort-bed <bed file> > <sorted bed file>

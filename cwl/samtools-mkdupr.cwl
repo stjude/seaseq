@@ -4,6 +4,10 @@ baseCommand: [samtools, markdup, -r]
 class: CommandLineTool
 label: mark and remove duplicates from bam file
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/samtools:v1.9
+
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement

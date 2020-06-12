@@ -3,6 +3,10 @@ cwlVersion: v1.0
 baseCommand: [samtools, flagstat]
 class: CommandLineTool
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/samtools:v1.9
+
 label: SamTools flagstat
 doc: |
   samtools flagstat $BAM > flagstat.txt

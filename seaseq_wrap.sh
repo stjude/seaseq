@@ -77,6 +77,7 @@ mkdir -p $tmp $out
 rm -rf $jobstore $logtxt
 
 toil-cwl-runner --batchSystem=lsf \
+--no-container \
 --preserve-entire-environment \
 --disableCaching \
 --logFile $logtxt \
