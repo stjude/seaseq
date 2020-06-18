@@ -1,5 +1,7 @@
 # (S)ingle (E)nd (A)ntibody (SEQ)uencing pipeline
 
+### St. Jude HPC-LSF version
+
 Chromatin Single-End analysis pipeline
 
 The SEASEQ Pipeline is a complete analysis pipeline for CHiP 
@@ -25,9 +27,9 @@ and about 30GB of supplemental data.
 * samtools v. 1.9
 * R v. 3.6.1
 * macs v. 041014
-* SICER2 v. 1.0.1
+* SICER2 v. 1.0.2
 * meme v. 4.11.2
-* phantompeakqualtools v. 1.2.1.1
+* spp v. 1.16.0
 * bedtools/2.25.0
 * python v. 3.7.0
 * java v. 1.8.0_60
@@ -43,38 +45,38 @@ and about 30GB of supplemental data.
 
 INPUT YML
 
-```
-reference: 
-  class: Directory
-  location: /path/to/genome_reference+index
-
-fastqfile: 
-  - { class: File, path: /path/to/fastqfile1 }
-  - { class: File, path: /path/to/fastqfile2 }
-
-keep_dup: all
-
-chromsizes: 
-  class: File
-  path: /path/to/chromsizes_file
-
-blacklistfile:
-  class: File
-  path: /path/to/blacklist_file
-
-gtffile:
-  class: File
-  path: /path/to/gtf_file
-
-motifdatabases:
-  - { class: File, path: /path/to/meme_motif1 }
-  - { class: File, path: /path/to/meme_motif2 }
-```
+	```
+	reference: 
+	  class: Directory
+	  location: /path/to/genome_reference_+_bowtie_indexes_+_samtools_index
+	
+	fastqfile: 
+	  - { class: File, path: /path/to/fastqfile1 }
+	  - { class: File, path: /path/to/fastqfile2 }
+	
+	keep_dup: all
+	
+	chromsizes: 
+	  class: File
+	  path: /path/to/chromsizes_file
+	
+	blacklistfile:
+	  class: File
+	  path: /path/to/blacklist_file
+	
+	gtffile:
+	  class: File
+	  path: /path/to/gtf_file
+	
+	motifdatabases:
+	  - { class: File, path: /path/to/meme_motif1 }
+	  - { class: File, path: /path/to/meme_motif2 }
+	```
 
 
 ## EXAMPLE
 
-We provided example instructions for running under [Toil]
-(https://toil.readthedocs.io/en/latest/) on our St. Jude HPC LSF cluster.
+We provided example instructions for running under **Toil** 
+and **CWLEXEC** on the St. Jude HPC LSF cluster 
 
 

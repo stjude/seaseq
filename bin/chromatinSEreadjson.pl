@@ -26,7 +26,10 @@ my $data = decode_json($json);
 #After the 1st stage (1st-mapping) is completed
 if ($step == 1) {
   #output to tempfile: bamfile, zipfile, STATbkoutfile, STATbamoutfile, STATrmdupoutfile
-  unless ($folder) { $folder = (split("\_fastq", $data->{'readqc_zip'}->{'nameroot'}))[0];  }
+  unless ($folder) { $folder = (split("\_fastq", $data->{'readqc_zip'}->{'nameroot'}))[0]; }
+  unless ($folder) { $folder = (split("\_fastq", $data->{'readqc_zip'}->{'basename'}))[0]; }
+  unless ($folder) { die "Folder name can't be obtained"; }
+
   if ($outfile) {
     open my $fh, ">>", $outfile;
 
