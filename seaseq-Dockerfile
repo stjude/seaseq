@@ -43,6 +43,7 @@ RUN apt-get clean all &&    \
 		curl                \
         nodejs              \
         bc                  \
+        python2.7           \
         python3-numpy       \
         python3-scipy       \
         python3-pip         \
