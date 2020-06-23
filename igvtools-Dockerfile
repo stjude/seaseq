@@ -18,9 +18,10 @@ MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
 WORKDIR /tmp
 
 #install igv and igvtools
+ENV IGV_FOLDER 2.8
 ENV IGV_VERSION 2.8.2
-ENV IGV_URL https://data.broadinstitute.org/igv/projects/downloads/2.8/IGV_${IGV_VERSION}.zip
+ENV IGV_URL https://data.broadinstitute.org/igv/projects/downloads/${IGV_FOLDER}/IGV_${IGV_VERSION}.zip
 
 RUN cd /opt && wget ${IGV_URL} && \
     unzip IGV_${IGV_VERSION}.zip;
-ENV PATH /opt/IGV_2.8.2:${PATH}
+ENV PATH /opt/IGV_${IGV_VERSION}:${PATH}
