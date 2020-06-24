@@ -2,25 +2,26 @@
 cwlVersion: v1.0
 baseCommand: [intersectBed]
 class: CommandLineTool
+label: number of overlap of A with B
+doc: |
+  intersectBed -sorted -a <peaksbed> -b <sorted bamtobed> -c > <output countfile>
+
 
 hints:
   DockerRequirement:
     dockerPull: madetunj/bedtools:v2.25.0
 
-label: number of overlap of A with B
-doc: |
-  intersectBed -sorted -a <peaksbed> -b <sorted bamtobed> -c > <output countfile>
 
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement
-
   expressionLib:
   - var var_output_name = function() {
       if (inputs.peaksbed != null) {
          return inputs.peaksbed.nameroot.split('.bed')[0]+'-counts.txt';
       }
    };
+
 
 inputs:
   peaksbed:
@@ -58,6 +59,7 @@ inputs:
     label: "Output file name"
     default: ""
 
+
 stdout: |
   ${
     if (inputs.outputfile == "") {
@@ -66,6 +68,7 @@ stdout: |
       return inputs.outputfile;
     }
   }
+
 
 outputs:
   outfile:

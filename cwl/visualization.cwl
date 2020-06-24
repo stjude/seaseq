@@ -1,12 +1,13 @@
 #!/usr/bin/env cwl-runner
 cwlVersion: v1.0
 class: Workflow
-
 doc: |
   Create visualization files: TDF for IGV and BigWig for UCSC
 
+
 requirements:
   - class: SubworkflowFeatureRequirement
+
 
 inputs: 
   chromsizes: 

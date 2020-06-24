@@ -2,14 +2,15 @@
 cwlVersion: v1.0
 baseCommand: [macs14]
 class: CommandLineTool
+label: MACS1 - NoModel
+doc: |
+  macs14 -t $file.bam -w -S --shiftsize=100 --space=50 --nomodel -n $file\_nm
+
 
 hints:
   DockerRequirement:
     dockerPull: madetunj/macs:v1.4.2
 
-label: MACS1 - NoModel
-doc: |
-  macs14 -t $file.bam -w -S --shiftsize=100 --space=50 --nomodel -n $file\_nm
 
 requirements:
 - class: ShellCommandRequirement
@@ -39,6 +40,7 @@ requirements:
         }
       }
    };
+
   
 inputs:
   treatmentfile:

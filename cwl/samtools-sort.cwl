@@ -4,20 +4,22 @@ baseCommand: [samtools, sort]
 class: CommandLineTool
 label: sort bam file
 
+
 hints:
   DockerRequirement:
-    dockerPull: madetunj/samtools:v1.9
+    dockerPull: madetunj/samtools:v1.9 
+
 
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement
-
   expressionLib:
   - var var_output_name = function() {
       if (inputs.infile != null) {
          return inputs.infile.nameroot.split('.bam')[0]+'.sorted.bam';
       }
    };
+
 
 inputs:
   infile:
@@ -40,6 +42,7 @@ inputs:
             }
         }
     default: ""
+
 
 outputs:
   outfile:

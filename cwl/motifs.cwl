@@ -2,9 +2,11 @@
 cwlVersion: v1.0
 class: Workflow
 
+
 requirements:
   - class: StepInputExpressionRequirement
   - class: InlineJavascriptRequirement
+
 
 inputs: 
   reference:
@@ -47,6 +49,7 @@ steps:
   AME:
     requirements:
       ResourceRequirement:
+        ramMax: 10000
         coresMin: 1
     run: ame.cwl
     in:

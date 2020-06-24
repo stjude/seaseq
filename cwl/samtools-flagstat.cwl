@@ -2,23 +2,24 @@
 cwlVersion: v1.0
 baseCommand: [samtools, flagstat]
 class: CommandLineTool
+label: SamTools flagstat
+doc: |
+  samtools flagstat $BAM > flagstat.txt
+
 
 hints:
   DockerRequirement:
     dockerPull: madetunj/samtools:v1.9
 
-label: SamTools flagstat
-doc: |
-  samtools flagstat $BAM > flagstat.txt
 
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement
-
   expressionLib:
   - var var_output_name = function() {
       return inputs.infile.nameroot+'-flagstat.txt';
    };
+
 
 inputs:
   infile:
@@ -32,6 +33,7 @@ inputs:
     label: "Output file name"
     default: ""
 
+
 stdout: |
   ${
     if (inputs.outputfile == "") {
@@ -40,6 +42,7 @@ stdout: |
       return inputs.outputfile;
     }
   }
+
 
 outputs:
   outfile:

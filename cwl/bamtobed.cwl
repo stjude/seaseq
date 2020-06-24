@@ -2,25 +2,26 @@
 cwlVersion: v1.0
 baseCommand: [bamToBed]
 class: CommandLineTool
-
-hints:
-  DockerRequirement:
-    dockerPull: madetunj/bedtools:v2.25.0
-
 label: convert bam to bed
 doc: |
   bamToBed -i <bam file> > <bed file>
 
+
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/bedtools:v2.25.0 
+
+
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement
-
   expressionLib:
   - var var_output_name = function() {
       if (inputs.infile != null) {
          return inputs.infile.nameroot.split('.bam')[0]+'.bam2bed.bed';
       }
    };
+
 
 inputs:
   infile:
@@ -35,6 +36,7 @@ inputs:
     label: "Output BED file name"
     default: ""
 
+
 stdout: |
   ${
     if (inputs.outputfile == "") {
@@ -43,6 +45,7 @@ stdout: |
       return inputs.outputfile;
     }
   }
+
 
 outputs:
   outfile:

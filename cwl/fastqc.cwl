@@ -4,13 +4,16 @@ baseCommand: [fastqc]
 class: CommandLineTool
 label: QC on reads or bam file
 
+
 hints:
   DockerRequirement:
     dockerPull: madetunj/fastqc:v0.11.9
 
+
 requirements:
 - class: InitialWorkDirRequirement
   listing: [ $(inputs.infile) ]
+
 
 inputs:
   infile:
@@ -26,6 +29,7 @@ inputs:
       position: 2
       prefix: '-o'
     default: './'
+
 
 outputs:
   htmlfile:
