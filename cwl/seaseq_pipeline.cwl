@@ -405,7 +405,7 @@ steps:
   SICER:
     requirements:
       ResourceRequirement:
-        ramMax: 10000
+        ramMax: 15000
         coresMin: 1
     in:
       species: species
