@@ -2,21 +2,19 @@
 cwlVersion: v1.0
 baseCommand: bowtie
 class: CommandLineTool
-
-hints:
-  DockerRequirement:
-    dockerPull: madetunj/bowtie:v1.2.3
-
-#INITIAL SYNTAX
 label: Bowtie on ChipSeq reads
 doc: |
   bsub -K -R \"rusage[mem=10000]\" -n 20 -q standard -R \"select[rhel7]\" bowtie -l \$readLength -p 20 -k 2 -m 2 --best -S /datasets/public/genomes/Homo_sapiens/hg19/TOPHAT/hg19 ${files[$file]} \> $file.sam" >> $outfile
 
 
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/bowtie:v1.2.3
+
+
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement
-
   expressionLib:
   - var var_output_name = function() {
       if (inputs.output_prefix != null) { return inputs.output_prefix+'.sam'; } 
@@ -28,6 +26,7 @@ requirements:
         return inputs.readLengthFile.nameroot;
       }
    };
+
 
 inputs:
   output_prefix:
@@ -122,6 +121,7 @@ inputs:
     label: "SAM file name"
     default: ""
 
+
 stdout: |
   ${
     if (inputs.samfilename == "") {
@@ -130,6 +130,7 @@ stdout: |
       return inputs.samfile;
     }
   }
+
 
 outputs:
   samfile:

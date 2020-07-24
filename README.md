@@ -20,14 +20,16 @@ and about 30GB of supplemental data.
 
 ## PROGRAMS & VERSIONS
 
+Programs and versions used to build and test the pipeline.
+
 * bowtie v. 1.2.2
 * fastqc v. 0.11.5
 * samtools v. 1.9
 * R v. 3.6.1
 * macs v. 041014
-* SICER2 v. 1.0.1
+* SICER2 v. 1.0.2
 * meme v. 4.11.2
-* phantompeakqualtools v. 1.2.1.1
+* spp v. 1.16.0
 * bedtools/2.25.0
 * python v. 3.7.0
 * java v. 1.8.0_60
@@ -39,9 +41,13 @@ and about 30GB of supplemental data.
 * BAM2GFF v. 1.1.0
 
 
-## REQUIREMENTS
+## REQUIREMENT
 
-INPUT YML
+* INPUT
+
+**inputyml.yml** file 
+
+Example of an **inputyml.yml** file.
 
 ```
 reference: 
@@ -49,8 +55,8 @@ reference:
   location: /path/to/genome_reference+index
 
 fastqfile: 
-  - { class: File, path: /path/to/fastqfile1 }
-  - { class: File, path: /path/to/fastqfile2 }
+  class: File
+  path: /path/to/fastqfile
 
 keep_dup: all
 
@@ -71,10 +77,11 @@ motifdatabases:
   - { class: File, path: /path/to/meme_motif2 }
 ```
 
+* OUTPUTS
 
-## EXAMPLE
-
-We provided example instructions for running under [Toil]
-(https://toil.readthedocs.io/en/latest/) on our St. Jude HPC LSF cluster.
+All outputfiles will be saved in current working directory
 
 
+## EXAMPLE SYNTAX using CWLTOOL
+
+cwltool /path/to/folder/cwl/seaseq_pipeline.cwl inputyml.yml

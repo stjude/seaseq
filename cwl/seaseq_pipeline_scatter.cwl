@@ -9,9 +9,11 @@ doc: |
       enhancers & super-enhancers using ROSE, bam density plots 
       using BAM2GFF.
 
+
 requirements:
   - class: SubworkflowFeatureRequirement
   - class: ScatterFeatureRequirement
+
 
 inputs:
 # main files & directorys
@@ -53,11 +55,13 @@ inputs:
   # ROSE
   feature: string?
 
+
 outputs:
   finalDir:
     type: Directory[]
     label: "output directory of the analysis result for each fastqfile"
     outputSource: MoveFiles/finalDir
+
 
 steps:
   BasicMetrics:
@@ -299,7 +303,7 @@ steps:
   SICER:
     requirements:
       ResourceRequirement:
-        ramMax: 10000
+        ramMax: 15000
         coresMin: 1
     in:
       species: species

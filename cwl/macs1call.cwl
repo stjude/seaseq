@@ -2,14 +2,15 @@
 cwlVersion: v1.0
 baseCommand: [macs14]
 class: CommandLineTool
+label: MACS1 - Model based Analysis from ChiP-Seq
+doc: |
+  macs14 -t $file.bam -w -S --space=50 -p 1e-9 --keep-dup=auto -n $file\_p9_kd-auto
+
 
 hints:
   DockerRequirement:
     dockerPull: madetunj/macs:v1.4.2
 
-label: MACS1 - Model based Analysis from ChiP-Seq
-doc: |
-  macs14 -t $file.bam -w -S --space=50 -p 1e-9 --keep-dup=auto -n $file\_p9_kd-auto
 
 requirements:
 - class: ShellCommandRequirement
@@ -145,6 +146,7 @@ inputs:
             }
         }
     default: ""
+
 
 outputs:
   peaksbedfile:

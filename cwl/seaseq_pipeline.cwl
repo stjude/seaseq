@@ -9,8 +9,10 @@ doc: |
       enhancers & super-enhancers using ROSE, bam density plots 
       using BAM2GFF.
 
+
 requirements:
   - class: SubworkflowFeatureRequirement
+
 
 inputs:
 # main files & directorys
@@ -51,6 +53,7 @@ inputs:
 
   # ROSE
   feature: string?
+
 
 outputs:
   sam_sort:
@@ -189,6 +192,7 @@ outputs:
   textfile:
     type: File
     outputSource: PeaksQC/textfile
+
 
 steps:
   BasicMetrics:
@@ -401,7 +405,7 @@ steps:
   SICER:
     requirements:
       ResourceRequirement:
-        ramMax: 10000
+        ramMax: 15000
         coresMin: 1
     in:
       species: species

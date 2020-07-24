@@ -2,14 +2,15 @@
 cwlVersion: v1.0
 baseCommand: ame
 class: CommandLineTool
-
-hints:
-  DockerRequirement:
-    dockerPull: madetunj/memesuite:v5.1.1 
-
 label: AME - Analysis of Motif Enrichment
 doc: |
   ame <convert fasta> <motif-databases>
+
+
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/memesuite:v5.1.1
+
 
 requirements:
 - class: InlineJavascriptRequirement
@@ -17,6 +18,7 @@ requirements:
   - var var_output_name = function() {
       return 'bklist'+inputs.convertfasta.nameroot.split('bklist').slice(-1)+'-ame_out';
    };
+
 
 inputs:
   convertfasta:
@@ -48,8 +50,7 @@ inputs:
             }
         }
     default: ""
-      
-      
+
 
 outputs:
   outDir:

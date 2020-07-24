@@ -4,20 +4,22 @@ baseCommand: [wigToBigWig, -clip]
 class: CommandLineTool
 label: convert ascii format wig file to binary big wig format
 
+
 hints:
   DockerRequirement:
     dockerPull: madetunj/wigtobigwig:v4
 
+
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement
-
   expressionLib:
   - var var_output_name = function() {
       if (inputs.infile != null) {
          return inputs.infile.nameroot.split('wig')[0]+'bw';
       }
    };
+
 
 inputs:
   infile:
@@ -46,6 +48,7 @@ inputs:
             }
         }
     default: ""
+
 
 outputs:
   outfile:

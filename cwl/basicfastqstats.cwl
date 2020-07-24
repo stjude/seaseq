@@ -3,19 +3,21 @@ cwlVersion: v1.0
 baseCommand: [basicfastqstats.sh]
 class: CommandLineTool
 
+
 hints:
   DockerRequirement:
     dockerPull: madetunj/seaseq:v0.0.1
 
+
 requirements:
 - class: InlineJavascriptRequirement
-
   expressionLib:
   - var var_output_name = function() {
       if (inputs.fastqfile != null) {
          return inputs.fastqfile.nameroot.split('.fastq')[0]+'-fastq.metrics.txt';
       }
    };
+
 
 inputs:
   fastqfile:

@@ -2,21 +2,23 @@
 cwlVersion: v1.0
 baseCommand: meme-chip
 class: CommandLineTool
-
-hints:
-  DockerRequirement:
-    dockerPull: madetunj/memesuite:v5.1.1 
-
 label: MEME-ChIP performs comprehensive motif analysis (including motif discovery) 
 doc: |
   meme-chip <convert fasta>
+
   
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/memesuite:v5.1.1
+
+
 requirements:
 - class: InlineJavascriptRequirement
   expressionLib:
   - var var_output_name = function() {
       return 'bklist'+inputs.convertfasta.nameroot.split('bklist').slice(-1)+'-memechip_out';
    };
+
 
 inputs:
   convertfasta:
@@ -56,6 +58,7 @@ inputs:
             }
         }
     default: ""
+
 
 outputs:
   outDir:

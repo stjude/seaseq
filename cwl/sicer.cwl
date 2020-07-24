@@ -2,20 +2,22 @@
 cwlVersion: v1.0
 baseCommand: [ sicer ]
 class: CommandLineTool
-
-hints:
-  DockerRequirement:
-    dockerPull: madetunj/sicer:v1.0.2
-
 label: SICER new version - Broad Peaks
 doc: |
   sicer -t 20190628_KOPTK1-DMSO-MYBL2_AD7124_S12.sorted.bklist.rmdup.bam2bed.bed -s hg19 -egf 0.86 -g 200 -e 100
+
+
+hints:
+  DockerRequirement:
+    dockerPull: madetunj/sicer:v1.0.2 
+
 
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement
 - class: InitialWorkDirRequirement
   listing: [ $(inputs.treatmentbedfile) ]
+
 
 inputs:
   treatmentbedfile:
@@ -116,6 +118,7 @@ inputs:
       shellQuote: false
       prefix: '" && mkdir -p $nameoffolder && mv *W200* $nameoffolder' 
     default: true
+
 
 outputs:
   sicerDir:

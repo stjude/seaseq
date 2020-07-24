@@ -2,25 +2,25 @@
 cwlVersion: v1.0
 baseCommand: [ bedtools, getfasta ]
 class: CommandLineTool
+doc: |
+  bedtools getfasta -fi <reference fa> -bed <peads bed> -fo <fasta outputfile>
+
 
 hints:
   DockerRequirement:
     dockerPull: madetunj/bedtools:v2.25.0
 
-doc: |
-  bedtools getfasta -fi <reference fa> -bed <peads bed> -fo <fasta outputfile>
-
 
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement
-
   expressionLib:
   - var var_output_name = function() {
       if (inputs.bedfile != null) {
          return inputs.bedfile.nameroot+'.fa';
       }
    };
+
 
 inputs:
   reference:
@@ -61,6 +61,7 @@ inputs:
             }
         }
     default: ""
+
 
 outputs:
   outfile:

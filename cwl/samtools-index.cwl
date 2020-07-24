@@ -4,13 +4,16 @@ baseCommand: [samtools, index]
 class: CommandLineTool
 label: index bam file
 
+
 hints:
   DockerRequirement:
-    dockerPull: madetunj/samtools:v1.9
+    dockerPull: madetunj/samtools:v1.9 
+
 
 requirements:
   InitialWorkDirRequirement:
     listing: [ $(inputs.infile) ]
+
 
 inputs:
   infile:
@@ -19,6 +22,7 @@ inputs:
     inputBinding:
       position: 1
       valueFrom: $(self.basename)
+
 
 outputs:
   outfile:

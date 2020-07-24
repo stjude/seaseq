@@ -2,25 +2,25 @@
 cwlVersion: v1.0
 baseCommand: [ flanking.pl ]
 class: CommandLineTool
+doc: |
+  flanking.pl summits.bed 50 > summits-flank50.bed
+
 
 hints:
   DockerRequirement:
     dockerPull: madetunj/seaseq:v0.0.1
 
-doc: |
-  flanking.pl summits.bed 50 > summits-flank50.bed
-
 
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement
-
   expressionLib:
   - var var_output_name = function() {
       if (inputs.bedfile != null) {
          return inputs.bedfile.nameroot+'-flank'+inputs.flank+'.bed';
       }
    };
+
 
 inputs:
   flank:
@@ -41,6 +41,7 @@ inputs:
     label: "Output file name"
     default: ""
 
+
 stdout: |
   ${
     if (inputs.outputfile == "") {
@@ -49,6 +50,7 @@ stdout: |
       return inputs.outputfile;
     }
   }
+
 
 outputs:
   outfile:

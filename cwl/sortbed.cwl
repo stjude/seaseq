@@ -2,25 +2,26 @@
 cwlVersion: v1.0
 baseCommand: [sort-bed]
 class: CommandLineTool
+label: Using bedops to sort bed file
+doc: |
+  sort-bed <bed file> > <sorted bed file>
+
 
 hints:
   DockerRequirement:
     dockerPull: madetunj/bedops:v2.4.37
 
-label: Using bedops to sort bed file
-doc: |
-  sort-bed <bed file> > <sorted bed file>
 
 requirements:
 - class: ShellCommandRequirement
 - class: InlineJavascriptRequirement
-
   expressionLib:
   - var var_output_name = function() {
       if (inputs.infile != null) {
          return inputs.infile.nameroot.split('.bed')[0]+'.sorted.bed';
       }
    };
+
 
 inputs:
   infile:
@@ -34,6 +35,7 @@ inputs:
     label: "sorted BED output file name"
     default: ""
 
+
 stdout: |
   ${
     if (inputs.outputfile == "") {
@@ -42,6 +44,7 @@ stdout: |
       return inputs.outputfile;
     }
   }
+
 
 outputs:
   outfile:

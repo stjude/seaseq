@@ -6,12 +6,15 @@ label: ROSE - calling Enhancers and Super-enhancers
 doc: |
   ROSE_call.sh <gtf file> <bam file> ROSE_out genes hg19 <bed file 1> <bed file 2>
 
+
 hints:
   DockerRequirement:
     dockerPull: madetunj/rose:v1.2.0
 
+
 requirements:
 - class: InlineJavascriptRequirement
+
 
 inputs:
   gtffile:
@@ -60,6 +63,7 @@ inputs:
     label: "MACS All BED file"
     inputBinding:
       position: 7
+
 
 outputs:
   RoseDir:
