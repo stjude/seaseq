@@ -1,17 +1,17 @@
 version 1.0
-import "https://raw.githubusercontent.com/madetunj/wdl-seaseq/master/wdl/fastqc.wdl"
-import "https://raw.githubusercontent.com/madetunj/wdl-seaseq/master/wdl/bedtools.wdl"
-import "https://raw.githubusercontent.com/madetunj/wdl-seaseq/master/wdl/bowtie.wdl"
-import "https://raw.githubusercontent.com/madetunj/wdl-seaseq/master/wdl/samtools.wdl"
-import "https://raw.githubusercontent.com/madetunj/wdl-seaseq/master/wdl/macs.wdl" 
-import "https://raw.githubusercontent.com/madetunj/wdl-seaseq/master/wdl/bamtogff.wdl"
-import "https://raw.githubusercontent.com/madetunj/wdl-seaseq/master/wdl/sicer.wdl"
-import "https://raw.githubusercontent.com/madetunj/wdl-seaseq/master/wdl/motifs.wdl"
-import "https://raw.githubusercontent.com/madetunj/wdl-seaseq/master/wdl/rose.wdl"
-import "https://raw.githubusercontent.com/madetunj/wdl-seaseq/master/wdl/util.wdl"
-import "https://raw.githubusercontent.com/madetunj/wdl-seaseq/master/wdl/visualization.wdl" as viz
-import "https://raw.githubusercontent.com/madetunj/wdl-seaseq/master/wdl/runspp.wdl"
-import "https://raw.githubusercontent.com/madetunj/wdl-seaseq/master/wdl/sortbed.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/fastqc.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/bedtools.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/bowtie.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/samtools.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/macs.wdl" 
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/bamtogff.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sicer.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/workflows/motifs.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/rose.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/util.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/workflows/visualization.wdl" as viz
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/runspp.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sortbed.wdl"
 
 workflow seaseq {
     input {
