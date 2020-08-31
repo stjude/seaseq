@@ -6,14 +6,14 @@
 # Description:      igvtools image
 # Website:          https://software.broadinstitute.org/software/igv/igvtools
 # Provides:         igvtools
-# Base Image:       madetunj/seaseq:v0.0.1
+# Base Image:       madetunj/seaseq:v1.0.0
 # Build Cmd:        docker build --rm -t madetunj/igvtools:v2.8.2 -f igvtools-Dockerfile .
 # Pull Cmd:         docker pull madetunj/igvtools:v2.8.2
 # Run Cmd:          docker run --rm -ti madetunj/igvtools:v2.8.2
 #################################################################
 
 ## BASE IMAGE
-FROM madetunj/seaseq:v0.0.1
+FROM madetunj/seaseq:v1.0.0
 MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
 WORKDIR /tmp
 

@@ -29,6 +29,7 @@ ENV ROSE_VERSION 1.2.0
 ENV ROSE_NAME ROSE
 ENV ROSE_URL https://github.com/stjude/${ROSE_NAME}/archive/${ROSE_VERSION}.zip
 RUN cd /opt && wget $ROSE_URL && unzip ${ROSE_VERSION}.zip
+RUN cp /opt/${ROSE_NAME}-${ROSE_VERSION}/lib/ROSE_utils.py /opt/${ROSE_NAME}-${ROSE_VERSION}/bin
 ENV PATH /opt/${ROSE_NAME}-${ROSE_VERSION}/bin:${PATH}
 ENV PYTHONPATH /opt/${ROSE_NAME}-${ROSE_VERSION}/lib:${PYTHONPATH} 
 

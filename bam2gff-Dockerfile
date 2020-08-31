@@ -29,6 +29,7 @@ ENV B2G_VERSION 1.1.0
 ENV B2G_NAME BAM2GFF
 ENV B2G_URL https://github.com/stjude/${B2G_NAME}/archive/${B2G_VERSION}.zip
 RUN cd /opt && wget $B2G_URL && unzip ${B2G_VERSION}.zip
+RUN cp /opt/${B2G_NAME}-${B2G_VERSION}/lib/utils.py /opt/${B2G_NAME}-${B2G_VERSION}/bin
 ENV PATH /opt/${B2G_NAME}-${B2G_VERSION}/bin:${PATH}
 ENV PYTHONPATH /opt/${B2G_NAME}-${B2G_VERSION}/lib:${PYTHONPATH} 
 
