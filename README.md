@@ -1,4 +1,5 @@
 # (S)ingle (E)nd (A)ntibody (SEQ)uencing pipeline
+### SEASEQ pipeline written in CWL
 
 Chromatin Single-End analysis pipeline
 
