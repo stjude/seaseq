@@ -1,47 +1,44 @@
-# (S)ingle (E)nd (A)ntibody (SEQ)uencing pipeline
-### SEASEQ pipeline written in WDL
+## STEPs to build DNAnexus workflow
+```
+conda activate dx
 
-Chromatin Single-End analysis pipeline
+#login to account
+dx login
 
-The SEASEQ Pipeline is a complete analysis pipeline for CHiP 
-sequencing single-end data.
+#create new project if applicable
+dx new project
 
-The analysis pipeline includes mapping using bowtie, peak-calls 
-using MACS and SICER, motif analysis using meme suite,
-enhancers & super-enhancers using ROSE, bam density plots 
-using BAM2GFF.
+#build reorganization applet
+dx build seaseq-reorg
 
-## INSTRUCTIONS
+#build wdl workflow
+java -jar dxWDL-v1.48.2.jar compile seaseq.wdl \
+    -project project-id \
+    -reorg -extras.json \
+    -folder /apps
 
-To run SEASEQ pipeline, you will need Linux, docker,
-Cromwell(WDL) manager and about 30GB of supplemental data. 
+#upload test data
+dx upload -r test
 
-## PROGRAMS & VERSIONS
+#run workflow in interactive mode
+dx run /apps/seaseq
 
-Programs and versions used to build and test the pipeline.
-Programs are dockerized and do not require installation.
-
-* bowtie v. 1.2.3
-* fastqc v. 0.11.5
-* samtools v. 1.9
-* R v. 3.6.1
-* macs v. 041014
-* SICER2 v. 1.0.2
-* meme v. 5.1.1
-* spp v. 1.16.0
-* bedtools/2.25.0
-* python v. 3.7.0
-* java v. 1.8.0_60
-* perl v. 5.10.1
-* wigToBigWig v. 4
-* bedops v. 2.4.2
-* igvtools v. 2.3.2
-* ROSE v. 1.1.0
-* BAM2GFF v. 1.1.0
-
-## USAGE
+#or with the inputs specified
+dx run /apps/seaseq \
+-istage-common.blacklistfile="/test/hg19/hg19-blacklist.v2_chr21.bed" \
+-istage-common.chromsizes="/test/hg19/UCSC_hg19_chromInfo_chr21.tab" \
+-istage-common.fastqfile="/test/fastqfiles/H3K27Ac-AB5_R1_001.fastq.gz" \
+-istage-common.gtffile="/test/hg19/GRCh37_latest_genomic_chr21.gtf" \
+-istage-common.reference="/test/hg19/CHR21INDEX/hg19_chr21.fa" \
+-istage-common.reference_index="/test/hg19/CHR21INDEX/hg19_chr21.fa.fai" \
+-istage-common.index_files="/test/hg19/CHR21INDEX/hg19_chr21.1.ebwt" \
+-istage-common.index_files="/test/hg19/CHR21INDEX/hg19_chr21.2.ebwt" \
+-istage-common.index_files="/test/hg19/CHR21INDEX/hg19_chr21.3.ebwt" \
+-istage-common.index_files="/test/hg19/CHR21INDEX/hg19_chr21.4.ebwt" \
+-istage-common.index_files="/test/hg19/CHR21INDEX/hg19_chr21.rev.1.ebwt" \
+-istage-common.index_files="/test/hg19/CHR21INDEX/hg19_chr21.rev.2.ebwt" \
+-istage-common.motif_databases="/test/hg19/motifs/CIS-BP.Homo_sapiens.meme" \
+-istage-common.motif_databases="/test/hg19/motifs/JASPAR2018_CORE_vertebrates_redundant.meme" \
+--destination "output-test"
 
 ```
-java -jar cromwell.jar run seaseq.wdl -i inputs.json -o options.json
-```
-View /test folder for example usage and further instructions.

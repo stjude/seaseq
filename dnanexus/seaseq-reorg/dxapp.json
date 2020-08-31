@@ -1,0 +1,51 @@
+{
+  "name": "seaseq-reorg",
+  "title": "Organize output files in preferred file structure",
+  "summary": "Organize seaseq output files and remove the intermediate or temporary files",
+  "dxapi": "1.0.0",
+  "inputSpec": [
+    {
+      "name": "reorg_conf___",
+      "label": "Config",
+      "help": "",
+      "class": "file",
+      "patterns": ["*"],
+      "optional": true
+    },
+    {
+      "name": "reorg_status___",
+      "label": "Config",
+      "help": "",
+      "class": "string",
+      "optional": true
+    }
+  ],
+  "outputSpec": [],
+  "runSpec": {
+    "interpreter": "python2.7",
+    "timeoutPolicy": {
+      "*": {
+        "hours": 48
+      }
+    },
+    "distribution": "Ubuntu",
+    "release": "16.04",
+    "file": "seaseq-reorg.py"
+  },
+  "access": {
+    "network": [
+      "*"
+    ],
+    "project": "CONTRIBUTE"
+  },
+  "ignoreReuse": true,
+  "regionalOptions": {
+    "azure:westus": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "azure:mem1_ssd1_x4"
+        }
+      }
+    }
+  }
+}
