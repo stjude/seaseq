@@ -40,7 +40,7 @@ task basicfastqstats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'madetunj/seaseq:v0.0.1'
+        docker: 'madetunj/seaseq:v1.0.0'
         cpu: ncpu
     }
     output {
@@ -70,7 +70,7 @@ task flankbed {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'madetunj/seaseq:v0.0.1'
+        docker: 'madetunj/seaseq:v1.0.0'
         cpu: ncpu
     }
     output {
@@ -124,7 +124,7 @@ task summarystats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'madetunj/seaseq:v0.0.1'
+        docker: 'madetunj/seaseq:v1.0.0'
         cpu: ncpu
     }
     output {
@@ -189,7 +189,7 @@ task normalize {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'madetunj/seaseq:v0.0.1'
+        docker: 'madetunj/seaseq:v1.0.0'
         cpu: ncpu
     }
     output {
