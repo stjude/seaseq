@@ -1,0 +1,37 @@
+#################################################################
+# Dockerfile
+#
+# Software:         ROSE
+# Software Version: 1.2.0
+# Description:      ROSE image
+# Website:          https://github.com/stjude/ROSE
+# Provides:         ROSE suite
+# Base Image:       madetunj/madetunj/spp:v1.16.0
+# Build Cmd:        docker build --rm -t madetunj/rose:v1.2.0 -f rose-Dockerfile .
+# Pull Cmd:         docker pull madetunj/rose:v1.2.0
+# Run Cmd:          docker run --rm -ti madetunj/rose:v1.2.0 
+#################################################################
+
+## DEPENDENCIES
+#   bedtools
+#   samtools
+#   R
+
+FROM madetunj/bedtools:v2.25.0 as frombed
+
+## BASE IMAGE
+FROM madetunj/spp:v1.16.0
+MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
+WORKDIR /tmp
+
+## INSTALL ROSE
+ENV ROSE_VERSION 1.2.0
+ENV ROSE_NAME ROSE
+ENV ROSE_URL https://github.com/stjude/${ROSE_NAME}/archive/${ROSE_VERSION}.zip
+RUN cd /opt && wget $ROSE_URL && unzip ${ROSE_VERSION}.zip
+RUN cp /opt/${ROSE_NAME}-${ROSE_VERSION}/lib/ROSE_utils.py /opt/${ROSE_NAME}-${ROSE_VERSION}/bin
+ENV PATH /opt/${ROSE_NAME}-${ROSE_VERSION}/bin:${PATH}
+ENV PYTHONPATH /opt/${ROSE_NAME}-${ROSE_VERSION}/lib:${PYTHONPATH} 
+
+## ADD DEPENDENCIES TO BASE IMAGE
+COPY --from=frombed /opt/bedtools2/bin /usr/local/bin

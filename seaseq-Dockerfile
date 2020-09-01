@@ -1,0 +1,69 @@
+#################################################################
+# Dockerfile
+#
+# Software:         seaseq base image
+# Software Version: 1.0.0
+# Description:      Base image for seaseq image
+# Website:          
+# Provides:         wget, zip, seaseq custom scripts, etc
+# Base Image:       ubuntu:18.04
+# Build Cmd:        docker build --rm -t madetunj/seaseq:v1.0.0 -f seaseq-Dockerfile .
+# Pull Cmd:         docker pull madetunj/seaseq:v1.0.0
+# Run Cmd:          docker run --rm -ti madetunj/seaseq:v1.0.0
+#################################################################
+
+## BASE IMAGE
+FROM ubuntu:18.04
+MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
+ENV DEBIAN_FRONTEND noninteractive
+
+# apt update and install global requirements
+RUN apt-get clean all &&    \
+    apt-get update &&       \
+    apt-get upgrade -y &&   \
+    apt-get install -y --no-install-recommends \
+        openjdk-11-jdk-headless \
+        curl                \
+        git                 \
+        wget                \
+        zip                 \
+        unzip               \
+        build-essential     \
+        python3             \
+        zlib1g-dev          \
+        apt-utils           \
+        ed                  \
+        less                \
+        locales             \
+        vim-tiny            \
+        ca-certificates     \
+        apt-transport-https \
+        gsfonts             \
+        gnupg2              \
+        curl                \
+        nodejs              \
+        bc                  \
+        python2.7           \
+        python3-numpy       \
+        python3-scipy       \
+        python3-pip         \
+        python3-dev         \
+        python3-setuptools  \
+        gawk                \
+        rsync               \
+        libtbb-dev          \
+        libcurl3-dev        \
+        libbz2-dev          \
+        liblzma-dev         \
+        libssl-dev &&       \
+    apt-get clean &&        \
+    apt-get purge &&        \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+
+RUN cp /usr/bin/python3 /usr/bin/python
+
+##INSTALL SEASEQ
+ENV SEASEQ_VERSION 1.0-scripts
+ENV SEASEQ_URL "http://github.com/stjude/seaseq/archive/v${SEASEQ_VERSION}.tar.gz"
+RUN cd /opt && wget ${SEASEQ_URL} && tar -xf v${SEASEQ_VERSION}.tar.gz; \
+    cp -rf /opt/seaseq-${SEASEQ_VERSION}/* /usr/local/bin
