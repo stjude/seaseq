@@ -18,20 +18,41 @@ def main(reorg_conf___=None, reorg_status___=None):
 
     # retrieve the dictionary containing outputs
     output_map = [x['execution']['output'] for x in stages if x['id'] == 'stage-outputs'][0]
+    common_map =  [x['execution']['output'] for x in stages if x['id'] == 'stage-common'][0]
+
     folder_location = [x['execution']['folder'] for x in stages if x['id'] == 'stage-outputs'][0]
 
     # retrieve container id
     dx_container = dxpy.DXProject(dxpy.PROJECT_CONTEXT_ID)
 
-    # create temporary folder to move all files in the output folder
+    # create temporary folder to move all created files in the output folder
     datestamp = datetime.today().strftime('%s')
     temp_folder = "/" + datestamp + "-temp"
     dx_container.new_folder(temp_folder, parents=True)
+
+    #pipeline input files
+    for eachcommon in common_map.values():
+        if isinstance(eachcommon, dict):
+            dx_container.move(
+                destination=temp_folder,
+                objects=[eachcommon['$dnanexus_link']]
+            )
+        else:
+            for thepath in eachcommon:
+                dx_container.move(
+                    destination=temp_folder,
+                    objects=[thepath['$dnanexus_link']]
+                )
+
+    #intermediate files
     for eachfile in dx_container.list_folder(folder_location)['objects']:
-        dx_container.move(
-            destination=temp_folder,
-            objects=[eachfile['id']]
-        )
+        checkjobid = dxpy.describe(eachfile['id'])['createdBy']
+        if 'job' in checkjobid.keys():
+            if dxpy.describe(checkjobid['job'])['rootExecution'] == analysis_id:
+                dx_container.move(
+                    destination=temp_folder,
+                    objects=[eachfile['id']]
+                )
 
     # move required outputfiles to their preferred folders
 #FASTQC
