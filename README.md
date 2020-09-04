@@ -14,7 +14,8 @@ using BAM2GFF.
 ## INSTRUCTIONS
 
 To run SEASEQ pipeline, you will need Linux,
-Cromwell(WDL) runner and about 30GB of supplemental data. 
+[Cromwell](https://github.com/broadinstitute/cromwell/releases) runner, docker,
+and about 30GB of supplemental data. 
 
 ## PROGRAMS & VERSIONS
 
