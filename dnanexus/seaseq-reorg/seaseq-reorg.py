@@ -33,16 +33,20 @@ def main(reorg_conf___=None, reorg_status___=None):
     #pipeline input files
     for eachcommon in common_map.values():
         if isinstance(eachcommon, dict):
-            dx_container.move(
-                destination=temp_folder,
-                objects=[eachcommon['$dnanexus_link']]
-            )
-        else:
-            for thepath in eachcommon:
+            common_folder = dxpy.describe(eachcommon['$dnanexus_link'])['folder']
+            if folder_location == common_folder:
                 dx_container.move(
                     destination=temp_folder,
-                    objects=[thepath['$dnanexus_link']]
+                    objects=[eachcommon['$dnanexus_link']]
                 )
+        else:
+            for thepath in eachcommon:
+                common_folder = dxpy.describe(thepath['$dnanexus_link'])['folder']
+                if folder_location == common_folder:
+                    dx_container.move(
+                        destination=temp_folder,
+                        objects=[thepath['$dnanexus_link']]
+                    )
 
     #intermediate files
     for eachfile in dx_container.list_folder(folder_location)['objects']:
