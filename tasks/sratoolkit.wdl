@@ -2,7 +2,7 @@ version 1.0
 
 task fastqdump {
     input {
-        String sra_id
+        String? sra_id
 
         Int memory_gb = 5
         Int max_retries = 1
