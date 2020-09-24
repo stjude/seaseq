@@ -6,10 +6,10 @@ task fastqdump {
 
         Int memory_gb = 5
         Int max_retries = 1
-        Int ncpu = 1
+        Int ncpu = 20
     }
     command {
-        fastq-dump --gzip ~{sra_id}
+        pfastq-dump -t 20 --gzip -s ~{sra_id} -O ./
     }
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
