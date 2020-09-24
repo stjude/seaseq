@@ -5,7 +5,10 @@ task bowtie {
         File fastqfile
         File? metricsfile
         Array[File]+ index_files
-        String outputfile = sub(basename(fastqfile),'\_R[12]\_.+[0-9]\.f.*q\.gz','.sam')
+
+        String outputfile = sub(basename(fastqfile),'\_R*[12]\_.+[0-9]\.f.*q\.gz','.sam')
+        String outputfile_ = sub(basename(fastqfile),'\.f.*q\.gz','.sam')
+        
         Int? read_length = 75
         Int limit_alignments = 2
         Int good_alignments = 2
@@ -31,7 +34,7 @@ task bowtie {
             -S \
             ~{sub(index_files[0], "(\.rev)?\.[0-9]\.ebwt$", "")} \
             ~{fastqfile} \
-            > ~{outputfile}
+            > ~{outputfile_}
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
@@ -40,6 +43,6 @@ task bowtie {
         cpu: ncpu
     }
     output {
-        File samfile = "~{outputfile}"
+        File samfile = "~{outputfile_}"
     }
 }
