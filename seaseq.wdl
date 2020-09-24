@@ -12,10 +12,12 @@ import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/util
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/workflows/visualization.wdl" as viz
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/runspp.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sortbed.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sratoolkit.wdl" as sra
 
 workflow seaseq {
     input {
-        File fastqfile
+        String? sra_id
+        File? fastqfile
         File reference
         File reference_index
         File blacklistfile
@@ -25,19 +27,28 @@ workflow seaseq {
         Array[File]+ motif_databases
     }
 
+    if ( defined(sra_id) ) {
+        call sra.fastqdump {
+            input :
+                sra_id=sra_id
+        }
+    }
+
+    File fastqfile_ = select_first([fastqfile,fastqdump.fastqfile])
+
     call fastqc.fastqc {
         input :
-            inputfile=fastqfile
+            inputfile=fastqfile_
     }
     
     call util.basicfastqstats as bfs {
         input :
-            fastqfile=fastqfile
+            fastqfile=fastqfile_
     }
     
     call bowtie.bowtie {
         input :
-            fastqfile=fastqfile,
+            fastqfile=fastqfile_,
             index_files=index_files,
             metricsfile=bfs.metrics_out
     }
