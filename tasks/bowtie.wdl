@@ -25,6 +25,12 @@ task bowtie {
             readlength=~{read_length}
         fi
 
+        if [ "~{outputfile}" = "~{basename(fastqfile)}" ]; then
+            samfile=~{outputfile_}
+        else
+            samfile=~{outputfile}
+        fi
+
         bowtie \
             -l $readlength \
             -p ~{ncpu} \
@@ -34,7 +40,7 @@ task bowtie {
             -S \
             ~{sub(index_files[0], "(\.rev)?\.[0-9]\.ebwt$", "")} \
             ~{fastqfile} \
-            > ~{outputfile_}
+            > $samfile
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
@@ -43,6 +49,6 @@ task bowtie {
         cpu: ncpu
     }
     output {
-        File samfile = "~{outputfile_}"
+        File samfile = glob("*.sam")
     }
 }
