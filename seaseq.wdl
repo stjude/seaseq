@@ -55,7 +55,7 @@ workflow seaseq {
     
     call samtools.viewsort {
         input :
-            samfile=bowtie.samfile
+            samfile=select_first(bowtie.samfile)
     }
     
     call fastqc.fastqc as bamfqc {
