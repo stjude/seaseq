@@ -49,6 +49,6 @@ task bowtie {
         cpu: ncpu
     }
     output {
-        File samfile = glob("*.sam")
+        Array[File?] samfile = glob("*.sam")
     }
 }
