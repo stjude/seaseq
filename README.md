@@ -14,13 +14,15 @@ using BAM2GFF.
 ## INSTRUCTIONS
 
 To run SEASEQ pipeline, you will need Linux,
-Cromwell(WDL) runner and about 30GB of supplemental data. 
+[Cromwell](https://github.com/broadinstitute/cromwell/releases) runner, docker,
+and about 30GB of supplemental data. 
 
 ## PROGRAMS & VERSIONS
 
 Programs and versions used to build and test the pipeline.
 Programs are dockerized and do not require installation.
 
+* sra-toolkit v. 2.9.6
 * bowtie v. 1.2.3
 * fastqc v. 0.11.5
 * samtools v. 1.9
@@ -38,6 +40,7 @@ Programs are dockerized and do not require installation.
 * igvtools v. 2.3.2
 * ROSE v. 1.1.0
 * BAM2GFF v. 1.1.0
+
 
 ## USAGE
 

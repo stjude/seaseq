@@ -7,6 +7,8 @@ local_cromwell="/Users/madetunj/Downloads/cromwell-51.jar"
 # CROMWELL on St. Jude hpc user directory
 sjhpc_cromwell="/home/madetunj/.software/cromwell-52.jar"
 lsf_config="/home/madetunj/.commands/lsf.conf"
+input="seaseqinputs.json"
+option="seaseqoptions.json"
 
 # STD OUT and ERR files
 logout="wdlseaseq-out"
@@ -19,8 +21,8 @@ rm -rf SEASEQ seaseq_logs wdlseaseq*
 if [ -f "$local_cromwell" ]; then
     java -jar $local_cromwell \
         run ../seaseq.wdl \
-        -i seaseqinputs.json \
-        -o seaseqoptions.json \
+        -i $input \
+        -o $option \
         1>$logout 2>$logerr
 
 elif [ -f "$sjhpc_cromwell" ]; then 
@@ -28,8 +30,8 @@ elif [ -f "$sjhpc_cromwell" ]; then
     wdlscript="java -Dconfig.file=$lsf_config \
         -jar $sjhpc_cromwell \
         run ../seaseq.wdl \
-        --inputs seaseqinputs.json \
-        --options seaseqoptions.json"
+        --inputs $input \
+        --options $option"
     bsub -P watcher -q compbio \
         -J wdlseaseq \
         -o $logout \
