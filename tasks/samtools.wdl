@@ -93,3 +93,26 @@ task viewsort {
         File sortedbam = "~{default_location}/~{outputfile}"
     }
 }
+
+task faidx {
+    input {
+	File reference
+
+        Int memory_gb = 5
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+        ln -s ~{reference} ~{basename(reference)}
+        samtools faidx ~{basename(reference)} -o ~{basename(reference)}.fai
+    >>>
+    runtime {
+        memory: memory_gb + " GB"
+        maxRetries: max_retries
+        docker: 'madetunj/samtools:v1.9'
+        cpu: ncpu
+    }
+    output {
+	File faidx_file = "~{basename(reference)}.fai"
+    }
+}

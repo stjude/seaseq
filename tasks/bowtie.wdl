@@ -52,3 +52,25 @@ task bowtie {
         Array[File?] samfile = glob("*.sam")
     }
 }
+
+task index {
+    input {
+        File reference
+
+        Int memory_gb = 10
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+        bowtie-build ~{reference} ~{basename(reference)}
+    >>>
+    runtime {
+        memory: memory_gb + " GB"
+        maxRetries: max_retries
+        docker: 'madetunj/bowtie:v1.2.3'
+        cpu: ncpu
+    }
+    output {
+        Array[File] bowtie_indexes = glob("~{basename(reference)}*")
+    }
+}
