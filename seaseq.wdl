@@ -19,11 +19,11 @@ workflow seaseq {
         String? sra_id
         File? fastqfile
         File reference
-        File reference_index
+        File? reference_index
         File blacklistfile
         File chromsizes
         File gtffile
-        Array[File]+ index_files
+        Array[File]? index_files
         Array[File]+ motif_databases
     }
 
@@ -34,7 +34,23 @@ workflow seaseq {
         }
     }
 
-    File fastqfile_ = select_first([fastqfile,fastqdump.fastqfile])
+    if ( !defined(index_files) ) {
+        call bowtie.index as bowtie_index {
+            input:
+                reference=reference
+        }
+    }
+   
+    if ( !defined(reference_index) ) {
+        call samtools.faidx as samtools_faidx {
+            input:
+                reference=reference
+        }
+    }
+
+    Array[File] index_files_ = flatten(select_all([index_files, bowtie_index.bowtie_indexes]))
+    File fastqfile_ = select_first([fastqfile, fastqdump.fastqfile])
+    File reference_index_ = select_first([reference_index, samtools_faidx.faidx_file])
 
     call fastqc.fastqc {
         input :
@@ -49,7 +65,7 @@ workflow seaseq {
     call bowtie.bowtie {
         input :
             fastqfile=fastqfile_,
-            index_files=index_files,
+            index_files=index_files_,
             metricsfile=bfs.metrics_out
     }
     
@@ -129,7 +145,7 @@ workflow seaseq {
     call motifs.motifs {
         input:
             reference=reference,
-            reference_index=reference_index,
+            reference_index=reference_index_,
             bedfile=macs.peakbedfile,
             motif_databases=motif_databases
     }
@@ -143,7 +159,7 @@ workflow seaseq {
     call motifs.motifs as flank {
         input:
             reference=reference,
-            reference_index=reference_index,
+            reference_index=reference_index_,
             bedfile=flankbed.flankbedfile,
             motif_databases=motif_databases
     }
