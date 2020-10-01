@@ -48,7 +48,7 @@ task wigtobigwig {
         Int ncpu = 1
     }
     command <<<
-        mkdir ~{default_location} && cd ~{default_location}
+        mkdir -p ~{default_location} && cd ~{default_location}
 
         wigToBigWig \
             -clip \
@@ -81,7 +81,7 @@ task igvtdf {
         Int ncpu = 1
     }
     command <<<
-        mkdir ~{default_location} && cd ~{default_location}
+        mkdir -p ~{default_location} && cd ~{default_location}
 
         igvtools \
             toTDF \

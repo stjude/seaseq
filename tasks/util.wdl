@@ -149,7 +149,7 @@ task normalize {
     }
     command <<<
 
-        mkdir ~{default_location} && cd ~{default_location}
+        mkdir -p ~{default_location} && cd ~{default_location}
 
         gunzip -c ~{wigfile} > ~{basename(wigfile,'.gz')}
         ln -s ~{basename(wigfile,'.gz')} thewig.wig
