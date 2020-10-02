@@ -9,7 +9,7 @@ task fastqdump {
         Int ncpu = 20
     }
     command {
-        pfastq-dump -t 20 --gzip -s ~{sra_id} -O ./
+        pfastq-dump -t ~{ncpu} --gzip -s ~{sra_id} -O ./
     }
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
@@ -18,6 +18,6 @@ task fastqdump {
         cpu: ncpu
     }
     output {
-        File fastqfile = "~{sra_id}.fastq.gz"
+        Array[File] fastqfile = glob("~{sra_id}.fastq.gz")
     }
 }

@@ -6,10 +6,11 @@ task basicfastqstats {
         String outputfile = sub(basename(fastqfile),'\.f.*q\.gz', '-fastq.metrics.txt')
         String default_location = "QC_files/STATS"
 
-        Int memory_gb = 20
         Int max_retries = 1
         Int ncpu = 1
     }
+    Int memory_gb = ceil((size(fastqfile, "GiB") * 2) + 10)
+
     command <<<
         mkdir -p ~{default_location} && cd ~{default_location}
 
