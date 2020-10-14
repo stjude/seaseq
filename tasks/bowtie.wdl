@@ -59,13 +59,13 @@ task index {
 
         Int memory_gb = 10
         Int max_retries = 1
-        Int ncpu = 1
+        Int ncpu = 20
     }
     command <<<
-        bowtie-build ~{reference} ~{basename(reference)}
+        bowtie-build --threads ~{ncpu} ~{reference} ~{basename(reference)}
     >>>
     runtime {
-        memory: memory_gb + " GB"
+        memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
         docker: 'madetunj/bowtie:v1.2.3'
         cpu: ncpu
