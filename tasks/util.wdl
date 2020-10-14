@@ -87,7 +87,7 @@ task summarystats {
         File peaksxls
         File bamflag
         File rmdupflag
-        File bkflag
+        File? bkflag
         File fastqczip
         File fastqmetrics
         File enhancers
@@ -116,7 +116,7 @@ task summarystats {
             -c ~{countsfile} \
             -px ~{peaksxls} \
             -bamflag ~{bamflag} \
-            -bkflag ~{bkflag} \
+            ~{if defined(bkflag) then "-bkflag " + bkflag else ""} \
             -fqc ~{fastqczip} \
             -fx ~{fastqmetrics} \
             -rose $(pwd) \
