@@ -16,16 +16,21 @@ import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/srat
 
 workflow seaseq {
     input {
-	Array[String]? sra_id 
+        #input files 
+        Array[String]? sra_id 
         Array[File]? fastqfile
+        
+        #reference genome + motif files
         File reference
         File? reference_index
-        File blacklistfile
+        File? blacklistfile
         File chromsizes
         File gtffile
         Array[File]? index_files
         Array[File]+ motif_databases
-        Int sra_cpu = 20
+        
+        #additional variables
+        String? gtf_feature = "gene"
     }
 
     if ( defined(sra_id) ) { 
@@ -34,8 +39,7 @@ workflow seaseq {
         scatter (eachsra in sra_id_) {
             call sra.fastqdump {
                 input :
-                    sra_id=eachsra,
-                    ncpu=sra_cpu
+                    sra_id=eachsra
             }
         }   
 
@@ -98,26 +102,31 @@ workflow seaseq {
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAM_files'
         }
     
-        call bedtools.intersect as blacklist {
-            input :
-                fileA=viewsort.sortedbam,
-                fileB=blacklistfile,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAM_files',
-                nooverlap=true
+        if (defined(blacklistfile)) {
+            File fake_blacklistfile = "" #buffer to allow for blacklistfile optionality
+            File blacklistfile_ = select_first([blacklistfile, fake_blacklistfile])
+            call bedtools.intersect as blacklist {
+                input :
+                    fileA=viewsort.sortedbam,
+                    fileB=blacklistfile_,
+                    default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAM_files',
+                    nooverlap=true
+            }
+            call samtools.indexstats as bklist {
+                input :
+                    bamfile=blacklist.intersect_out,
+                    default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAM_files'
+            }
         }
+
+        File downstream_bam = select_first([blacklist.intersect_out, viewsort.sortedbam])
     
         call samtools.markdup {
             input :
-                bamfile=blacklist.intersect_out,
+                bamfile=downstream_bam,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAM_files'
         }
-    
-        call samtools.indexstats as bklist {
-            input :
-                bamfile=blacklist.intersect_out,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAM_files'
-        }
-    
+
         call samtools.indexstats as mkdup {
             input :
                 bamfile=markdup.mkdupbam,
@@ -126,26 +135,27 @@ workflow seaseq {
     
         call macs.macs {
             input :
-                bamfile=blacklist.intersect_out,
+                bamfile=downstream_bam,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/NARROW_peaks'
         }
     
         call macs.macs as all {
             input :
-                bamfile=blacklist.intersect_out,
+                bamfile=downstream_bam,
                 keep_dup="all",
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/NARROW_peaks'
         }
         
         call macs.macs as nomodel {
             input :
-                bamfile=blacklist.intersect_out,
+                bamfile=downstream_bam,
                 nomodel=true,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/NARROW_peaks'
         }
         
         call bamtogff.bamtogff {
             input :
+                feature=gtf_feature,
                 gtffile=gtffile,
                 chromsizes=chromsizes,
                 bamfile=markdup.mkdupbam,
@@ -187,12 +197,13 @@ workflow seaseq {
                 motif_databases=motif_databases,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIF_files'
         }
-    
+        File rose_indexbam = select_first([bklist.indexbam, indexstats.indexbam])
         call rose.rose {
             input :
+                feature=gtf_feature,
                 gtffile=gtffile,
-                bamfile=blacklist.intersect_out,
-                bamindex=bklist.indexbam,
+                bamfile=downstream_bam,
+                bamindex=rose_indexbam,
                 bedfile_auto=macs.peakbedfile,
                 bedfile_all=all.peakbedfile,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/STITCHED_REGIONS'
@@ -224,12 +235,12 @@ workflow seaseq {
     
         call bedtools.bamtobed as tobed {
             input :
-                bamfile=blacklist.intersect_out
+                bamfile=downstream_bam
         }
         
         call runspp.runspp {
             input:
-                bamfile=blacklist.intersect_out
+                bamfile=downstream_bam
         }
         
         call sortbed.sortbed {
@@ -278,9 +289,9 @@ workflow seaseq {
         #BAMFILES
         Array[File] sortedbam = viewsort.sortedbam
         Array[File] mkdupbam = markdup.mkdupbam
-        Array[File] bklistbam = blacklist.intersect_out
+        Array[File?] bklistbam = blacklist.intersect_out
         Array[File] indexbam = indexstats.indexbam
-        Array[File] bklist_indexbam = bklist.indexbam
+        Array[File?] bklist_indexbam = bklist.indexbam
         Array[File] mkdup_indexbam = mkdup.indexbam
 
         #MACS
