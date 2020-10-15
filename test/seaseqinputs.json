@@ -1,8 +1,4 @@
 {
-    "seaseq.sra_id" :
-    [
-        "SRR1631226"
-    ],
     "seaseq.fastqfile" : 
     [
         "./fastqfiles/H3K27me3-AB4_R1_001.fastq.gz",
