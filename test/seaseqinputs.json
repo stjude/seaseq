@@ -1,5 +1,9 @@
 {
-    "seaseq.fastqfile" : "./fastqfiles/H3K27Ac-AB5_R1_001.fastq.gz",
+    "seaseq.fastqfile" : 
+    [
+        "./fastqfiles/H3K27me3-AB4_R1_001.fastq.gz",
+        "./fastqfiles/H3K27Ac-AB5_R1_001.fastq.gz"
+    ],
     "seaseq.reference" : "./hg19/CHR21INDEX/hg19_chr21.fa",
     "seaseq.reference_index" : "./hg19/CHR21INDEX/hg19_chr21.fa.fai",
     "seaseq.blacklistfile" : "./hg19/hg19-blacklist.v2_chr21.bed",
