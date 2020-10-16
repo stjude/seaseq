@@ -8,7 +8,8 @@ import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/bamt
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sicer.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/workflows/motifs.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/rose.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/util.wdl"
+import "/home/madetunj/madetunj/seaseq/git-workflows/tasks/util.wdl"
+#import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/util.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/workflows/visualization.wdl" as viz
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/runspp.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sortbed.wdl"
@@ -103,7 +104,7 @@ workflow seaseq {
         }
     
         if (defined(blacklistfile)) {
-            File fake_blacklistfile = "" #buffer to allow for blacklistfile optionality
+            String fake_blacklistfile = "" #buffer to allow for blacklistfile optionality
             File blacklistfile_ = select_first([blacklistfile, fake_blacklistfile])
             call bedtools.intersect as blacklist {
                 input :
