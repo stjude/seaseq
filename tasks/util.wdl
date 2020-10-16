@@ -62,11 +62,26 @@ task flankbed {
         Int ncpu = 1
     }
     command <<<
-        mkdir -p ~{default_location} && cd ~{default_location}
 
-        awk -F'[\t ]' '{
-            printf $1"\t"$2-~{flank}"\t"$2+~{flank}"\t"$4"\t"$5"\n"}' ~{bedfile} \
-        >> ~{outputfile}
+        mkdir -p ~{default_location} && cd ~{default_location}
+        ln -s ~{bedfile} ~{basename(bedfile)}
+        echo ~{flank} > flank.rdl
+        python <<CODE
+
+        input = open("~{basename(bedfile)}",'r')
+        output = open("~{outputfile}",'w')
+        flank = int(open("flank.rdl").readline().rstrip())
+        Lines = input.readlines()
+        for line in Lines :
+            all = line.rstrip("\n").split('\t')
+            start = int(all[1]) - flank
+            if start <= 0 : start = 1
+            end = int(all[1]) + flank
+            if end <= 0 : end = 1
+            output.write("%s\t%d\t%d\t%s\t%s\n" %(all[0], start, end, all[3], all[4]))
+        CODE
+        rm -rf flank.rdl
+
     >>> 
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
