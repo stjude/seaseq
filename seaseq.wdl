@@ -8,8 +8,7 @@ import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/bamt
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sicer.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/workflows/motifs.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/rose.wdl"
-import "/home/madetunj/madetunj/seaseq/git-workflows/tasks/util.wdl"
-#import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/util.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/util.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/workflows/visualization.wdl" as viz
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/runspp.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sortbed.wdl"
