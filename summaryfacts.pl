@@ -54,11 +54,11 @@ if ($fastqczip) {
   my $seqrep = `unzip -p $fastqczip */fastqc_data.txt | grep "Overrepresented sequences" | awk -F' ' '{print \$NF}'`;
   print OUT "Raw Reads = $totalreads"; chop $totalreads; 
   print OUT "Base Quality = $basequality"; chop $basequality;
-  print OUT "Sequence Overrep = $seqrep"; chop $seqrep;
+  print OUT "Overrepresented sequences = $seqrep"; chop $seqrep;
   
   #QCdash
-  $OvQual{'Raw Reads'}{'value'} = $totalreads; $OvQual{'Base Quality'}{'value'} = $basequality; $OvQual{'Sequence OverRep'}{'value'} = $seqrep;
-  $OvQual{'Raw Reads'}{'score'} = -2; $OvQual{'Base Quality'}{'score'} = -2; $OvQual{'Sequence OverRep'}{'score'} = -2;
+  $OvQual{'Raw Reads'}{'value'} = $totalreads; $OvQual{'Base Quality'}{'value'} = $basequality; $OvQual{'Overrepresented sequences'}{'value'} = $seqrep;
+  $OvQual{'Raw Reads'}{'score'} = -2; $OvQual{'Base Quality'}{'score'} = -2; $OvQual{'Overrepresented sequences'}{'score'} = -2;
   
   if ($OvQual{'Raw Reads'}{'value'} >= 15000000) { $OvQual{'Raw Reads'}{'score'} = -1; }
   if ($OvQual{'Raw Reads'}{'value'} >= 20000000) { $OvQual{'Raw Reads'}{'score'} = 0; }
@@ -66,8 +66,8 @@ if ($fastqczip) {
   if ($OvQual{'Raw Reads'}{'value'} >= 30000000) { $OvQual{'Raw Reads'}{'score'} = 2; }
   if ($OvQual{'Base Quality'}{'value'} eq 'warn') { $OvQual{'Base Quality'}{'score'} = 0; }
   if ($OvQual{'Base Quality'}{'value'} eq 'pass') { $OvQual{'Base Quality'}{'score'} = 2; }
-  if ($OvQual{'Sequence OverRep'}{'value'} eq 'warn') { $OvQual{'Sequence OverRep'}{'score'} = 0; }
-  if ($OvQual{'Sequence OverRep'}{'value'} eq 'pass') { $OvQual{'Sequence OverRep'}{'score'} = 2; }
+  if ($OvQual{'Overrepresented sequences'}{'value'} eq 'warn') { $OvQual{'Overrepresented sequences'}{'score'} = 0; }
+  if ($OvQual{'Overrepresented sequences'}{'value'} eq 'pass') { $OvQual{'Overrepresented sequences'}{'score'} = 2; }
 } # end if fastqczip
 
 #working with Flagstat
@@ -158,14 +158,9 @@ if ($sppout) {
   $OvQual{'Normalized Strand Cross-correlation'}{'score'} = -2;
   $OvQual{'Relative Strand Cross-correlation'}{'score'} = -2;
   $OvQual{'Phantom Quality'}{'score'} = $PhantomQual;
-  if ($OvQual{'Normalized Strand Cross-correlation'}{'value'} >= 1.1) { $OvQual{'Normalized Strand Cross-correlation'}{'score'} = -1; }
-  if ($OvQual{'Normalized Strand Cross-correlation'}{'value'} >= 1.15) { $OvQual{'Normalized Strand Cross-correlation'}{'score'} = 0; }
-  if ($OvQual{'Normalized Strand Cross-correlation'}{'value'} >= 1.25) { $OvQual{'Normalized Strand Cross-correlation'}{'score'} = 1; }
-  if ($OvQual{'Normalized Strand Cross-correlation'}{'value'} >= 1.5) { $OvQual{'Normalized Strand Cross-correlation'}{'score'} = 2; }
-  if ($OvQual{'Relative Strand Cross-correlation'}{'value'} >= 0.25) { $OvQual{'Relative Strand Cross-correlation'}{'score'} = -1; }
-  if ($OvQual{'Relative Strand Cross-correlation'}{'value'} >= 0.5) { $OvQual{'Relative Strand Cross-correlation'}{'score'} = 0; }
-  if ($OvQual{'Relative Strand Cross-correlation'}{'value'} >= 1) { $OvQual{'Relative Strand Cross-correlation'}{'score'} = 1; }
-  if ($OvQual{'Relative Strand Cross-correlation'}{'value'} >= 1.5) { $OvQual{'Relative Strand Cross-correlation'}{'score'} = 2; }
+  if ($OvQual{'Normalized Strand Cross-correlation'}{'value'} >= 1.045) { $OvQual{'Normalized Strand Cross-correlation'}{'score'} = 2; }
+  if ($OvQual{'Relative Strand Cross-correlation'}{'value'} >= 0.75) { $OvQual{'Relative Strand Cross-correlation'}{'score'} = 1; }
+  if ($OvQual{'Relative Strand Cross-correlation'}{'value'} >= 1) { $OvQual{'Relative Strand Cross-correlation'}{'score'} = 2; }
 }
 
 if ($countsfile) {
@@ -183,6 +178,11 @@ if ($countsfile) {
   print ".. Done\n";
 
   #QCdash
+  $OvQual{'Peaks'}{'value'} = $peaks; $OvQual{'Peaks'}{'score'} = -2;
+  if ($OvQual{'Peaks'}{'value'} > 1000) {$OvQual{'Peaks'}{'score'} = -1;}
+  if ($OvQual{'Peaks'}{'value'} > 2000) {$OvQual{'Peaks'}{'score'} = 0;}
+  if ($OvQual{'Peaks'}{'value'} > 5000) {$OvQual{'Peaks'}{'score'} = 1;}
+  if ($OvQual{'Peaks'}{'value'} >= 10000) {$OvQual{'Peaks'}{'score'} = 2;}
   $OvQual{'FRiP'}{'value'} = $FRIP; $OvQual{'FRiP'}{'score'} = -2;
   if ($OvQual{'FRiP'}{'value'} >= 0.0075) {$OvQual{'FRiP'}{'score'} = -1;}
   if ($OvQual{'FRiP'}{'value'} >= 0.01) {$OvQual{'FRiP'}{'score'} = 0;}
@@ -213,32 +213,32 @@ if ($peaksxls) {
   } # end if fastqmetrics
 } #end if peaksxls
  
-#Stitched regions & Enhancers
+#Stitched regions & Superenhancers
 if ($rosedir){
   print "Processing ROSE counts ...";
   my $enhancers = `wc -l $rosedir/unionpeaks_AllEnhancers.table.txt | awk '{print \$1-6}'`; chop $enhancers;
   my $superenhancers = `wc -l $rosedir/unionpeaks_SuperEnhancers.table.txt | awk '{print \$1-6}'`; chop $superenhancers;
   unless ($enhancers > 0 ) { $enhancers = 0; }  #making sure enhancers  is numeric
   unless ($superenhancers > 0 ) { $superenhancers = 0; } #making sure superenhancers is numeric
-  print OUT "Total number of Enhancers = ", $enhancers,"\n";
-  print OUT "Total number of Superenhancers = ", $superenhancers,"\n";
+  print OUT "Total number of Linear Stitched Peaks (Enhancers) = ", $enhancers,"\n";
+  print OUT "Total number of SE-like Enriched Regions (Superenhancers) = ", $superenhancers,"\n";
   print ".. Done\n";
   
   #QCdash
-  $OvQual{'Enhancers'}{'value'} = $enhancers; $OvQual{'Enhancers'}{'score'} = -2;
-  $OvQual{'Super Enhancers'}{'value'} = $superenhancers; $OvQual{'Super Enhancers'}{'score'} = 2;
-  if ($OvQual{'Enhancers'}{'value'} > 1000) {$OvQual{'Enhancers'}{'score'} = -1;}
-  if ($OvQual{'Enhancers'}{'value'} > 2000) {$OvQual{'Enhancers'}{'score'} = 0;}
-  if ($OvQual{'Enhancers'}{'value'} > 5000) {$OvQual{'Enhancers'}{'score'} = 1;}
-  if ($OvQual{'Enhancers'}{'value'} >= 10000) {$OvQual{'Enhancers'}{'score'} = 2;}
+  $OvQual{'Linear Stitched Peaks'}{'value'} = $enhancers; $OvQual{'Linear Stitched Peaks'}{'score'} = -2;
+  $OvQual{'SE-like Enriched Regions'}{'value'} = $superenhancers; $OvQual{'SE-like Enriched Regions'}{'score'} = 2;
+  if ($OvQual{'Linear Stitched Peaks'}{'value'} > 1000) {$OvQual{'Linear Stitched Peaks'}{'score'} = -1;}
+  if ($OvQual{'Linear Stitched Peaks'}{'value'} > 2000) {$OvQual{'Linear Stitched Peaks'}{'score'} = 0;}
+  if ($OvQual{'Linear Stitched Peaks'}{'value'} > 5000) {$OvQual{'Linear Stitched Peaks'}{'score'} = 1;}
+  if ($OvQual{'Linear Stitched Peaks'}{'value'} >= 10000) {$OvQual{'Linear Stitched Peaks'}{'score'} = 2;}
 
-  if (($OvQual{'Enhancers'}{'value'} == 0) || ($OvQual{'Super Enhancers'}{'value'} == 0)) { $OvQual{'Super Enhancers'}{'score'} = -2 }
+  if (($OvQual{'Linear Stitched Peaks'}{'value'} == 0) || ($OvQual{'SE-like Enriched Regions'}{'value'} == 0)) { $OvQual{'SE-like Enriched Regions'}{'score'} = -2 }
   else {
-    if (($OvQual{'Super Enhancers'}{'value'}/$OvQual{'Enhancers'}{'value'}) > 0.02) {$OvQual{'Super Enhancers'}{'score'} = 1;}
-    if (($OvQual{'Super Enhancers'}{'value'}/$OvQual{'Enhancers'}{'value'}) > 0.05) {$OvQual{'Super Enhancers'}{'score'} = 0;}
-    if (($OvQual{'Super Enhancers'}{'value'}/$OvQual{'Enhancers'}{'value'}) > 0.1) {$OvQual{'Super Enhancers'}{'score'} = -1;}
-    if (($OvQual{'Super Enhancers'}{'value'}/$OvQual{'Enhancers'}{'value'}) >= 0.2) {$OvQual{'Super Enhancers'}{'score'} = -2;}
-    if ($OvQual{'Super Enhancers'}{'value'} <= 1) {$OvQual{'Super Enhancers'}{'score'} = -2;}
+    if (($OvQual{'SE-like Enriched Regions'}{'value'}/$OvQual{'Linear Stitched Peaks'}{'value'}) > 0.02) {$OvQual{'SE-like Enriched Regions'}{'score'} = 1;}
+    if (($OvQual{'SE-like Enriched Regions'}{'value'}/$OvQual{'Linear Stitched Peaks'}{'value'}) > 0.05) {$OvQual{'SE-like Enriched Regions'}{'score'} = 0;}
+    if (($OvQual{'SE-like Enriched Regions'}{'value'}/$OvQual{'Linear Stitched Peaks'}{'value'}) > 0.1) {$OvQual{'SE-like Enriched Regions'}{'score'} = -1;}
+    if (($OvQual{'SE-like Enriched Regions'}{'value'}/$OvQual{'Linear Stitched Peaks'}{'value'}) >= 0.2) {$OvQual{'SE-like Enriched Regions'}{'score'} = -2;}
+    if ($OvQual{'SE-like Enriched Regions'}{'value'} <= 1) {$OvQual{'SE-like Enriched Regions'}{'score'} = -2;}
   }
 } # end if rosedir
 
