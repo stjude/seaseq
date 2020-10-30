@@ -253,7 +253,11 @@ foreach (keys %OvQual){
 #color names
 my %color = ( "-2" => "#FF0000", "-1" => "#FF8C00", "0" => "#FFFF00", "1" => "#ADFF2F", "2" => "#008000" ); #red #orangered #yellow #greenyellow #green
 
-my $OverallQuality = sprintf ("%.4f", ($totalscore/$count)); my $color = $color{(sprintf ("%.0f", ($totalscore/$count)))};
+my $OverallQuality = sprintf ("%.4f", ($totalscore/$count)); my $color = $color{-2};
+if ((sprintf ("%.0f", ($totalscore/$count))) > -1) { $color = $color{-1}; }
+if ((sprintf ("%.0f", ($totalscore/$count))) > 0) { $color = $color{0}; }
+if ((sprintf ("%.0f", ($totalscore/$count))) > 1) { $color = $color{1}; }
+if ((sprintf ("%.0f", ($totalscore/$count))) > 2) { $color = $color{2}; }
 
 my $htmlheader = "<table border='1' cellpadding='5'><tr><th>Sample Name</th><th>"."Overall Quality";
 my $textheader = "Sample Name\tOverall Quality";
