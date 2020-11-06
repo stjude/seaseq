@@ -10,6 +10,7 @@ task bamtogff {
         File gtffile
         File chromsizes
         String feature = "gene"
+        Int distance = 2000 #distance from site
 
         String samplename = basename(bamfile,'.bam')
 
@@ -28,6 +29,8 @@ task bamtogff {
         BAMFILE=~{basename(bamfile)}
         CHROMSIZES=~{chromsizes}
         SAMPLENAME=~{samplename}
+        MATRIXFILES="matrixfiles"
+        RSCRIPT="densityplots.R"
 
         echo "#############################################"
         echo "######            BAM2GFF v1           ######"
@@ -37,41 +40,47 @@ task bamtogff {
         echo "FEATURE type: $FEATURE"
         echo "Sample Name: $SAMPLENAME"
 
-        mkdir -p annotation
         echo "Extracting GENE regions"
-        BAM2GFF_gtftogenes.py -g $GTFFILE -f $FEATURE -c $CHROMSIZES
+        BAM2GFF_gtftogenes.py -g $GTFFILE -f $FEATURE -c $CHROMSIZES -d ~{distance}
 
-        mkdir -p matrix
+        mkdir -p $MATRIXFILES
         echo "Working on Promoter Region"
-        BAM2GFF_main.py -b $BAMFILE -i annotation/promoters.gff -m 100 -o matrix/promoters.txt
+        BAM2GFF_main.py -b $BAMFILE -i annotation/promoters.gff -m 100 -o $MATRIXFILES/promoters.txt
 
         echo "Working on GeneBody Region"
-        BAM2GFF_main.py -b $BAMFILE -i annotation/genes.gff -m 100 -o matrix/genebody.txt
+        BAM2GFF_main.py -b $BAMFILE -i annotation/genes.gff -m 100 -o $MATRIXFILES/genebody.txt
 
         echo "Working on Upstream Region"
-        BAM2GFF_main.py -b $BAMFILE -i annotation/upstream.gff -m 50 -o matrix/upstream.txt
+        BAM2GFF_main.py -b $BAMFILE -i annotation/upstream.gff -m 50 -o $MATRIXFILES/upstream.txt
 
         echo "Working on Downstream Region"
-        BAM2GFF_main.py -b $BAMFILE -i annotation/downstream.gff -m 50 -o matrix/downstream.txt
+        BAM2GFF_main.py -b $BAMFILE -i annotation/downstream.gff -m 50 -o $MATRIXFILES/downstream.txt
 
         echo "BAM2GFF_plots.R $SAMPLENAME"
-        BAM2GFF_plots.R $SAMPLENAME
+        BAM2GFF_plots.R -n $SAMPLENAME -d ~{distance} -f $MATRIXFILES
 
+        #create a custom R script to recreate plots
+        head -n 461 /opt/BAM2GFF-1.2.0/bin/BAM2GFF_plots.R > $RSCRIPT
+        echo 'folder = "'$MATRIXFILES'"' >> $RSCRIPT
+        echo 'samplename = "'$SAMPLENAME'"' >> $RSCRIPT
+        echo 'distance = round(~{distance}/1000,1)' >> $RSCRIPT
+        tail -n 53 /opt/BAM2GFF-1.2.0/bin/BAM2GFF_plots.R >> $RSCRIPT 
         echo "Done!"
 
-        mv matrix *png *pdf ~{default_location}
+        mv $RSCRIPT $MATRIXFILES *png *pdf ~{default_location}
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'madetunj/bam2gff:v1.1.0'
+        docker: 'madetunj/bam2gff:v1.2.0'
         cpu: ncpu
     }
     output {
-        File m_downstream = "~{default_location}/matrix/downstream.txt"
-	File m_upstream = "~{default_location}/matrix/upstream.txt"
-	File m_genebody = "~{default_location}/matrix/genebody.txt"
-	File m_promoters = "~{default_location}/matrix/promoters.txt"
+        File m_downstream = "~{default_location}/matrixfiles/downstream.txt"
+	File m_upstream = "~{default_location}/matrixfiles/upstream.txt"
+	File m_genebody = "~{default_location}/matrixfiles/genebody.txt"
+	File m_promoters = "~{default_location}/matrixfiles/promoters.txt"
+        File densityplot = "~{default_location}/densityplots.R"
         File? pdf_gene = "~{default_location}/~{samplename}-entiregene.pdf"
         File? pdf_h_gene = "~{default_location}/~{samplename}-heatmap.entiregene.pdf"
         File? png_h_gene = "~{default_location}/~{samplename}-heatmap.entiregene.png"

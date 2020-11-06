@@ -18,17 +18,24 @@ workflow motifs {
             bedfile=bedfile
     }
 
+    call process_motif_folder {
+        input :
+            inputfile=bedfasta.fastafile
+    }
+
     call ame {
         input :
             motif_databases=motif_databases,
             fastafile=bedfasta.fastafile,
-            default_location=default_location
+            default_location=default_location,
+            folder_output = select_first(process_motif_folder.placeholder_output)
     }
 
     call meme {
         input :
             fastafile=bedfasta.fastafile,
-            default_location=default_location
+            default_location=default_location,
+            folder_output = select_first(process_motif_folder.placeholder_output)
     }
 
     output {
@@ -47,12 +54,13 @@ task meme {
         Boolean spamo_skip = false
         Boolean fimo_skip = false
         String default_location = "MOTIF_files"
+        File folder_output
 
         Int memory_gb = 5
         Int max_retries = 1
         Int ncpu = 1
 
-        String outputfolder = "bklist" + sub(basename(fastafile,'.fa'),'^.*bklist','') + '-meme_out'
+        String outputfolder = basename(folder_output) + '-meme_out'
     }
     command <<<
         mkdir -p ~{default_location} && cd ~{default_location}
@@ -76,6 +84,7 @@ task meme {
         File outputdir = "~{default_location}/~{outputfolder}.zip"
         File meme_summary = "~{default_location}/~{outputfolder}-summary.tsv"
     }
+
 }
 
 task ame {
@@ -84,12 +93,13 @@ task ame {
         File fastafile
         Array[File]+ motif_databases
         String default_location = "MOTIF_files"
+        File folder_output
 
         Int memory_gb = 10
         Int max_retries = 1
         Int ncpu = 1
 
-        String outputfolder = "bklist" + sub(basename(fastafile,'.fa'),'^.*bklist','') + '-ame_out'
+        String outputfolder = basename(folder_output) + '-ame_out'
     }
     command <<<
         mkdir -p ~{default_location} && cd ~{default_location}
@@ -111,4 +121,25 @@ task ame {
         File? ame_html = "~{default_location}/~{outputfolder}/ame.html"
         File? ame_seq = "~{default_location}/~{outputfolder}/sequences.tsv.gz"
     }
+
+}
+
+task process_motif_folder {
+
+    input {
+        File inputfile
+        String parser = basename(inputfile,'.fa')
+    }
+
+    command <<<
+        old_name=~{parser}
+        output_name=${old_name##*.}
+        mkdir -p $old_name
+        touch ~{parser}/$output_name
+    >>>
+
+    output {
+        Array[File?] placeholder_output = glob("~{parser}/*")
+    }
+
 }
