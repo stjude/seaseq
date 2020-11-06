@@ -15,7 +15,7 @@ logout="wdlseaseq-out"
 logerr="wdlseaseq-err"
 
 # removing old files
-rm -rf SEASEQ seaseq_logs wdlseaseq*
+rm -rf SEASEQ seaseq_logs $logout $logerr
 
 # check if cromwell app exists
 if [ -f "$local_cromwell" ]; then
@@ -33,6 +33,7 @@ elif [ -f "$sjhpc_cromwell" ]; then
         --inputs $input \
         --options $option"
     bsub -P watcher -q compbio \
+        -R "rusage[mem=10000]" \
         -J wdlseaseq \
         -o $logout \
         -e $logerr \
