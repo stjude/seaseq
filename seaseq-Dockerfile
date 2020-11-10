@@ -2,14 +2,14 @@
 # Dockerfile
 #
 # Software:         seaseq base image
-# Software Version: 1.0.0
+# Software Version: 1.0.1
 # Description:      Base image for seaseq image
 # Website:          
 # Provides:         wget, zip, seaseq custom scripts, etc
 # Base Image:       ubuntu:18.04
-# Build Cmd:        docker build --rm -t madetunj/seaseq:v1.0.0 -f seaseq-Dockerfile .
-# Pull Cmd:         docker pull madetunj/seaseq:v1.0.0
-# Run Cmd:          docker run --rm -ti madetunj/seaseq:v1.0.0
+# Build Cmd:        docker build --rm -t madetunj/seaseq:v1.0.1 -f seaseq-Dockerfile .
+# Pull Cmd:         docker pull madetunj/seaseq:v1.0.1
+# Run Cmd:          docker run --rm -ti madetunj/seaseq:v1.0.1
 #################################################################
 
 ## BASE IMAGE
@@ -63,7 +63,7 @@ RUN apt-get clean all &&    \
 RUN cp /usr/bin/python3 /usr/bin/python
 
 ##INSTALL SEASEQ
-ENV SEASEQ_VERSION 1.0-scripts
+ENV SEASEQ_VERSION 1.1-scripts
 ENV SEASEQ_URL "http://github.com/stjude/seaseq/archive/v${SEASEQ_VERSION}.tar.gz"
 RUN cd /opt && wget ${SEASEQ_URL} && tar -xf v${SEASEQ_VERSION}.tar.gz; \
     cp -rf /opt/seaseq-${SEASEQ_VERSION}/* /usr/local/bin

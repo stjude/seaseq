@@ -1,16 +1,22 @@
 ## SEASEQ docker image build files
 
-- seaseq 
-- samtools
-- bedtools
+- bam2gff
 - bedops
+- bedtools
 - bowtie
 - fastqc
+- igvtools
+- java
 - macs
 - memesuite
-- bam2gff
-- igvtools
+- perl
+- pfastq-dump
+- python
+- R
 - rose
+- samtools
+- seaseq
 - SPP
 - sicer
+- sratoolkit
 - wigToBigWig

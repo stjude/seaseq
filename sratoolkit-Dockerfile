@@ -1,0 +1,40 @@
+#################################################################
+# Dockerfile
+#
+# Software:         sra-toolkit
+# Software Version: 2.9.6
+# Description:      sra-toolkit image
+# Website:          https://ncbi.github.io/sra-tools/
+# Provides:         sra-toolkit
+# Base Image:       madetunj/seaseq:v1.0.1
+# Build Cmd:        docker build --rm -t madetunj/sratoolkit:v2.9.6 -f sratoolkit-Dockerfile .
+# Pull Cmd:         docker pull madetunj/sratoolkit:v2.9.6
+# Run Cmd:          docker run --rm -ti madetunj/sratoolkit:v2.9.6
+#################################################################
+
+## BASE IMAGE
+FROM madetunj/seaseq:v1.0.1
+MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
+WORKDIR /tmp
+
+
+## INSTALL SRA-TOOLKIT
+ENV SRA_VERSION 2.9.6
+ENV SRA_URL "http://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/${SRA_VERSION}/sratoolkit.${SRA_VERSION}-ubuntu64.tar.gz"
+
+RUN cd /opt && wget ${SRA_URL} && \
+    tar -xzf sratoolkit.${SRA_VERSION}-ubuntu64.tar.gz && \
+    cp -r sratoolkit.${SRA_VERSION}-ubuntu64/bin/* /usr/bin/
+
+
+## INSTALL PFASTQ-DUMP [parallel fastq-dump]
+ENV PFASTQ_VERSION 0.1.6
+ENV PFASTQ_URL "https://github.com/inutano/pfastq-dump/archive/v${PFASTQ_VERSION}.zip"
+
+RUN cd /opt && wget ${PFASTQ_URL} && \
+    unzip v${PFASTQ_VERSION}.zip && \
+    cp pfastq-dump-${PFASTQ_VERSION}/bin/pfastq-dump /usr/bin/ && \
+    chmod +x /usr/bin/pfastq-dump
+
+
+
