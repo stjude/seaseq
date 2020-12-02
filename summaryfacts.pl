@@ -29,8 +29,9 @@ my ($statsout, $htmlfile, $textfile);
 
 #Initialize variables
 my ($Uniquecnt, $Totalcnt, $Fripcnt, $FRIP, $peaks, $PBC, $NRF, $PhantomQual) = (0,0,0,0,0,0,0,0);
-my (%HASH, %OvQual, $alignedpercent, $totalreads);
+my (%HASH, %OVAL, %OvQual, $alignedpercent, $totalreads);
 my $prev = "NA";
+my $output_counter = 0;
 
 #output file name
 unless ($outfile) { 
@@ -52,13 +53,17 @@ if ($fastqczip) {
   $totalreads = `unzip -p $fastqczip */fastqc_data.txt | grep "Total Sequences" | awk -F' ' '{print \$NF}'`;
   my $basequality = `unzip -p $fastqczip */fastqc_data.txt | grep "base sequence quality" | awk -F' ' '{print \$NF}'`;
   my $seqrep = `unzip -p $fastqczip */fastqc_data.txt | grep "Overrepresented sequences" | awk -F' ' '{print \$NF}'`;
-  print OUT "Raw Reads = $totalreads"; chop $totalreads; 
+  print OUT "Raw Reads = $totalreads"; chop $totalreads;
   print OUT "Base Quality = $basequality"; chop $basequality;
-  print OUT "Overrepresented sequences = $seqrep"; chop $seqrep;
+  print OUT "Sequence Diversity = $seqrep"; chop $seqrep;
   
   #QCdash
-  $OvQual{'Raw Reads'}{'value'} = $totalreads; $OvQual{'Base Quality'}{'value'} = $basequality; $OvQual{'Overrepresented sequences'}{'value'} = $seqrep;
-  $OvQual{'Raw Reads'}{'score'} = -2; $OvQual{'Base Quality'}{'score'} = -2; $OvQual{'Overrepresented sequences'}{'score'} = -2;
+  $OVAL{0} = 'Raw Reads';
+  $OVAL{1} = 'Base Quality';
+  $OVAL{2} = 'Sequence Diversity';
+  
+  $OvQual{'Raw Reads'}{'value'} = $totalreads; $OvQual{'Base Quality'}{'value'} = $basequality; $OvQual{'Sequence Diversity'}{'value'} = $seqrep;
+  $OvQual{'Raw Reads'}{'score'} = -2; $OvQual{'Base Quality'}{'score'} = -2; $OvQual{'Sequence Diversity'}{'score'} = -2;
   
   if ($OvQual{'Raw Reads'}{'value'} >= 15000000) { $OvQual{'Raw Reads'}{'score'} = -1; }
   if ($OvQual{'Raw Reads'}{'value'} >= 20000000) { $OvQual{'Raw Reads'}{'score'} = 0; }
@@ -66,8 +71,8 @@ if ($fastqczip) {
   if ($OvQual{'Raw Reads'}{'value'} >= 30000000) { $OvQual{'Raw Reads'}{'score'} = 2; }
   if ($OvQual{'Base Quality'}{'value'} eq 'warn') { $OvQual{'Base Quality'}{'score'} = 0; }
   if ($OvQual{'Base Quality'}{'value'} eq 'pass') { $OvQual{'Base Quality'}{'score'} = 2; }
-  if ($OvQual{'Overrepresented sequences'}{'value'} eq 'warn') { $OvQual{'Overrepresented sequences'}{'score'} = 0; }
-  if ($OvQual{'Overrepresented sequences'}{'value'} eq 'pass') { $OvQual{'Overrepresented sequences'}{'score'} = 2; }
+  if ($OvQual{'Sequence Diversity'}{'value'} eq 'warn') { $OvQual{'Sequence Diversity'}{'score'} = 0; }
+  if ($OvQual{'Sequence Diversity'}{'value'} eq 'pass') { $OvQual{'Sequence Diversity'}{'score'} = 2; }
 } # end if fastqczip
 
 #working with Flagstat
@@ -76,15 +81,16 @@ if ($bamflag) {
   print OUT "Total Mapped Reads = $mappedreads"; chop $mappedreads;
   
   if ($fastqczip) {
-    $alignedpercent = $mappedreads/$totalreads;
+    $alignedpercent = sprintf ("%.3f", ($mappedreads/$totalreads * 100));
     print OUT "Aligned percentage = ",$alignedpercent, "\n";
     
     #QCdash
+    $OVAL{3} = 'Aligned Percent';
     $OvQual{'Aligned Percent'}{'value'} = $alignedpercent; $OvQual{'Aligned Percent'}{'score'} = -2;
-    if ($OvQual{'Aligned Percent'}{'value'} >= 0.5) {$OvQual{'Aligned Percent'}{'score'} = -1;}
-    if ($OvQual{'Aligned Percent'}{'value'} >= 0.6) {$OvQual{'Aligned Percent'}{'score'} = 0;}
-    if ($OvQual{'Aligned Percent'}{'value'} >= 0.7) {$OvQual{'Aligned Percent'}{'score'} = 1;}
-    if ($OvQual{'Aligned Percent'}{'value'} >= 0.8) {$OvQual{'Aligned Percent'}{'score'} = 2;}
+    if ($OvQual{'Aligned Percent'}{'value'} >= 50) {$OvQual{'Aligned Percent'}{'score'} = -1;}
+    if ($OvQual{'Aligned Percent'}{'value'} >= 60) {$OvQual{'Aligned Percent'}{'score'} = 0;}
+    if ($OvQual{'Aligned Percent'}{'value'} >= 70) {$OvQual{'Aligned Percent'}{'score'} = 1;}
+    if ($OvQual{'Aligned Percent'}{'value'} >= 80) {$OvQual{'Aligned Percent'}{'score'} = 2;}
   } #end if fastqczip
   
 } #end if bamflag
@@ -121,46 +127,55 @@ if ($bambed) {
  
   my $Oneread = $Uniquecnt - scalar keys %HASH;
   if ($Uniquecnt >= 0 && $Totalcnt >= 0 && $Oneread >= 0) {
-    $NRF = $Uniquecnt/$Totalcnt;
-    $PBC = $Oneread/$Uniquecnt;
+    $NRF = sprintf ("%.4f", ($Uniquecnt/$Totalcnt));
+    $PBC = sprintf ("%.4f", ($Oneread/$Uniquecnt));
   } else { $NRF = 0; $PBC = 0; }
   print OUT "Unique Genomic Locations = $Uniquecnt\nNRF score = $NRF\nPCR Bottleneck Coefficient = $PBC\n";
   print ".. Done\n";
   
   #QCdash
-  $OvQual{'Non Redundant Percent'}{'value'} = $NRF;
-  $OvQual{'PCR Bottleneck'}{'value'} = $PBC;
-  $OvQual{'Non Redundant Percent'}{'score'} = -2;
-  $OvQual{'PCR Bottleneck'}{'score'} = -2;
-  if ($OvQual{'Non Redundant Percent'}{'value'} >= 0.5) { $OvQual{'Non Redundant Percent'}{'score'} = -1; }
-  if ($OvQual{'Non Redundant Percent'}{'value'} >= 0.6) { $OvQual{'Non Redundant Percent'}{'score'} = 0; }
-  if ($OvQual{'Non Redundant Percent'}{'value'} >= 0.7) { $OvQual{'Non Redundant Percent'}{'score'} = 1; }
-  if ($OvQual{'Non Redundant Percent'}{'value'} >= 0.8) { $OvQual{'Non Redundant Percent'}{'score'} = 2; }
-  if ($OvQual{'PCR Bottleneck'}{'value'} >= 0.5) { $OvQual{'PCR Bottleneck'}{'score'} = -1; }
-  if ($OvQual{'PCR Bottleneck'}{'value'} >= 0.66) { $OvQual{'PCR Bottleneck'}{'score'} = 0; }
-  if ($OvQual{'PCR Bottleneck'}{'value'} >= 0.75) { $OvQual{'PCR Bottleneck'}{'score'} = 1; }
-  if ($OvQual{'PCR Bottleneck'}{'value'} >= 0.9) { $OvQual{'PCR Bottleneck'}{'score'} = 2; }
+  $output_counter=6;
+  $OVAL{$output_counter++} = 'NRF';
+  $OVAL{$output_counter++} = 'PBC';
+
+  $OvQual{'NRF'}{'value'} = $NRF;
+  $OvQual{'PBC'}{'value'} = $PBC;
+  $OvQual{'NRF'}{'score'} = -2;
+  $OvQual{'PBC'}{'score'} = -2;
+  if ($OvQual{'NRF'}{'value'} >= 0.5) { $OvQual{'NRF'}{'score'} = -1; }
+  if ($OvQual{'NRF'}{'value'} >= 0.6) { $OvQual{'NRF'}{'score'} = 0; }
+  if ($OvQual{'NRF'}{'value'} >= 0.7) { $OvQual{'NRF'}{'score'} = 1; }
+  if ($OvQual{'NRF'}{'value'} >= 0.8) { $OvQual{'NRF'}{'score'} = 2; }
+  if ($OvQual{'PBC'}{'value'} >= 0.5) { $OvQual{'PBC'}{'score'} = -1; }
+  if ($OvQual{'PBC'}{'value'} >= 0.66) { $OvQual{'PBC'}{'score'} = 0; }
+  if ($OvQual{'PBC'}{'value'} >= 0.75) { $OvQual{'PBC'}{'score'} = 1; }
+  if ($OvQual{'PBC'}{'value'} >= 0.9) { $OvQual{'PBC'}{'score'} = 2; }
 
 }
 if ($sppout) {
   #Process NSC (normalized) + RSC (relative strand cross-correlation coefficient)
   open (IN, "<$sppout"); # || die $!; 
   my ($NSC, $RSC,$PhantomQual) = (split("\t", <IN>))[8,9,10]; close(IN);
+  $NSC = sprintf ("%.4f", $NSC);
+  $RSC = sprintf ("%.4f", $RSC);
   print OUT "Normalized Strand cross-correlation Coefficient (NSC) = $NSC\n";
   print OUT "Relative Strand cross-correlation Coefficient (RSC) = $RSC\n";
   print OUT "Phantom Quality = $PhantomQual"; chop $PhantomQual;
   print ".. Done\n";
   
   #QCdash
-  $OvQual{'Normalized Strand Cross-correlation'}{'value'} = $NSC;
-  $OvQual{'Relative Strand Cross-correlation'}{'value'} = $RSC;
-  $OvQual{'Phantom Quality'}{'value'} = $PhantomQual;
-  $OvQual{'Normalized Strand Cross-correlation'}{'score'} = -2;
-  $OvQual{'Relative Strand Cross-correlation'}{'score'} = -2;
-  $OvQual{'Phantom Quality'}{'score'} = $PhantomQual;
-  if ($OvQual{'Normalized Strand Cross-correlation'}{'value'} >= 1.045) { $OvQual{'Normalized Strand Cross-correlation'}{'score'} = 2; }
-  if ($OvQual{'Relative Strand Cross-correlation'}{'value'} >= 0.75) { $OvQual{'Relative Strand Cross-correlation'}{'score'} = 1; }
-  if ($OvQual{'Relative Strand Cross-correlation'}{'value'} >= 1) { $OvQual{'Relative Strand Cross-correlation'}{'score'} = 2; }
+  $OVAL{$output_counter++} = 'NSC';
+  $OVAL{$output_counter++} = 'RSC';
+
+  $OvQual{'NSC'}{'value'} = $NSC;
+  $OvQual{'RSC'}{'value'} = $RSC;
+  #$OvQual{'Phantom Quality'}{'value'} = $PhantomQual; #removed from Overall Quality
+  $OvQual{'NSC'}{'score'} = -2;
+  $OvQual{'RSC'}{'score'} = -2;
+  #$OvQual{'Phantom Quality'}{'score'} = $PhantomQual; #removed from Overall Quality
+  if ($OvQual{'NSC'}{'value'} >= 1.045) { $OvQual{'NSC'}{'score'} = 2; }
+  if ($OvQual{'RSC'}{'value'} >= 0.75) { $OvQual{'RSC'}{'score'} = 1; }
+  if ($OvQual{'RSC'}{'value'} >= 1) { $OvQual{'RSC'}{'score'} = 2; }
 }
 
 if ($countsfile) {
@@ -173,16 +188,19 @@ if ($countsfile) {
     $Fripcnt+=$l[-1];
     $peaks++; 
   } close (IN);
-  $FRIP = sprintf ("%.6f", ($Fripcnt/$Totalcnt));
+  $FRIP = sprintf ("%.4f", ($Fripcnt/$Totalcnt));
   print OUT "Total Peaks = $peaks\nFRIP score = $FRIP\n";
   print ".. Done\n";
 
   #QCdash
-  $OvQual{'Peaks'}{'value'} = $peaks; $OvQual{'Peaks'}{'score'} = -2;
-  if ($OvQual{'Peaks'}{'value'} > 1000) {$OvQual{'Peaks'}{'score'} = -1;}
-  if ($OvQual{'Peaks'}{'value'} > 2000) {$OvQual{'Peaks'}{'score'} = 0;}
-  if ($OvQual{'Peaks'}{'value'} > 5000) {$OvQual{'Peaks'}{'score'} = 1;}
-  if ($OvQual{'Peaks'}{'value'} >= 10000) {$OvQual{'Peaks'}{'score'} = 2;}
+  $OVAL{$output_counter++} = 'FRiP';
+  $OVAL{$output_counter++} = 'Total Peaks';
+
+  $OvQual{'Total Peaks'}{'value'} = $peaks; $OvQual{'Total Peaks'}{'score'} = -2;
+  if ($OvQual{'Total Peaks'}{'value'} > 1000) {$OvQual{'Total Peaks'}{'score'} = -1;}
+  if ($OvQual{'Total Peaks'}{'value'} > 2000) {$OvQual{'Total Peaks'}{'score'} = 0;}
+  if ($OvQual{'Total Peaks'}{'value'} > 5000) {$OvQual{'Total Peaks'}{'score'} = 1;}
+  if ($OvQual{'Total Peaks'}{'value'} >= 10000) {$OvQual{'Total Peaks'}{'score'} = 2;}
   $OvQual{'FRiP'}{'value'} = $FRIP; $OvQual{'FRiP'}{'score'} = -2;
   if ($OvQual{'FRiP'}{'value'} >= 0.0075) {$OvQual{'FRiP'}{'score'} = -1;}
   if ($OvQual{'FRiP'}{'value'} >= 0.01) {$OvQual{'FRiP'}{'score'} = 0;}
@@ -201,7 +219,11 @@ if ($peaksxls) {
   my $predictedtaglength = `grep "\# tag size is determined" $peaksxls | head -n 1 | awk '{print \$(NF-1)}'`;
   print OUT "Estimated Tag Length = $predictedtaglength"; chop $predictedtaglength;
   print ".. Done\n";
+
   #QCdash
+  $OVAL{4} = 'Estimated Fragment Width';
+  $OVAL{5} = 'Estimated Tag Length';
+
   $OvQual{'Estimated Fragment Width'}{'value'} = $fragmentwidth; $OvQual{'Estimated Fragment Width'}{'score'} = 2;
   $OvQual{'Estimated Tag Length'}{'value'} = $predictedtaglength; $OvQual{'Estimated Tag Length'}{'score'} = 2;
   #working on the fastq metrics file to get avg read length
@@ -225,6 +247,9 @@ if ($rosedir){
   print ".. Done\n";
   
   #QCdash
+  $OVAL{$output_counter++} = 'Linear Stitched Peaks';
+  $OVAL{$output_counter++} = 'SE-like Enriched Regions';
+
   $OvQual{'Linear Stitched Peaks'}{'value'} = $enhancers; $OvQual{'Linear Stitched Peaks'}{'score'} = -2;
   $OvQual{'SE-like Enriched Regions'}{'value'} = $superenhancers; $OvQual{'SE-like Enriched Regions'}{'score'} = 2;
   if ($OvQual{'Linear Stitched Peaks'}{'value'} > 1000) {$OvQual{'Linear Stitched Peaks'}{'score'} = -1;}
@@ -266,12 +291,12 @@ my $htmlvalues = "<tr><td><center>".$samplename."</center></td>";
 $htmlvalues .= "<td bgcolor='$color'><center>".$OverallQuality."</center></td>";
 my $textvalues = "$samplename\t$OverallQuality";
 
-foreach (sort keys %OvQual){
-  $htmlheader .= "</th><th>".$_;
-  $textheader .= "\t$_";
-  $htmlvalues .="<td bgcolor='".$color{$OvQual{$_}{'score'}}."'><center>".$OvQual{$_}{'value'}."</center></td>";
-  $textvalues .= "\t$OvQual{$_}{'value'}";
-  print "$_\t$OvQual{$_}{'value'}\t$OvQual{$_}{'score'}\n";
+foreach (sort {$a <=> $b} keys %OVAL){
+  $htmlheader .= "</th><th>".$OVAL{$_};
+  $textheader .= "\t$OVAL{$_}";
+  $htmlvalues .="<td bgcolor='".$color{$OvQual{$OVAL{$_}}{'score'}}."'><center>".$OvQual{$OVAL{$_}}{'value'}."</center></td>";
+  $textvalues .= "\t$OvQual{$OVAL{$_}}{'value'}";
+  print "$_\t$OVAL{$_}\t$OvQual{$OVAL{$_}}{'value'}\t$OvQual{$OVAL{$_}}{'score'}\n";
 }
 $htmlheader .= "</th></tr>"; $htmlvalues .= "</tr>";
 
