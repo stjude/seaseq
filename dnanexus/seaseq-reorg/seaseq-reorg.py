@@ -238,6 +238,7 @@ def main(reorg_conf___=None, reorg_status___=None):
     m_upstream = output_map['m_upstream']
     m_genebody = output_map['m_genebody']
     m_promoters = output_map['m_promoters']
+    densityplot = output_map['densityplot']
     pdf_gene = output_map['pdf_gene']
     pdf_h_gene = output_map['pdf_h_gene']
     png_h_gene = output_map['png_h_gene']

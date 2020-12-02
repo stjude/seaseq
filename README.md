@@ -1,26 +1,32 @@
 ## STEPs to build DNAnexus workflow
+
+1. Activate dx
+```conda activate dx```
+
+1. Login to account
+```dx login```
+
+1. Create New Project (if applicable)
+```dx new project```
+
+1. Build reorganization applet
+```dx build seaseq-reorg```
+
+1. Edit extras.json file with new applet id for seaseq-reorg
+
+1. Build wdl workflow
 ```
-conda activate dx
-
-#login to account
-dx login
-
-#create new project if applicable
-dx new project
-
-#build reorganization applet
-dx build seaseq-reorg
-
-#build wdl workflow
 java -jar dxWDL-v1.48.2.jar compile seaseq.wdl \
     -project project-id \
     -reorg -extras extras.json \
     -folder /apps
+```
 
-#upload test data
-dx upload -r test
+1. Upload test data
+``` dx upload -r test ```
 
-#run workflow in interactive mode
+1. Run workflow in interactive mode
+``` 
 dx run /apps/seaseq
 
 #or with the inputs specified
