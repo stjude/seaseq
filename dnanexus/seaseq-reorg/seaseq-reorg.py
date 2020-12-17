@@ -39,9 +39,9 @@ def main(reorg_conf___=None, reorg_status___=None):
                     destination=temp_folder,
                     objects=[eachcommon['$dnanexus_link']]
                 )
-        else:
+        elif isinstance(eachcommon,list):
             for thepath in eachcommon:
-                common_folder = dxpy.describe(thepath['$dnanexus_link'])['folder']
+                common_folder = dxpy.describe(thepath['$dnanexus_link'])
                 if folder_location == common_folder:
                     dx_container.move(
                         destination=temp_folder,
