@@ -4,7 +4,6 @@ task macs {
 
     input {
         File bamfile
-        String default_location = "PEAKS_files/NARROW_peaks"
 
         Int memory_gb = 10
         Int max_retries = 1
@@ -18,15 +17,14 @@ task macs {
         Boolean single_profile = true
         Boolean nomodel = false
 
-        String prefix = basename(bamfile,'\.bam') 
-        String name = if (nomodel) then '_nm' else '_p' + sub(pvalue,'^.*-','') + '_kd-' + keep_dup
-        String folder = if (nomodel) then '-nm' else '-p' + sub(pvalue,'^.*-','') + '_kd-' + keep_dup
+        String prefix_location = "PEAKS_files/NARROW_peaks"
+        String default_location = if (nomodel) then prefix_location + '/' + basename(bamfile,'\.bam')  + '-nm' else prefix_location + '/' + basename(bamfile,'\.bam')  + '-p' + sub(pvalue,'^.*-','') + '_kd-' + keep_dup
+        String output_name = if (nomodel) then basename(bamfile,'\.bam') + '_nm' else basename(bamfile,'\.bam') + '_p' + sub(pvalue,'^.*-','') + '_kd-' + keep_dup
+
     }
     command <<<
-        outputname="~{prefix}~{name}"
-        outputfolder="~{default_location}/~{prefix}~{folder}"
 
-        mkdir -p ${outputfolder}
+        mkdir -p ~{default_location}
 
         if [ "~{nomodel}" == 'true' ]; then
             macs14 \
@@ -38,8 +36,8 @@ task macs {
                 ~{true="--nomodel" false="" nomodel} \
                 -n ${outputname} \
                 && mv \
-                ${outputname}* \
-                ${outputfolder}
+                ~{output_name}* \
+                ~{default_location}
         else
             macs14 \
                 -t ~{bamfile} \
@@ -50,8 +48,8 @@ task macs {
                 ~{true="-S" false="" single_profile} \
                 -n ${outputname} \
                 && mv \
-                ${outputname}* \
-                ${outputfolder}
+                ~{output_name}* \
+                ~{default_location}
         fi
     >>>
     runtime {
@@ -61,9 +59,9 @@ task macs {
         cpu: ncpu
     }
     output {
-	File peakbedfile = "~{default_location}\/~{prefix}~{folder}\/~{prefix}~{name}_peaks.bed"
-	File peakxlsfile = "~{default_location}\/~{prefix}~{folder}\/~{prefix}~{name}_peaks.xls"
-	File summitsfile = "~{default_location}\/~{prefix}~{folder}\/~{prefix}~{name}_summits.bed"
-	File wigfile = "~{default_location}\/~{prefix}~{folder}\/~{prefix}~{name}_MACS_wiggle\/treat\/~{prefix}~{name}_treat_afterfiting_all.wig.gz"
+        File peakbedfile = "~{default_location}\/~{output_name}_peaks.bed"
+        File peakxlsfile = "~{default_location}\/~{output_name}_peaks.xls"
+        File summitsfile = "~{default_location}\/~{output_name}_summits.bed"
+        File wigfile = "~{default_location}\/~{output_name}_MACS_wiggle\/treat\/~{output_name}_treat_afterfiting_all.wig.gz"
     }
 }

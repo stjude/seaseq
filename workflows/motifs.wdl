@@ -27,8 +27,8 @@ workflow motifs {
         input :
             motif_databases=motif_databases,
             fastafile=bedfasta.fastafile,
-            default_location=default_location,
-            folder_output = select_first(process_motif_folder.placeholder_output)
+            folder_output = select_first(process_motif_folder.placeholder_output),
+            default_location=default_location + basename(folder_output) + '-ame_out',
     }
 
     call meme {
@@ -117,9 +117,9 @@ task ame {
         cpu: ncpu
     }
     output {
-        File? ame_tsv = "~{default_location}/~{outputfolder}/ame.tsv"
-        File? ame_html = "~{default_location}/~{outputfolder}/ame.html"
-        File? ame_seq = "~{default_location}/~{outputfolder}/sequences.tsv.gz"
+        File? ame_tsv = "~{default_location}/ame.tsv"
+        File? ame_html = "~{default_location}/ame.html"
+        File? ame_seq = "~{default_location}/sequences.tsv.gz"
     }
 
 }
