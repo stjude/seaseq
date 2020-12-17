@@ -34,7 +34,7 @@ task macs {
                 ~{true="-w" false="" wiggle} \
                 ~{true="-S" false="" single_profile} \
                 ~{true="--nomodel" false="" nomodel} \
-                -n ${outputname} \
+                -n ~{output_name} \
                 && mv \
                 ~{output_name}* \
                 ~{default_location}
@@ -46,7 +46,7 @@ task macs {
                 --space=~{space} \
                 ~{true="-w" false="" wiggle} \
                 ~{true="-S" false="" single_profile} \
-                -n ${outputname} \
+                -n ~{output_name} \
                 && mv \
                 ~{output_name}* \
                 ~{default_location}

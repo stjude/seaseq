@@ -28,7 +28,7 @@ workflow motifs {
             motif_databases=motif_databases,
             fastafile=bedfasta.fastafile,
             folder_output = select_first(process_motif_folder.placeholder_output),
-            default_location=default_location + basename(folder_output) + '-ame_out',
+            default_location=default_location + '/' + basename(select_first(process_motif_folder.placeholder_output)) + '-ame_out',
     }
 
     call meme {
@@ -92,23 +92,24 @@ task ame {
     input {
         File fastafile
         Array[File]+ motif_databases
-        String default_location = "MOTIF_files"
         File folder_output
 
         Int memory_gb = 10
         Int max_retries = 1
         Int ncpu = 1
 
-        String outputfolder = basename(folder_output) + '-ame_out'
+        String default_location = "MOTIF_files" + '/' + basename(folder_output) + '-ame_out'
     }
     command <<<
         mkdir -p ~{default_location} && cd ~{default_location}
 
         ame \
-            -oc ~{outputfolder} \
+            -oc ./ \
             ~{fastafile} \
             ~{sep=' ' motif_databases}
-       gzip ~{outputfolder}/sequences.tsv
+
+       gzip sequences.tsv
+
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
