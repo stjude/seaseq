@@ -30,33 +30,12 @@ def main(reorg_conf___=None, reorg_status___=None):
     temp_folder = "/" + datestamp + "-temp"
     dx_container.new_folder(temp_folder, parents=True)
 
-    #pipeline input files are moved to the temporary folder if applicable
-    for eachcommon in common_map.values():
-        if isinstance(eachcommon, dict):
-            common_folder = dxpy.describe(eachcommon['$dnanexus_link'])['folder']
-            if folder_location == common_folder:
-                dx_container.move(
-                    destination=temp_folder,
-                    objects=[eachcommon['$dnanexus_link']]
-                )
-        elif isinstance(eachcommon,list):
-            for thepath in eachcommon:
-                common_folder = dxpy.describe(thepath['$dnanexus_link'])
-                if folder_location == common_folder:
-                    dx_container.move(
-                        destination=temp_folder,
-                        objects=[thepath['$dnanexus_link']]
-                    )
-
     #intermediate files. All files are moved to the temporary folder
     for eachfile in dx_container.list_folder(folder_location)['objects']:
-        checkjobid = dxpy.describe(eachfile['id'])['createdBy']
-        if 'job' in checkjobid.keys():
-            if dxpy.describe(checkjobid['job'])['rootExecution'] == analysis_id:
-                dx_container.move(
-                    destination=temp_folder,
-                    objects=[eachfile['id']]
-                )
+        dx_container.move(
+            destination=temp_folder,
+            objects=[eachfile['id']]
+        )
 
     # move required outputfiles to their preferred permanent folders
     for file_identifiers in output_map:
