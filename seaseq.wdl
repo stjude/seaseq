@@ -136,21 +136,24 @@ workflow seaseq {
         call macs.macs {
             input :
                 bamfile=downstream_bam,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/NARROW_peaks'
+                pvalue = "1e-9",
+                keep_dup="auto",
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-p9_kd-auto'
         }
     
         call macs.macs as all {
             input :
                 bamfile=downstream_bam,
+                pvalue = "1e-9",
                 keep_dup="all",
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/NARROW_peaks'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-p9_kd-all'
         }
         
         call macs.macs as nomodel {
             input :
                 bamfile=downstream_bam,
                 nomodel=true,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/NARROW_peaks'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-nm'
         }
         
         call bamtogff.bamtogff {
