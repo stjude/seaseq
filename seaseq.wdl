@@ -13,7 +13,7 @@ import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/workflows/
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/runspp.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sortbed.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sratoolkit.wdl" as sra
-import "/Users/madetunj/Desktop/seaseq/workflows/tasks/peaksanno.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/peaksanno.wdl"
 
 workflow seaseq {
     input {
