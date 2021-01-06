@@ -13,6 +13,7 @@ import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/workflows/
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/runspp.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sortbed.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sratoolkit.wdl" as sra
+import "/Users/madetunj/Desktop/seaseq/workflows/tasks/peaksanno.wdl"
 
 workflow seaseq {
     input {
@@ -68,13 +69,13 @@ workflow seaseq {
         call fastqc.fastqc {
             input :
                 inputfile=eachfastq,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/QC_files/FASTQC'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/QC/FastQC'
         }
         
         call util.basicfastqstats as bfs {
             input :
                 fastqfile=eachfastq,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/QC_files/STATS'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/QC/SummaryStats'
         }
     
         call bowtie.bowtie {
@@ -93,7 +94,7 @@ workflow seaseq {
         call fastqc.fastqc as bamfqc {
             input :
                 inputfile=viewsort.sortedbam,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/QC_files/FASTQC'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/QC/FastQC'
         }
     
         call samtools.indexstats {
@@ -138,7 +139,7 @@ workflow seaseq {
                 bamfile=downstream_bam,
                 pvalue = "1e-9",
                 keep_dup="auto",
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-p9_kd-auto'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-p9_kd-auto'
         }
     
         call macs.macs as all {
@@ -146,14 +147,14 @@ workflow seaseq {
                 bamfile=downstream_bam,
                 pvalue = "1e-9",
                 keep_dup="all",
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-p9_kd-all'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-p9_kd-all'
         }
         
         call macs.macs as nomodel {
             input :
                 bamfile=downstream_bam,
                 nomodel=true,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-nm'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-nm'
         }
         
         call bamtogff.bamtogff {
@@ -163,7 +164,7 @@ workflow seaseq {
                 chromsizes=chromsizes,
                 bamfile=markdup.mkdupbam,
                 bamindex=mkdup.indexbam,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAMDensity_files'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAM_Density'
         }
         
         call bedtools.bamtobed {
@@ -174,7 +175,7 @@ workflow seaseq {
         call sicer.sicer {
             input :
                 bedfile=bamtobed.bedfile,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/BROAD_peaks'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/BROAD_peaks'
         }
         
         call motifs.motifs {
@@ -183,13 +184,13 @@ workflow seaseq {
                 reference_index=reference_index_,
                 bedfile=macs.peakbedfile,
                 motif_databases=motif_databases,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIF_files'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
         }
     
         call util.flankbed {
             input :
                 bedfile=macs.summitsfile,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIF_files'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
         }
         
         call motifs.motifs as flank {
@@ -198,7 +199,7 @@ workflow seaseq {
                 reference_index=reference_index_,
                 bedfile=flankbed.flankbedfile,
                 motif_databases=motif_databases,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIF_files'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
         }
         File rose_indexbam = select_first([bklist.indexbam, indexstats.indexbam])
         call rose.rose {
@@ -209,15 +210,24 @@ workflow seaseq {
                 bamindex=rose_indexbam,
                 bedfile_auto=macs.peakbedfile,
                 bedfile_all=all.peakbedfile,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_files/STITCHED_REGIONS'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/STITCHED_peaks'
         }
-    
+
+        call peaksanno.peaksanno {
+            input :
+                gtffile=gtffile,
+                bedfile=macs.peakbedfile,
+                chromsizes=chromsizes,
+                summitfile=macs.summitsfile,
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Annotation'
+        }
+
         call viz.visualization {
             input:
                 wigfile=macs.wigfile,
                 chromsizes=chromsizes,
                 xlsfile=macs.peakxlsfile,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKDisplay_files'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Display'
         }
         
         call viz.visualization as vizall {
@@ -225,7 +235,7 @@ workflow seaseq {
                 wigfile=all.wigfile,
                 chromsizes=chromsizes,
                 xlsfile=all.peakxlsfile,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKDisplay_files'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Display'
         }
         
         call viz.visualization as viznomodel {
@@ -233,7 +243,7 @@ workflow seaseq {
                 wigfile=nomodel.wigfile,
                 chromsizes=chromsizes,
                 xlsfile=nomodel.peakxlsfile,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKDisplay_files'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Display'
         }
     
         call bedtools.bamtobed as tobed {
@@ -272,7 +282,7 @@ workflow seaseq {
                 fastqmetrics=bfs.metrics_out,
                 enhancers=rose.enhancers,
                 superenhancers=rose.super_enhancers,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/QC_files/STATS'
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/QC/SummaryStats'
         }
     }
         
@@ -355,6 +365,13 @@ workflow seaseq {
         Array[File?] pdf_promoters = bamtogff.pdf_promoters
         Array[File?] pdf_h_promoters = bamtogff.pdf_h_promoters
         Array[File?] png_h_promoters = bamtogff.png_h_promoters
+
+	#PEAKS-ANNOTATION
+        Array[File?] peak_promoters = peaksanno.peak_promoters
+        Array[File?] peak_genebody = peaksanno.peak_genebody
+        Array[File?] peak_window = peaksanno.peak_window
+        Array[File?] peak_closest = peaksanno.peak_closest
+        Array[File?] peak_comparison = peaksanno.peak_comparison
 
         #VISUALIZATION
         Array[File] bigwig = visualization.bigwig
