@@ -8,6 +8,7 @@ igvtools
 java
 macs
 memesuite
+peaks_annotation custom package
 perl
 pfastq-dump
 python

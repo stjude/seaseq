@@ -1,0 +1,28 @@
+#################################################################
+# Dockerfile
+#
+# Software:         peaks_annotation
+# Software Version: 1.0.0
+# Description:      peaks_annotation image
+# Website:          https://github.com/madetunj/peaks_annotation
+# Provides:         peaks_annotation custom package
+# Base Image:       madetunj/bedtools:v2.25.0
+# Build Cmd:        docker build --rm -t madetunj/peaksanno:v1.0.0 -f peaksanno-Dockerfile .
+# Pull Cmd:         docker pull madetunj/peaksanno:v1.0.0
+# Run Cmd:          docker run --rm -ti madetunj/peaksanno:v1.0.0 
+#################################################################
+
+## DEPENDENCIES
+#   bedtools
+
+## BASE IMAGE
+FROM madetunj/bedtools:v2.25.0
+MAINTAINER Modupeore Adetunji "modupeore.adetunji@stjude.org"
+WORKDIR /tmp
+
+## INSTALL peaks_annotation
+ENV PA_VERSION 1.0.0
+ENV PA_NAME peaks_annotation
+ENV PA_URL https://github.com/madetunj/${PA_NAME}/archive/${PA_VERSION}.zip
+RUN cd /opt && wget $PA_URL && unzip ${PA_VERSION}.zip
+ENV PATH /opt/${PA_NAME}-${PA_VERSION}/bin:${PATH}
