@@ -372,6 +372,8 @@ workflow seaseq {
         Array[File?] peak_window = peaksanno.peak_window
         Array[File?] peak_closest = peaksanno.peak_closest
         Array[File?] peak_comparison = peaksanno.peak_comparison
+        Array[File?] gene_comparison = peaksanno.gene_comparison
+        Array[File?] pdf_comparison = peaksanno.pdf_comparison
 
         #VISUALIZATION
         Array[File] bigwig = visualization.bigwig
