@@ -22,13 +22,15 @@ SEASEQ performs extensive analyses from the raw output of the experiment, includ
 
 ### Input configuration
 
-SEASEQ requires either or both FastQ files or SRA identifiers (SRRs). Genome Bowtie indexes, Blacklists are optional
+SEASEQ requires either or both FastQ files or SRA identifiers (SRRs).
+Genome Bowtie indexes, Blacklists are also optional.
 
 [MEME suite motif databases]: https://meme-suite.org/meme/db/motifs
 
 ## Output
 
-SEASEQ provides multiple outputs from the different analyses offers. Outputs are grouped into folders
+SEASEQ provides multiple outputs from the different analyses offers. 
+Outputs are grouped into folders:
 
 | Name                  | Type    | Description                                                                            |
 |-----------------------|---------|----------------------------------------------------------------------------------------|
@@ -71,25 +73,18 @@ monitor run progress.
 SEASEQ has special preset options in the "Launch Tool" dropdown.
 These are explained below:
 
-### Selecting parameters
-
-The following are the parameters that can be set, a short description of each 
-parameter and an example value. How to customize parameters is covered in [the 
-general workflow guide](running-sj-workflows.md#selecting-parameters). If you 
-have questions, please [contact us](https://stjude.cloud/contact)
-
-| Parameter Name        | Description                                            |  Example           |
-|-----------------------|--------------------------------------------------------|--------------------|
-|   sra_id              |   One or more SRA identifiers (SRR)                    |   [`SRR12345678`]  |
-|   gtf_feature         |   gene annotation feature (either gene or transcript)  |   [`gene`]         |
-
 ## Analysis of Results
+
+Each tool in St. Jude Cloud produces a visualization that makes understanding 
+results more accessible than working with spreadsheets or tab-delimited files. 
+This is a recommended way to view the provided visualization files.
 
 Refer to [the general workflow
 guide](running-sj-workflows.md#custom-visualizations) to learn how to access
 these visualizations.
 
-We include the output files for you to dig into to answer your research question.
+We also include the raw output files for you to dig into if the visualization 
+is not sufficient to answer your research question.
 
 Refer to [the general workflow
 guide](running-sj-workflows.md#raw-results-files) to learn how to access raw
@@ -99,7 +94,8 @@ SEASEQ results will be in the parent `/` folder unless otherwise specified.
 
 ##  Interpreting results
 
-Upon successful run of SEASEQ, all files are saved to the results directory as specified in [outputs](#outputs)
+Upon successful run of SEASEQ, all files are saved to the results directory as 
+specified in [outputs](#output).
 
 ### QC Metrics
 
