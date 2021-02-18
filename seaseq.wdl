@@ -1,67 +1,168 @@
 version 1.0
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/fastqc.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/bedtools.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/bowtie.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/samtools.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/macs.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/bamtogff.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sicer.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/workflows/motifs.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/rose.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/util.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/workflows/visualization.wdl" as viz
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/runspp.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sortbed.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/sratoolkit.wdl" as sra
-import "https://raw.githubusercontent.com/stjude/seaseq/wdl-workflows/tasks/peaksanno.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/fastqc.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bedtools.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bowtie.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/samtools.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/macs.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bamtogff.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sicer.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/workflows/motifs.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/rose.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/util.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/workflows/visualization.wdl" as viz
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/runspp.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sortbed.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sratoolkit.wdl" as sra
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/peaksanno.wdl"
 
 workflow seaseq {
+    String pipeline_ver = 'v1.0.0'
+
+    meta {
+        title: 'SEASEQ Pipeline'
+        summary: 'Single-End Antibody Sequencing (SEASEQ) Pipeline'
+        description: 'A comprehensive automated computational pipeline for all ChIP-Seq/CUT&RUN data analysis.'
+        version: '1.0.0'
+        details: {
+            citation: 'pending',
+            contactEmail: 'modupeore.adetunji@stjude.org',
+            contactOrg: "St Jude Children's Research Hospital",
+            contactUrl: "",
+            upstreamLicenses: "MIT",
+            upstreamUrl: 'https://github.com/stjude/seaseq',
+            whatsNew: [
+                {
+                    version: "1.1",
+                    changes: ["Initial release"]
+                }
+            ]
+        }
+        parameter_group: {
+            reference_genome: {
+                title: 'Reference genome',
+                description: 'Genome specific files. e.g. reference FASTA, GTF, blacklist, motif databases, FASTA index, bowtie index .',
+                help: 'Input reference genome files as defined. If some genome data are missing then analyses using such data will be skipped.'
+            },
+            input_genomic_data: {
+                title: 'Input FASTQ data',
+                description: 'Genomic input files for experiment.',
+                help: 'Input one or more sample data and/or SRA identifiers.'
+            },
+            pipeline_parameter: {
+                title: 'Pipeline Parameter',
+                description: 'SEASEQ pipeline type.',
+                help: 'Specify parameter gene feature type.'
+            } 
+        }
+    }
     input {
-        #input files 
-        Array[String]? sra_id 
-        Array[File]? fastqfile
-        
-        #reference genome + motif files
+        # group: reference_genome
         File reference
         File? reference_index
-        File? blacklistfile
+        File? blacklist
         File chromsizes
-        File gtffile
-        Array[File]? index_files
+        File gtf
+        Array[File]? bowtie_index
         Array[File]+ motif_databases
         
-        #additional variables
-        String? gtf_feature = "gene"
+        # group: input_genomic_data
+        Array[String]? sra_id 
+        Array[File]? fastqfile
+
+        # group: pipeline_parameter        
+        String? gtf_feature = "transcript"
     }
 
-    if ( defined(sra_id) ) { 
+    parameter_meta {
+        reference: {
+            description: 'Reference FASTA file',
+            group: 'reference_genome'
+        }
+        reference_index: {
+            description: 'Reference FASTA index (.fai)',
+            group: 'reference_genome'
+        }
+        blacklist: {
+            description: 'Blacklist file in BED format',
+            group: 'reference_genome',
+            help: 'If it is defined, regions listed will be filtered out after reference alignement.'
+        }
+        chromsizes: {
+            description: '2 column chromosome sizes file',
+            group: 'reference_genome',
+            help: 'If not defined, it will be generated.'
+        }
+        gtf: {
+            description: 'gene annotation file (.gtf)',
+            group: 'reference_genome'
+        }
+        bowtie_index: {
+            description: 'bowtie v1 index files (*.ebwt)',
+            group: 'reference_genome',
+            help: 'If not defined, bowtie v1 index files will be generated, will take a longer compute time.'
+        }
+        motif_databases: {
+            description: 'One or more of the MEME suite motif databases (*.meme)',
+            group: 'reference_genome',
+            help: 'Input one or more motif databases available from the MEME suite (https://meme-suite.org/meme/db/motifs).'
+        }
+
+        sra_id: {
+            description: 'One or more SRA (Sequence Read Archive) run identifiers',
+            group: 'input_genomic_data',
+            help: 'Define if you want to analyze publicly available FASTQs (SRR). Multiple SRRs are separated by commas (,).',
+            example: 'SRR12345678'
+        }
+        fastqfile: {
+            description: 'One or more FASTQs',
+            group: 'input_genomic_data',
+            help: 'Define if you want to analyze uploaded FASTQ files.'
+        }
+        gtf_feature: {
+            description: 'Gene Annotation feature',
+            group: 'pipeline_parameter',
+            help: 'Gene feature. Default is transcript',
+            choices: ['gene', 'transcript'],
+            suggestions: ['gene', 'transcript'],
+            default: 'transcript'
+        }     
+    }
+
+    if ( defined(sra_id) ) {
+        # download sample file(s) from SRA database
+        # outputs:
+        #    fastqdump.fastqfile : downloaded sample files in fastq.gz format 
         Array[String] fake_sra = [1] #buffer to allow for sra_id optionality
         Array[String] sra_id_ = select_first([sra_id, fake_sra])
         scatter (eachsra in sra_id_) {
             call sra.fastqdump {
                 input :
-                    sra_id=eachsra
+                    sra_id=eachsra,
+                    cloud="false"
             }
         }   
 
         Array[File] fastqfile_ = flatten(fastqdump.fastqfile)
     }
 
-    if ( !defined(index_files) ) {
-        call bowtie.index as bowtie_index {
+    if ( !defined(bowtie_index) ) {
+        # create bowtie index when not provided
+        call bowtie.index as bowtie_idx {
             input:
                 reference=reference
         }
     }
 
     if ( !defined(reference_index) ) {
+        # create reference index (fai) when not provided
         call samtools.faidx as samtools_faidx {
             input:
                 reference=reference
         }
     }
 
-    Array[File] index_files_ = flatten(select_all([index_files, bowtie_index.bowtie_indexes]))
+    # Merge files for the pipeline 
+    Array[File] bowtie_index_ = flatten(select_all([bowtie_index, bowtie_idx.bowtie_indexes]))
     Array[File] fastqfiles = flatten(select_all([fastqfile, fastqfile_]))
     File reference_index_ = select_first([reference_index, samtools_faidx.faidx_file])
 
@@ -81,7 +182,7 @@ workflow seaseq {
         call bowtie.bowtie {
             input :
                 fastqfile=eachfastq,
-                index_files=index_files_,
+                index_files=bowtie_index_,
                 metricsfile=bfs.metrics_out
         }
 
@@ -103,24 +204,25 @@ workflow seaseq {
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAM_files'
         }
     
-        if (defined(blacklistfile)) {
-            String fake_blacklistfile = "" #buffer to allow for blacklistfile optionality
-            File blacklistfile_ = select_first([blacklistfile, fake_blacklistfile])
-            call bedtools.intersect as blacklist {
+        if (defined(blacklist)) {
+            # remove blacklist regions
+            String fake_blacklist = "" #buffer to allow for blacklist optionality
+            File blacklist_ = select_first([blacklist, fake_blacklist])
+            call bedtools.intersect as rmblklist {
                 input :
                     fileA=viewsort.sortedbam,
-                    fileB=blacklistfile_,
+                    fileB=blacklist_,
                     default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAM_files',
                     nooverlap=true
             }
             call samtools.indexstats as bklist {
                 input :
-                    bamfile=blacklist.intersect_out,
+                    bamfile=rmblklist.intersect_out,
                     default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAM_files'
             }
         }
 
-        File downstream_bam = select_first([blacklist.intersect_out, viewsort.sortedbam])
+        File downstream_bam = select_first([rmblklist.intersect_out, viewsort.sortedbam])
     
         call samtools.markdup {
             input :
@@ -160,7 +262,7 @@ workflow seaseq {
         call bamtogff.bamtogff {
             input :
                 feature=gtf_feature,
-                gtffile=gtffile,
+                gtffile=gtf,
                 chromsizes=chromsizes,
                 bamfile=markdup.mkdupbam,
                 bamindex=mkdup.indexbam,
@@ -201,11 +303,13 @@ workflow seaseq {
                 motif_databases=motif_databases,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
         }
+
         File rose_indexbam = select_first([bklist.indexbam, indexstats.indexbam])
+
         call rose.rose {
             input :
                 feature=gtf_feature,
-                gtffile=gtffile,
+                gtffile=gtf,
                 bamfile=downstream_bam,
                 bamindex=rose_indexbam,
                 bedfile_auto=macs.peakbedfile,
@@ -215,7 +319,7 @@ workflow seaseq {
 
         call peaksanno.peaksanno {
             input :
-                gtffile=gtffile,
+                gtffile=gtf,
                 bedfile=macs.peakbedfile,
                 chromsizes=chromsizes,
                 summitfile=macs.summitsfile,
@@ -302,7 +406,7 @@ workflow seaseq {
         #BAMFILES
         Array[File] sortedbam = viewsort.sortedbam
         Array[File] mkdupbam = markdup.mkdupbam
-        Array[File?] bklistbam = blacklist.intersect_out
+        Array[File?] bklistbam = rmblklist.intersect_out
         Array[File] indexbam = indexstats.indexbam
         Array[File?] bklist_indexbam = bklist.indexbam
         Array[File] mkdup_indexbam = mkdup.indexbam
