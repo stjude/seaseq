@@ -120,6 +120,16 @@ Upon successful run of SEASEQ, all files are saved to the results directory as
 listed in the [Outputs Section](#outputs). Here, we will discuss some of the
 different output directories in more detail.
 
+
+### Reads Alignment and Filtering
+
+Reads are stingently mapped to reference genome using [Bowtie] 
+`bowtie -l readlength -p 20 -k 2 -m 2 --best -S`. 
+
+Mapped BAMs are further processed by removal of duplicate reads using [SAMTools] 
+and blacklisted regions using [bedtools].
+Blacklisted regions are sources of bias in most ChIPSeq experiments. These problematic regions are identified as regions with significant background noise or artifically high signal (UHS/DAC/DER), and are recommended to be excluded in order to assess biologically relevant and true signals of enrichment.
+
 ### Peaks Identification
 
 We identify enriched regions based on two binding profiles; factors that bind 
@@ -137,7 +147,7 @@ overlapping gene information.
 
 ### Peaks Display
 
-Read Coverage files are generated in different visualization formats; 
+Coverage graphical files are generated in different visualization formats; 
 [WIG], [bigWig] and [TDF] formats, and normalized for display on 
 multiple genomic browsers.
 
@@ -146,7 +156,7 @@ Parameter specified to generate coverage files: `macs14 --space=50 --shiftsize=2
 ### Discovery and Enrichment of Motifs
 
 We discover sequence patterns that are widespread and have biological 
-significance using the MEME-ChIP and AME tools from the [MEME Suite].
+significance using the [MEME-ChIP] and [AME] tools from the [MEME Suite].
 
 [AME] discovers known enriched binding motifs. 
 [MEME-ChIP] performs several motif analysis steps such as novel DNA-binding motif discovery 
@@ -157,19 +167,17 @@ The motifs are identified using the peak regions and 100bp window around peak su
 
 ### Reads Coverage Profiling
 
+Read density profiling of major genomic regions such as promoters and gene body using [BamToGFF].
+We generate coverage graphs and heatmaps plots with additional custom R scripts for further customization.
+
 ### Peaks Annotation
 
 Genic annotation of peaks including promoters, gene bodies, gene-centric windows, and proximal genes.
 We designed custom scripts to provide this information.
 
-### Reads Alignment and Filtering
-
-Reads are stingently mapped to reference genome using [Bowtie] 
-`bowtie -l readlength -p 20 -k 2 -m 2 --best -S`. 
-
-Mapped BAMs are further processed by removal of duplicate reads using [SAMTools] 
-and blacklisted regions using [bedtools].
-Blacklisted regions are sources of bias in most ChIPSeq experiments. These problematic regions are identified as regions with significant background noise or artifically high signal (UHS/DAC/DER), and are recommended to be excluded in order to assess biologically relevant and true signals of enrichment.
+Custom scripts are designed to generate the genic annotation of peaks at promoters, gene bodies 
+and gene-centric windows. Annotated regions are collated to provide a binary or matrix overview 
+of proximal genes, distribution graphs are also provided.
 
 ### QC Metrics
 
@@ -203,6 +211,8 @@ SEASEQ metrics calculated to infer quality are:
 | Overall Quality	| Cross-metric average score. |
 
 ## Frequently asked questions
+
+None yet!
 
 If you have any questions not covered here, feel free to reach out
 on [our contact
