@@ -14,19 +14,24 @@ SEASEQ analyses include alignment, peak calling, motif analysis, read coverage p
 |   Name                        |   Type                | Description                                                 |  Example            |
 |-------------------------------|-----------------------|-------------------------------------------------------------|---------------------|
 |   FASTQ files                 |   Array of files      |   One or more FASTQ files. The files should be gzipped.     |   [`*.gz`]          |
-|   SRA identifiers (SRR)       |   Array of strings    |   One or more SRRs.                                         |   [`SRR12345678`]   |
-|   Genome Reference            |   File                |   The genome reference.                                     |   [`*.fa`]          |
+|   SRA run accession (SRR)     |   Array of strings    |   One or more SRR.                                          |   [`SRR12345678`]   |
+|   Genome Reference            |   File                |   The genome reference in FASTA format.                     |   [`*.fa`]          |
 |   Genome Bowtie indexes       |   Array of files      |   The genome bowtie v1 indexes. Should be six index files.  |   [`*.ebwt`]        |
-|   Gene Annotation             |   File                |   A database file of known gene positions.                  |   [`*.gtf`]         |
+|   Gene Annotation             |   File                |   A gene position database file.                            |   [`RefSeq.gtf`]    |
 |   Blacklists                  |   File                |   UHS/DER/DAC or custom blacklist regions file.             |   [`*/bed`]         |
 |   MEME motif databases        |   Array of files      |   One or more of the [MEME suite motif databases]           |   [`*.meme`]        |
 
 ### Input configuration
 
 SEASEQ supports FASTQ files and SRA identifiers (SRRs) as input. A combination of both is also supported. 
+
 Bowtie genomic indexes and region-based blacklists are optional.
 
+Gene position database can either be obtained from [RefSeq] or [GENCODE].
+
 [MEME suite motif databases]: https://meme-suite.org/meme/db/motifs
+[RefSeq]: https://ftp.ncbi.nlm.nih.gov/refseq/
+[GENCODE]: https://www.gencodegenes.org/
 
 ## Outputs
 
@@ -122,7 +127,7 @@ different output directories in more detail.
 
 ### Reads Alignment and Filtering
 
-Reads are stingently mapped to reference genome using [Bowtie] 
+Reads are stringently mapped to reference genome using [Bowtie] 
 `bowtie -l readlength -p 20 -k 2 -m 2 --best -S`. 
 
 Mapped BAMs are further processed by removal of duplicate reads using [SAMTools] 
@@ -147,7 +152,7 @@ overlapping gene information.
 ### Peaks Display
 
 Coverage graphical files are generated in different visualization formats; 
-[WIG], [bigWig] and [TDF] formats, and normalized for display on 
+[WIG], [bigWig], and [TDF] formats, and normalized for display on 
 multiple genomic browsers.
 
 Parameter specified to generate coverage files: `macs14 --space=50 --shiftsize=200 -w -S`.
