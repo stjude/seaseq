@@ -17,7 +17,7 @@ SEASEQ analyses include alignment, peak calling, motif analysis, read coverage p
 |   SRA run accession (SRR)     |   Array of strings    |   One or more SRR.                                          |   [`SRR12345678`]   |
 |   Genome Reference            |   File                |   The genome reference in FASTA format.                     |   [`*.fa`]          |
 |   Genome Bowtie indexes       |   Array of files      |   The genome bowtie v1 indexes. Should be six index files.  |   [`*.ebwt`]        |
-|   Gene Annotation             |   File                |   A gene position database file.                            |   [`RefSeq.gtf`]    |
+|   Gene Annotation             |   File                |   A gene position database file.                            |   [`*.gtf`]    |
 |   Blacklists                  |   File                |   UHS/DER/DAC or custom blacklist regions file.             |   [`*/bed`]         |
 |   MEME motif databases        |   Array of files      |   One or more of the [MEME suite motif databases]           |   [`*.meme`]        |
 
@@ -27,7 +27,7 @@ SEASEQ supports FASTQ files and SRA identifiers (SRRs) as input. A combination o
 
 Bowtie genomic indexes and region-based blacklists are optional.
 
-Gene position database can either be obtained from [RefSeq] or [GENCODE].
+A gene position database file can be obtained from [RefSeq] or [GENCODE].
 
 [MEME suite motif databases]: https://meme-suite.org/meme/db/motifs
 [RefSeq]: https://ftp.ncbi.nlm.nih.gov/refseq/
@@ -172,7 +172,7 @@ The motifs are identified using the peak regions and 100bp window around peak su
 ### Reads Coverage Profiling
 
 Read density profiling of major genomic regions such as promoters and gene body using [BamToGFF].
-We generate coverage graphs and heatmaps plots with additional custom R scripts for further customization.
+We generate coverage graphs and heatmap plots with additional custom R scripts for further customization.
 
 ### Peaks Annotation
 
