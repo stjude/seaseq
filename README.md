@@ -18,7 +18,7 @@ SEASEQ analyses include alignment, peak calling, motif analysis, read coverage p
 |   Genome Reference            |   File                |   The genome reference in FASTA format.                     |   [`*.fa`]          |
 |   Genome Bowtie indexes       |   Array of files      |   The genome bowtie v1 indexes. Should be six index files.  |   [`*.ebwt`]        |
 |   Gene Annotation             |   File                |   A gene position database file.                            |   [`*.gtf`]    |
-|   Blacklists                  |   File                |   UHS/DER/DAC or custom blacklist regions file.             |   [`*/bed`]         |
+|   Blacklists                  |   File                |   [UHS]/[DER]/[DAC] or custom blacklist regions file.             |   [`*/bed`]         |
 |   MEME motif databases        |   Array of files      |   One or more of the [MEME suite motif databases]           |   [`*.meme`]        |
 
 ### Input configuration
@@ -32,7 +32,9 @@ A gene position database file can be obtained from [RefSeq] or [GENCODE].
 [MEME suite motif databases]: https://meme-suite.org/meme/db/motifs
 [RefSeq]: https://ftp.ncbi.nlm.nih.gov/refseq/
 [GENCODE]: https://www.gencodegenes.org/
-
+[UHS]: https://sites.google.com/site/anshulkundaje/projects/blacklists
+[DER]: https://genome.ucsc.edu/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability
+[DAC]: https://genome.ucsc.edu/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability
 ## Outputs
 
 SEASEQ provides multiple outputs from the different analysis offerings. 
