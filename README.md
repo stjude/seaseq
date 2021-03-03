@@ -1,9 +1,9 @@
 ## Overview
 
-**Single-End Antibody SEQuencing pipeline** (abbreviated as **SEASEQ**) is a comprehensive automated pipeline for ChIP-Seq/CUT&RUN data analysis. Speaking broadly, it containerizes and joins field-standard, open-source tools for processing raw data and performing a wide array of basic analyses.  
+**Single-End Antibody SEQuencing pipeline** (abbreviated as **SEAseq**) is a comprehensive automated pipeline for ChIP-Seq/CUT&RUN data analysis. Speaking broadly, it containerizes and joins field-standard, open-source tools for processing raw data and performing a wide array of basic analyses.  
 
 
-SEASEQ analyses include alignment, peak calling, motif analysis, read coverage profiling, clustered peak (e.g. super-enhancer) identification, and quality assessment metrics, as well as automatic interfacing with data in [GEO]/[SRA]. The easy-to-use and flexibility of SEASEQ makes it a reliable and efficient resource for ensuring high quality ChIP-Seq analysis, especially in research environments lacking computational infrastructure or expertise.  
+SEAseq analyses include alignment, peak calling, motif analysis, read coverage profiling, clustered peak (e.g. super-enhancer) identification, and quality assessment metrics, as well as automatic interfacing with data in [GEO]/[SRA]. The easy-to-use and flexibility of SEAseq makes it a reliable and efficient resource for ensuring high quality ChIP-Seq analysis, especially in research environments lacking computational infrastructure or expertise.  
 
 
 [SRA]: https://www.ncbi.nlm.nih.gov/sra
@@ -17,14 +17,14 @@ SEASEQ analyses include alignment, peak calling, motif analysis, read coverage p
 |   SRA run accession (SRR)     |   Array of strings    |   One or more SRR.                                          |   [`SRR12345678`]   |
 |   Genome Reference            |   File                |   The genome reference in FASTA format.                     |   [`*.fa`]          |
 |   Genome Bowtie indexes       |   Array of files      |   The genome bowtie v1 indexes. Should be six index files.  |   [`*.ebwt`]        |
-|   Gene Annotation             |   File                |   A gene position database file.                            |   [`*.gtf`]    |
-|   Blacklists                  |   File                |   [UHS]/[DER]/[DAC] or custom blacklist regions file.             |   [`*/bed`]         |
+|   Gene Annotation             |   File                |   A gene position database file.                            |   [`*.gtf`]         |
+|   Blacklists                  |   File                |   [UHS]/[DER]/[DAC] or custom blacklist regions file.       |   [`*/bed`]         |
 |   MEME motif databases        |   Array of files      |   One or more of the [MEME suite motif databases]           |   [`*.meme`]        |
 
 ### Input configuration
 
-SEASEQ supports FASTQ files and SRA identifiers (SRRs) as input. A combination of both is also supported. 
-
+SEAseq supports FASTQ files and SRA identifiers (SRRs) as Sample Input. A combination of both is also supported. 
+SEAseq requires the 
 Bowtie genomic indexes and region-based blacklists are optional.
 
 A gene position database file can be obtained from [RefSeq] or [GENCODE].
@@ -37,7 +37,7 @@ A gene position database file can be obtained from [RefSeq] or [GENCODE].
 [DAC]: https://genome.ucsc.edu/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability
 ## Outputs
 
-SEASEQ provides multiple outputs from the different analysis offerings. 
+SEAseq provides multiple outputs from the different analysis offerings. 
 Outputs are grouped into subdirectories:
 
 | Name                  | Type    | Description                                                                            |
@@ -76,29 +76,29 @@ Outputs are grouped into subdirectories:
 
 Before you can run one of our workflows, you must first create a workspace in
 DNAnexus for the run. Refer to [the general workflow
-guide](running-sj-workflows.md#getting-started) to learn how to create a
-DNAnexus workspace for each workflow run.
+guide](../../analyzing-data/running-sj-workflows/#getting-started) to learn 
+how to create a DNAnexus workspace for each workflow run.
 
-You can navigate to the SEASEQ workflow page
-[here](https://platform.stjude.cloud/workflows/seaseq).
+You can navigate to the SEAseq workflow page
+[here]().
 
 ## Uploading Input Files
 
-SEASEQ requires at least the genome reference sequence, gene annotation and motif database 
+SEAseq requires at least the genome reference sequence, gene annotation and motif database 
 files to be uploaded as [input](#inputs).
 
-Refer to [the general workflow
-guide](running-sj-workflows.md#uploading-files) to learn how to upload input
+Refer to [the general workflow 
+guide](../../analyzing-data/running-sj-workflows/#uploading-files) to learn how to upload input
 files to the workspace you just created.
 
 ## Running the Workflow
 
-Refer to [the general workflow
-guide](running-sj-workflows.md#running-the-workflow) to learn how to launch
+Refer to [the general workflow 
+guide](../../analyzing-data/running-sj-workflows/#running-the-workflow) to learn how to launch
 the workflow, hook up input files, adjust parameters, start a run, and
 monitor run progress.
 
-SEASEQ has special preset options in the "Launch Tool" dropdown.
+SEAseq has special preset options in the "Launch Tool" dropdown.
 These are explained below:
 
 ## Analysis of Results
@@ -107,22 +107,22 @@ Each tool in St. Jude Cloud produces a visualization that makes understanding
 results more accessible than working with spreadsheets or tab-delimited files. 
 This is a recommended way to view the provided visualization files.
 
-Refer to [the general workflow
-guide](running-sj-workflows.md#custom-visualizations) to learn how to access
+Refer to [the general workflow 
+guide](../../analyzing-data/running-sj-workflows/#custom-visualizations) to learn how to access
 these visualizations.
 
 We also include the raw output files for you to dig into if the visualization 
 is not sufficient to answer your research question.
 
 Refer to [the general workflow
-guide](running-sj-workflows.md#raw-results-files) to learn how to access raw
+guide](../../analyzing-data/running-sj-workflows/#raw-results-files) to learn how to access raw
 results files.
 
-SEASEQ results will be in the parent `/` folder unless otherwise specified. 
+SEAseq results will be in the parent `/` folder unless otherwise specified. 
 
 ##  Interpreting results
 
-Upon successful run of SEASEQ, all files are saved to the results directory as 
+Upon successful run of SEAseq, all files are saved to the results directory as 
 listed in the [Outputs Section](#outputs). Here, we will discuss some of the
 different output directories in more detail.
 
@@ -187,7 +187,7 @@ of proximal genes, distribution graphs are also provided.
 
 ### QC Metrics
 
-SEASEQ provides a vast set of quality metrics for detecting experimental issues, including ChIP-Seq 
+SEAseq provides a vast set of quality metrics for detecting experimental issues, including ChIP-Seq 
 metrics recommended by the ENCODE consortium. 
 
 We incorporated a five-scale color-rank flag system to visually identify excellent 
@@ -197,7 +197,7 @@ thresholds where possible.
 
 The metrics are color flagged for easy visualization of overall performance in HTML format.
 
-SEASEQ metrics calculated to infer quality are:
+SEAseq metrics calculated to infer quality are:
 | Quality Metric	| Definition	|
 |--|--|
 | Aligned Percent | Percentage of mapped reads. |
@@ -218,7 +218,7 @@ SEASEQ metrics calculated to infer quality are:
 
 ## Frequently asked questions
 
-None yet!
+*faqs*
 
 If you have any questions not covered here, feel free to reach out
 on [our contact
