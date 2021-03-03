@@ -122,9 +122,7 @@ workflow seaseq {
             description: 'Gene Annotation feature',
             group: 'pipeline_parameter',
             help: 'Gene feature. Default is transcript',
-            choices: ['gene', 'transcript'],
-            suggestions: ['gene', 'transcript'],
-            default: 'transcript'
+            example: ['gene', 'transcript']
         }     
     }
 
