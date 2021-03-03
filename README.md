@@ -168,9 +168,9 @@ a custom R script that will also be provided in the results directory
 
 Below is an example of the read coverage profiles in promoters and gene body for [SRR10259398].
 
-![SRR10259398-bam_promoters](SRR10259398-promoters.png)
-
-![SRR10259398-bam_entiregene](SRR10259398-entiregene.png)
+<p align="center">
+<img src="SRR10259398-promoters.png"><img src="SRR10259398-entiregene.png">
+</p>
 
 ### Peaks Annotation
 
@@ -183,7 +183,9 @@ Annotated regions are collated to provide a binary overview
 of proximal genes, and the peaks occupancy percentages are graphically presented in a bar plot as 
 shown for [SRR10259398]. 
 
-![SRR10259398-peaksoccupancy](SRR10259398-peaksoccupancy.png)
+<p align="center">
+<img width="60%" height="auto" src="SRR10259398-peaksoccupancy.png">
+</p>
 
 ### QC Metrics
 
@@ -196,7 +198,8 @@ results for each metric in addition to a cross-metric summary score (between -2 
 thresholds where possible. 
 
 The metrics are color flagged for easy visualization of overall performance in HTML format as shown for [SRR10259398].
-![SRR10259398-QC](SRR10259398%20QC.png)
+
+<img src="SRR10259398%20QC.png">
 
 SEAseq metrics calculated to infer quality are:
 | Quality Metric	| Definition	|
