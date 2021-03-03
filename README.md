@@ -168,9 +168,9 @@ a custom R script that will also be provided in the results directory
 
 Below is an example of the read coverage profiles in promoters and gene body for [SRR10259398].
 
-![SRR10259398.sorted.bklist.rmdup-promoters.pdf](https://github.com/stjude/seaseq/files/6077655/SRR10259398.sorted.bklist.rmdup-promoters.pdf)
+![SRR10259398-bam_promoters](SRR10259398-promoters.png)
 
-![SRR10259398.sorted.bklist.rmdup-entiregene.pdf](https://github.com/stjude/seaseq/files/6077518/SRR10259398.sorted.bklist.rmdup-entiregene.pdf)
+![SRR10259398-bam_entiregene](SRR10259398-entiregene.png)
 
 ### Peaks Annotation
 
@@ -183,7 +183,7 @@ Annotated regions are collated to provide a binary overview
 of proximal genes, and the peaks occupancy percentages are graphically presented in a bar plot as 
 shown for [SRR10259398]. 
 
-[SRR10259398-peaksoccupancy.pdf](https://github.com/stjude/seaseq/files/6077584/SRR10259398-peaksoccupancy.pdf)
+![SRR10259398-peaksoccupancy](SRR10259398-peaksoccupancy.png)
 
 ### QC Metrics
 
@@ -216,11 +216,9 @@ SEAseq metrics calculated to infer quality are:
 | SE-like enriched regions (Super Enhancers)	| Total number of SE-like clustered enriched regions. |
 | Overall Quality	| Cross-metric average score. |
 
-We provided a link for [SRR-html](https://github.com/stjude/seaseq/files/6077584/SRR10259398_seaseq-summary-stats.html)
+[SRR10259398] quality metrics results can be viewed at this [link](SRR10259398_seaseq-summary-stats.html)
 
 ## Frequently asked questions
-
-*faqs*
 
 If you have any questions not covered here, feel free to reach out
 on [our contact
