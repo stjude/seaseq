@@ -31,11 +31,6 @@ Bowtie genomic indexes and region-based blacklists are optional.
 A gene position database file can be obtained from [RefSeq] or [GENCODE].
 
 [Motif databases]: https://meme-suite.org/meme/db/motifs
-[RefSeq]: https://ftp.ncbi.nlm.nih.gov/refseq/
-[GENCODE]: https://www.gencodegenes.org/
-[UHS]: https://sites.google.com/site/anshulkundaje/projects/blacklists
-[DER]: https://genome.ucsc.edu/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability
-[DAC]: https://genome.ucsc.edu/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability
 
 ## Outputs
 
@@ -71,7 +66,7 @@ Outputs are grouped into subdirectories:
     * For broad regions of enrichment, e.g. some histone modifications such as H3K27Ac using [SICER].
 7. Identification of stitched clusters of enriched regions and separates exceptionally large regions, e.g. super-enhancers from typical enhancers, using [ROSE].
 8. Motif discovery and enrichment using tools from the [MEME Suite].
-9. Custom annotation of peaks in genic regions.
+9. Annotation of peaks in genic regions.
 10. Assessment of quality by calculating relevant metrics including those recommmended by the [ENCODE consortium]. More information is provided [here](#qc-metrics).
 
 ## Creating a workspace
@@ -97,12 +92,11 @@ files to the workspace you just created.
 
 Refer to [the general workflow 
 guide](../../analyzing-data/running-sj-workflows/#running-the-workflow) to learn how to launch
-the workflow, hook up input files, adjust parameters, start a run, and
-monitor run progress.
+the workflow, hook up input files, adjust parameters, start a run, and monitor run progress.
 
 ## Analysis of Results
 
-We provide all the output files organized in the sub-directories as shown in the 
+All results will be organized in the outputs sub-directories as shown in the 
 [Outputs Section](#outputs) for easy exploration of results.
 
 Refer to [the general workflow
@@ -124,7 +118,10 @@ Reads are stringently mapped to reference genome using [Bowtie]
 
 Mapped BAMs are further processed by removal of duplicate reads using [SAMTools] 
 and blacklisted regions using [bedtools].
-Blacklisted regions are sources of bias in most ChIP-Seq experiments. These problematic regions are identified as regions with significant background noise or artifically high signal (UHS/DAC/DER), and are recommended to be excluded in order to assess biologically relevant and true signals of enrichment.
+Blacklisted regions are sources of bias in most ChIP-Seq experiments. These 
+problematic regions are identified as regions with significant background noise 
+or artifically high signal ([UHS]/[DAC]/[DER]), and are recommended to be 
+excluded in order to assess biologically relevant and true signals of enrichment.
 
 ### Peaks Identification
 
@@ -143,9 +140,7 @@ overlapping gene information.
 
 ### Peaks Display
 
-Coverage graphical files are generated in different visualization formats; 
-[WIG], [bigWig], and [TDF] formats, and normalized for display on 
-multiple genomic browsers.
+Coverage graphical files are normalized and generated to be uploaded for display on your choice of external genomic browsers such as [UCSC genome browser] or [GenomePaint] in [WIG] and [bigWig] format, or [IGV] in [TDF] format.
 
 Parameter specified to generate coverage files: `macs14 --space=50 --shiftsize=200 -w -S`.
 
@@ -164,8 +159,18 @@ The motifs are identified using the peak regions and 100bp window around peak su
 ### Reads Coverage Profiling
 
 Read density profiling of major genomic regions such as promoters and gene body using [BamToGFF].
-BamToGFF computes the average density of reads across provided genomic regions and provides a weighted matrix across all regions in specified bins.
-These matrices are used to generate coverage graphs and heatmap plots with the provision of the R script used in generating such plots for further customization.
+
+BamToGFF computes the average read densities of the provided gene coordinates creating a 
+normalized density matrix file.
+The density matrix files are then used to generate coverage graphs and heatmap plots using 
+a custom R script that will also be provided in the results directory 
+`/BAM_Density/densityplots.R` for further customization if needed.
+
+Below is an example of the read coverage profiles in promoters and gene body for [SRR10259398].
+
+[SRR10259398.sorted.bklist.rmdup-promoters.pdf](https://github.com/stjude/seaseq/files/6077655/SRR10259398.sorted.bklist.rmdup-promoters.pdf)
+
+[SRR10259398.sorted.bklist.rmdup-entiregene.pdf](https://github.com/stjude/seaseq/files/6077518/SRR10259398.sorted.bklist.rmdup-entiregene.pdf)
 
 ### Peaks Annotation
 
@@ -173,8 +178,12 @@ Genic annotation of peaks including promoters, gene bodies, gene-centric windows
 We designed custom scripts to provide this information.
 
 Custom scripts are designed to generate the genic annotation of peaks at promoters, gene bodies 
-and gene-centric windows. Annotated regions are collated to provide a binary overview 
-of proximal genes, bar graphs of peak distribution in the specified regions are also provided.
+and gene-centric windows. 
+Annotated regions are collated to provide a binary overview 
+of proximal genes, and the peaks occupancy percentages are graphically presented in a bar plot as 
+shown for [SRR10259398]. 
+
+[SRR10259398-peaksoccupancy.pdf](https://github.com/stjude/seaseq/files/6077584/SRR10259398-peaksoccupancy.pdf)
 
 ### QC Metrics
 
@@ -207,6 +216,8 @@ SEAseq metrics calculated to infer quality are:
 | SE-like enriched regions (Super Enhancers)	| Total number of SE-like clustered enriched regions. |
 | Overall Quality	| Cross-metric average score. |
 
+We provided a link for [SRR-html](https://github.com/stjude/seaseq/files/6077584/SRR10259398_seaseq-summary-stats.html)
+
 ## Frequently asked questions
 
 *faqs*
@@ -227,13 +238,18 @@ None yet!
 
 [Upload/Download Data (local)](../managing-data/upload-local.md)
 
-
-[GenomePaint]: https://www.cell.com/cancer-cell/fulltext/S1535-6108(20)30659-0
+[SRR10259398]: https://www.pnas.org/content/117/28/16516
+[RefSeq]: https://ftp.ncbi.nlm.nih.gov/refseq/
+[GENCODE]: https://www.gencodegenes.org/
+[UHS]: https://sites.google.com/site/anshulkundaje/projects/blacklists
+[DER]: https://genome.ucsc.edu/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability
+[DAC]: https://genome.ucsc.edu/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability
 [SAMTools]: https://doi.org/10.1093/bioinformatics/btp352
 [bedtools]: https://doi.org/10.1093/bioinformatics/btq033
 [SRA Toolkit]: http://www.ncbi.nlm.nih.gov/books/NBK158900/
 [Bowtie]: https://doi.org/10.1186/gb-2009-10-3-r25
 [BamToGFF]: https://github.com/stjude/BAM2GFF
+[GenomePaint]: https://www.cell.com/cancer-cell/fulltext/S1535-6108(20)30659-0
 [UCSC genome browser]: https://doi.org/10.1093/bib/bbs038
 [IGV]: https://doi.org/10.1093/bib/bbs017
 [MACS]: https://doi.org/10.1186/gb-2008-9-9-r137
