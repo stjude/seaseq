@@ -168,9 +168,9 @@ a custom R script that will also be provided in the results directory
 
 Below is an example of the read coverage profiles in promoters and gene body for [SRR10259398].
 
-[SRR10259398.sorted.bklist.rmdup-promoters.pdf](https://github.com/stjude/seaseq/files/6077655/SRR10259398.sorted.bklist.rmdup-promoters.pdf)
+![SRR10259398.sorted.bklist.rmdup-promoters.pdf](https://github.com/stjude/seaseq/files/6077655/SRR10259398.sorted.bklist.rmdup-promoters.pdf)
 
-[SRR10259398.sorted.bklist.rmdup-entiregene.pdf](https://github.com/stjude/seaseq/files/6077518/SRR10259398.sorted.bklist.rmdup-entiregene.pdf)
+![SRR10259398.sorted.bklist.rmdup-entiregene.pdf](https://github.com/stjude/seaseq/files/6077518/SRR10259398.sorted.bklist.rmdup-entiregene.pdf)
 
 ### Peaks Annotation
 
