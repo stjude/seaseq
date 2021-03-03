@@ -195,7 +195,7 @@ We incorporated a five-scale color-rank flag system to visually identify excelle
 results for each metric in addition to a cross-metric summary score (between -2 and 2), using recommended 
 thresholds where possible. 
 
-The metrics are color flagged for easy visualization of overall performance in HTML format as shown for [SRR10259398] below.
+The metrics are color flagged for easy visualization of overall performance in HTML format as shown for [SRR10259398].
 ![SRR10259398-QC](SRR10259398%20QC.png)
 
 SEAseq metrics calculated to infer quality are:
