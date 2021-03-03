@@ -11,30 +11,32 @@ SEAseq analyses include alignment, peak calling, motif analysis, read coverage p
 
 ## Inputs
 
-|   Name                        |   Type                | Description                                                 |  Example            |
-|-------------------------------|-----------------------|-------------------------------------------------------------|---------------------|
-|   FASTQ files                 |   Array of files      |   One or more FASTQ files. The files should be gzipped.     |   [`*.gz`]          |
-|   SRA run accession (SRR)     |   Array of strings    |   One or more SRR.                                          |   [`SRR12345678`]   |
-|   Genome Reference            |   File                |   The genome reference in FASTA format.                     |   [`*.fa`]          |
-|   Genome Bowtie indexes       |   Array of files      |   The genome bowtie v1 indexes. Should be six index files.  |   [`*.ebwt`]        |
-|   Gene Annotation             |   File                |   A gene position database file.                            |   [`*.gtf`]         |
-|   Blacklists                  |   File                |   [UHS]/[DER]/[DAC] or custom blacklist regions file.       |   [`*/bed`]         |
-|   MEME motif databases        |   Array of files      |   One or more of the [MEME suite motif databases]           |   [`*.meme`]        |
+|   Name                    |   Type                | Description                                                 |  Example            |
+|---------------------------|-----------------------|-------------------------------------------------------------|---------------------|
+|   FASTQ files             |   Array of files      |   One or more FASTQ files. The files should be gzipped.     |   [`*.gz`]          |
+|   SRA run accession (SRR) |   Array of strings    |   One or more SRR.                                          |   [`SRR12345678`]   |
+|   Genome Reference        |   File                |   The genome reference in FASTA format.                     |   [`*.fa`]          |
+|   Genome Bowtie indexes   |   Array of files      |   The genome bowtie v1 indexes. Should be six index files.  |   [`*.ebwt`]        |
+|   Gene Annotation         |   File                |   A gene position database file.                            |   [`*.gtf`]         |
+|   Blacklists              |   File                |   [UHS]/[DER]/[DAC] or custom blacklist regions file.       |   [`*/bed`]         |
+|   [Motif databases]       |   Array of files      |   One or more position weight matrix databases.             |   [`*.meme`]        |
 
 ### Input configuration
 
-SEAseq supports FASTQ files and SRA identifiers (SRRs) as Sample Input. A combination of both is also supported. 
-SEAseq requires the 
+SEASEQ supports FASTQ files and SRA identifiers (SRRs) as Sample Input. A combination of both is also supported. 
+
+SEASEQ requires the sample input, genome reference, gene annotation and motif database files.
 Bowtie genomic indexes and region-based blacklists are optional.
 
 A gene position database file can be obtained from [RefSeq] or [GENCODE].
 
-[MEME suite motif databases]: https://meme-suite.org/meme/db/motifs
+[Motif databases]: https://meme-suite.org/meme/db/motifs
 [RefSeq]: https://ftp.ncbi.nlm.nih.gov/refseq/
 [GENCODE]: https://www.gencodegenes.org/
 [UHS]: https://sites.google.com/site/anshulkundaje/projects/blacklists
 [DER]: https://genome.ucsc.edu/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability
 [DAC]: https://genome.ucsc.edu/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability
+
 ## Outputs
 
 SEAseq provides multiple outputs from the different analysis offerings. 
@@ -63,10 +65,10 @@ Outputs are grouped into subdirectories:
 2. Sequencing FASTQs are aligned to the reference genome using [Bowtie].
 3. Mapped reads are further processed by removal of redundant reads and blacklisted regions. 
 4. Read density profiling in relevant genomic regions such as promoters and gene body using [BamToGFF].
-5. Normalized and unnormalized coverage files for display are generated for the [UCSC genome browser] and [IGV]. 
+5. Normalized and unnormalized coverage files for display are generated for external browsers such as [GenomePaint], [UCSC genome browser] and [IGV]. 
 6. Identification of enriched regions for two binding profiles:
-    * For factors that bind shorter regions, e.g. many sequence-specific transcription factors using [MACS].
-    * For broad regions of enrichment, e.g. some histone modifications using [SICER].
+    * For factors that bind shorter regions, e.g. many sequence-specific transcription factors such as CTCF using [MACS].
+    * For broad regions of enrichment, e.g. some histone modifications such as H3K27Ac using [SICER].
 7. Identification of stitched clusters of enriched regions and separates exceptionally large regions, e.g. super-enhancers from typical enhancers, using [ROSE].
 8. Motif discovery and enrichment using tools from the [MEME Suite].
 9. Custom annotation of peaks in genic regions.
@@ -98,21 +100,10 @@ guide](../../analyzing-data/running-sj-workflows/#running-the-workflow) to learn
 the workflow, hook up input files, adjust parameters, start a run, and
 monitor run progress.
 
-SEAseq has special preset options in the "Launch Tool" dropdown.
-These are explained below:
-
 ## Analysis of Results
 
-Each tool in St. Jude Cloud produces a visualization that makes understanding 
-results more accessible than working with spreadsheets or tab-delimited files. 
-This is a recommended way to view the provided visualization files.
-
-Refer to [the general workflow 
-guide](../../analyzing-data/running-sj-workflows/#custom-visualizations) to learn how to access
-these visualizations.
-
-We also include the raw output files for you to dig into if the visualization 
-is not sufficient to answer your research question.
+We provide all the output files organized in the sub-directories as shown in the 
+[Outputs Section](#outputs) for easy exploration of results.
 
 Refer to [the general workflow
 guide](../../analyzing-data/running-sj-workflows/#raw-results-files) to learn how to access raw
@@ -120,12 +111,11 @@ results files.
 
 SEAseq results will be in the parent `/` folder unless otherwise specified. 
 
-##  Interpreting results
+## Interpreting results
 
 Upon successful run of SEAseq, all files are saved to the results directory as 
 listed in the [Outputs Section](#outputs). Here, we will discuss some of the
 different output directories in more detail.
-
 
 ### Reads Alignment and Filtering
 
@@ -174,7 +164,8 @@ The motifs are identified using the peak regions and 100bp window around peak su
 ### Reads Coverage Profiling
 
 Read density profiling of major genomic regions such as promoters and gene body using [BamToGFF].
-We generate coverage graphs and heatmap plots with additional custom R scripts for further customization.
+BamToGFF computes the average density of reads across provided genomic regions and provides a weighted matrix across all regions in specified bins.
+These matrices are used to generate coverage graphs and heatmap plots with the provision of the R script used in generating such plots for further customization.
 
 ### Peaks Annotation
 
@@ -182,8 +173,8 @@ Genic annotation of peaks including promoters, gene bodies, gene-centric windows
 We designed custom scripts to provide this information.
 
 Custom scripts are designed to generate the genic annotation of peaks at promoters, gene bodies 
-and gene-centric windows. Annotated regions are collated to provide a binary or matrix overview 
-of proximal genes, distribution graphs are also provided.
+and gene-centric windows. Annotated regions are collated to provide a binary overview 
+of proximal genes, bar graphs of peak distribution in the specified regions are also provided.
 
 ### QC Metrics
 
@@ -237,7 +228,7 @@ None yet!
 [Upload/Download Data (local)](../managing-data/upload-local.md)
 
 
-
+[GenomePaint]: https://www.cell.com/cancer-cell/fulltext/S1535-6108(20)30659-0
 [SAMTools]: https://doi.org/10.1093/bioinformatics/btp352
 [bedtools]: https://doi.org/10.1093/bioinformatics/btq033
 [SRA Toolkit]: http://www.ncbi.nlm.nih.gov/books/NBK158900/
