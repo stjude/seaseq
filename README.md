@@ -192,10 +192,11 @@ metrics recommended by the ENCODE consortium.
 
 We incorporated a five-scale color-rank flag system to visually identify excellent 
 (score = 2), good (score = 1), average (score = 0), below-average (score = -1) or poor (score = -2) 
-results for each metric and a cross-metric summary score (between -2 and 2), using recommended 
+results for each metric in addition to a cross-metric summary score (between -2 and 2), using recommended 
 thresholds where possible. 
 
-The metrics are color flagged for easy visualization of overall performance in HTML format.
+The metrics are color flagged for easy visualization of overall performance in HTML format as shown for [SRR10259398] below.
+![SRR10259398-QC](SRR10259398%20QC.png)
 
 SEAseq metrics calculated to infer quality are:
 | Quality Metric	| Definition	|
@@ -215,8 +216,6 @@ SEAseq metrics calculated to infer quality are:
 | Relative Strand-correlation Coefficient (RSC)	| A strand cross-correlation ratio between the fragment-length cross-correlation and the read-length peak. |
 | SE-like enriched regions (Super Enhancers)	| Total number of SE-like clustered enriched regions. |
 | Overall Quality	| Cross-metric average score. |
-
-[SRR10259398] quality metrics results can be viewed at this [link](SRR10259398_seaseq-summary-stats.html)
 
 ## Frequently asked questions
 
