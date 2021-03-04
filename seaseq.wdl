@@ -315,7 +315,7 @@ workflow seaseq {
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/STITCHED_peaks'
         }
 
-        call peaksanno.peaksanno {
+        call util.peaksanno {
             input :
                 gtffile=gtf,
                 bedfile=macs.peakbedfile,

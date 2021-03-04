@@ -233,11 +233,11 @@ task peaksanno {
 
         cd ~{default_location}
 
-        PEAKSANNO-main.sh \
-        ~{bedfile} \
-        ~{summitfile} \
-        ~{gtffile} \
-        ~{chromsizes}
+        peaksanno.py \
+        -p ~{bedfile} \
+        -s ~{summitfile} \
+        -g ~{gtffile} \
+        -c ~{chromsizes}
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
