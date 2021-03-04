@@ -77,7 +77,7 @@ guide](../../analyzing-data/running-sj-workflows/#getting-started) to learn
 how to create a DNAnexus workspace for each workflow run.
 
 You can navigate to the SEAseq workflow page
-[here]().
+[here](https://platform.stjude.cloud/workflows/seaseq).
 
 ## Uploading Input Files
 
