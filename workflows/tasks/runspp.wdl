@@ -21,7 +21,7 @@ task runspp {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'madetunj/spp:v1.16.0'
+        docker: 'abralab/spp:v1.16.0'
         cpu: ncpu
     }
     output {
