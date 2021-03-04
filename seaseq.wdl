@@ -13,7 +13,6 @@ import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/workflo
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/runspp.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sortbed.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sratoolkit.wdl" as sra
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/peaksanno.wdl"
 
 workflow seaseq {
     String pipeline_ver = 'v1.0.0'
@@ -122,9 +121,7 @@ workflow seaseq {
             description: 'Gene Annotation feature',
             group: 'pipeline_parameter',
             help: 'Gene feature. Default is transcript',
-            choices: ['gene', 'transcript'],
-            suggestions: ['gene', 'transcript'],
-            default: 'transcript'
+            example: ['gene', 'transcript']
         }     
     }
 
@@ -317,7 +314,7 @@ workflow seaseq {
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/STITCHED_peaks'
         }
 
-        call peaksanno.peaksanno {
+        call util.peaksanno {
             input :
                 gtffile=gtf,
                 bedfile=macs.peakbedfile,

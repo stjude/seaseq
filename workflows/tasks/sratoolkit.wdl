@@ -27,7 +27,7 @@ task fastqdump {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'madetunj/sratoolkit:v2.9.6'
+        docker: 'abralab/sratoolkit:v2.9.6'
         cpu: ncpu
     }
     output {

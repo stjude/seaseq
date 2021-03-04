@@ -1,9 +1,9 @@
 ## Overview
 
-**Single-End Analysis SEQuencing pipeline** (abbreviated as **SEASEQ**) is a comprehensive automated computational pipeline. It leverages field-standard, open-source tools for processing and analyzing 
-for all ChIP-Seq/CUT&RUN data analysis.
+**Single-End Antibody SEQuencing pipeline** (abbreviated as **SEASEQ**) is a comprehensive automated pipeline for ChIP-Seq/CUT&RUN data analysis. Speaking broadly, it containerizes and joins field-standard, open-source tools for processing raw data and performing a wide array of basic analyses.  
 
-SEASEQ performs extensive analyses from the raw output of the experiment, including alignment, peak calling, motif analysis, read coverage profiling, clustered peak (e.g. super-enhancer) identification, and quality assessment metrics, as well as automatic interfacing with data in [GEO]/[SRA]. The easy-to-use and versatile format of SEASEQ makes it a reliable and efficient resource for ensuring high quality ChIP-Seq analysis.
+
+SEASEQ analyses include alignment, peak calling, motif analysis, read coverage profiling, clustered peak (e.g. super-enhancer) identification, and quality assessment metrics, as well as automatic interfacing with data in [GEO]/[SRA]. The easy-to-use and flexibility of SEASEQ makes it a reliable and efficient resource for ensuring high quality ChIP-Seq analysis, especially in research environments lacking computational infrastructure or expertise.  
 
 
 [SRA]: https://www.ncbi.nlm.nih.gov/sra
@@ -14,11 +14,11 @@ SEASEQ performs extensive analyses from the raw output of the experiment, includ
 |   Name                        |   Type                | Description                                                 |  Example            |
 |-------------------------------|-----------------------|-------------------------------------------------------------|---------------------|
 |   FASTQ files                 |   Array of files      |   One or more FASTQ files. The files should be gzipped.     |   [`*.gz`]          |
-|   SRA identifiers (SRR)       |   Array of strings    |   One of more SRRs.                                         |   [`SRR12345678`]   |
+|   SRA identifiers (SRR)       |   Array of strings    |   One or more SRRs.                                         |   [`SRR12345678`]   |
 |   Genome Reference            |   File                |   The genome reference.                                     |   [`*.fa`]          |
 |   Genome Bowtie indexes       |   Array of files      |   The genome bowtie v1 indexes. Should be six index files.  |   [`*.ebwt`]        |
-|   Gene Annotation             |   File                |   The gene annotation.                                      |   [`*.gtf`]         |
-|   Blacklists                  |   File                |   UHS/DER/DAC or custom blacklists regions file.            |   [`*/bed`]         |
+|   Gene Annotation             |   File                |   A database file of known gene positions.                  |   [`*.gtf`]         |
+|   Blacklists                  |   File                |   UHS/DER/DAC or custom blacklist regions file.             |   [`*/bed`]         |
 |   MEME motif databases        |   Array of files      |   One or more of the [MEME suite motif databases]           |   [`*.meme`]        |
 
 ### Input configuration
@@ -30,13 +30,13 @@ Bowtie genomic indexes and region-based blacklists are optional.
 
 ## Outputs
 
-SEASEQ provides multiple outputs from the different analyses offers. 
+SEASEQ provides multiple outputs from the different analysis offerings. 
 Outputs are grouped into subdirectories:
 
 | Name                  | Type    | Description                                                                            |
 |-----------------------|---------|----------------------------------------------------------------------------------------|
+|  [BAM_files]          | Folder  | All mapping (`.bam`) files.                                                            |
 |  [BAM_Density]        | Folder  | Reads Coverage profiling in promoter and genic regions matrices, plots and heatmaps.   |
-|  [BAM_files]          | Folder  | All mapping (`.bam`) files.                                                              |
 |  [MOTIFS]             | Folder  | Motifs discovery and prediction results files.                                         |
 |  [PEAKS]              | Folder  | Identified narrow peaks, broad peaks and linear-stitched peaks files.                  |
 |  [PEAKS_Annotation]   | Folder  | Genic annotation of peaks tables and plot.                                             |
@@ -52,8 +52,7 @@ Outputs are grouped into subdirectories:
 [QC]: #qc-metrics
 
 ## Workflow Steps
-1. SRRs are downloaded as FASTQs using the [SRA Toolkit] if provided.
-
+1. If provided, SRRs are downloaded as FASTQs using the [SRA Toolkit].
 2. Sequencing FASTQs are aligned to the reference genome using [Bowtie].
 3. Mapped reads are further processed by removal of redundant reads and blacklisted regions. 
 4. Read density profiling in relevant genomic regions such as promoters and gene body using [BamToGFF].
@@ -78,7 +77,7 @@ You can navigate to the SEASEQ workflow page
 
 ## Uploading Input Files
 
-SEASEQ requires at least the genome reference, gene annotation and motif database 
+SEASEQ requires at least the genome reference sequence, gene annotation and motif database 
 files to be uploaded as [input](#inputs).
 
 Refer to [the general workflow
@@ -128,13 +127,13 @@ Reads are stingently mapped to reference genome using [Bowtie]
 
 Mapped BAMs are further processed by removal of duplicate reads using [SAMTools] 
 and blacklisted regions using [bedtools].
-Blacklisted regions are sources of bias in most ChIPSeq experiments. These problematic regions are identified as regions with significant background noise or artifically high signal (UHS/DAC/DER), and are recommended to be excluded in order to assess biologically relevant and true signals of enrichment.
+Blacklisted regions are sources of bias in most ChIP-Seq experiments. These problematic regions are identified as regions with significant background noise or artifically high signal (UHS/DAC/DER), and are recommended to be excluded in order to assess biologically relevant and true signals of enrichment.
 
 ### Peaks Identification
 
 We identify enriched regions based on two binding profiles; factors that bind 
 shorter regions such as transcription factors using MACS, and for those that 
-bind broad regions such as histone marks using SICER. 
+bind broad regions such as some histone marks using SICER. 
 
 Parameters specified for peak calls : 
   * **Narrow Peaks** : `macs14 -p 1e-9 --keep-dup=auto --space=50 -w -S`
@@ -195,7 +194,7 @@ SEASEQ metrics calculated to infer quality are:
 | Quality Metric	| Definition	|
 |--|--|
 | Aligned Percent | Percentage of mapped reads. |
-| Base Quality	| Per base sequence quality. |
+| Base Quality	| Per-base sequence quality. |
 | Estimated Fragment Width	| Average fragment size of the peak distribution.	|
 | Estimated Tag Length	| Sequencing read length. |
 | FRiP	| The fraction of reads within peaks regions. |

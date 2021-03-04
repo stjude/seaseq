@@ -72,7 +72,7 @@ task bamtogff {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'madetunj/bamtogff:v1.2.0'
+        docker: 'abralab/bamtogff:v1.2.0'
         cpu: ncpu
     }
     output {

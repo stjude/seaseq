@@ -83,7 +83,7 @@ task rose {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'madetunj/rose:v1.2.0'
+        docker: 'abralab/rose:v1.2.0'
         cpu: ncpu
     }
     output {
