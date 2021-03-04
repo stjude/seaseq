@@ -55,7 +55,7 @@ task macs {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'madetunj/macs:v1.4.2'
+        docker: 'abralab/macs:v1.4.2'
         cpu: ncpu
     }
     output {

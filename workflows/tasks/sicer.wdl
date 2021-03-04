@@ -39,7 +39,7 @@ task sicer {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'madetunj/sicer:v1.0.2'
+        docker: 'abralab/sicer:v1.0.2'
         cpu: ncpu
     }
     output {

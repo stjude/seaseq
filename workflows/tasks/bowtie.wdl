@@ -45,7 +45,7 @@ task bowtie {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'madetunj/bowtie:v1.2.3'
+        docker: 'quay.io/biocontainers/bowtie:1.2.3--py36hf1ae8f4_2'
         cpu: ncpu
     }
     output {
@@ -67,7 +67,7 @@ task index {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'madetunj/bowtie:v1.2.3'
+        docker: 'quay.io/biocontainers/bowtie:1.2.3--py36hf1ae8f4_2'
         cpu: ncpu
     }
     output {
