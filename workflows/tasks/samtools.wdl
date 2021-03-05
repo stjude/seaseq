@@ -105,6 +105,7 @@ task faidx {
     command <<<
         ln -s ~{reference} ~{basename(reference)}
         samtools faidx ~{basename(reference)} -o ~{basename(reference)}.fai
+        cut -f1,2 ~{basename(reference)}.fai > ~{basename(reference)}.tab
     >>>
     runtime {
         memory: memory_gb + " GB"
@@ -114,5 +115,6 @@ task faidx {
     }
     output {
 	File faidx_file = "~{basename(reference)}.fai"
+        File chromsizes = "~{basename(reference)}.tab"
     }
 }

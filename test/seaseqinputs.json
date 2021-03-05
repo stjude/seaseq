@@ -5,10 +5,8 @@
         "./fastqfiles/H3K27Ac-AB5_R1_001.fastq.gz"
     ],
     "seaseq.reference" : "./hg19/CHR21INDEX/hg19_chr21.fa",
-    "seaseq.reference_index" : "./hg19/CHR21INDEX/hg19_chr21.fa.fai",
     "seaseq.blacklist" : "./hg19/hg19-blacklist.v2_chr21.bed",
     "seaseq.gtf" : "./hg19/GRCh37_latest_genomic_chr21.gtf",
-    "seaseq.chromsizes" : "./hg19/UCSC_hg19_chromInfo_chr21.tab",
     "seaseq.gtf_feature" : "gene",
     "seaseq.motif_databases" : 
     [
