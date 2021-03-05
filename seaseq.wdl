@@ -14,6 +14,7 @@ import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/r
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sortbed.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sratoolkit.wdl" as sra
 
+
 workflow seaseq {
     String pipeline_ver = 'v1.0.0'
 
@@ -57,9 +58,7 @@ workflow seaseq {
     input {
         # group: reference_genome
         File reference
-        File? reference_index
         File? blacklist
-        File chromsizes
         File gtf
         Array[File]? bowtie_index
         Array[File]+ motif_databases
@@ -77,19 +76,10 @@ workflow seaseq {
             description: 'Reference FASTA file',
             group: 'reference_genome'
         }
-        reference_index: {
-            description: 'Reference FASTA index (.fai)',
-            group: 'reference_genome'
-        }
         blacklist: {
             description: 'Blacklist file in BED format',
             group: 'reference_genome',
             help: 'If it is defined, regions listed will be filtered out after reference alignement.'
-        }
-        chromsizes: {
-            description: '2 column chromosome sizes file',
-            group: 'reference_genome',
-            help: 'If not defined, it will be generated.'
         }
         gtf: {
             description: 'gene annotation file (.gtf)',
@@ -145,23 +135,19 @@ workflow seaseq {
     if ( !defined(bowtie_index) ) {
         # create bowtie index when not provided
         call bowtie.index as bowtie_idx {
-            input:
+            input :
                 reference=reference
         }
     }
 
-    if ( !defined(reference_index) ) {
-        # create reference index (fai) when not provided
-        call samtools.faidx as samtools_faidx {
-            input:
-                reference=reference
-        }
+    call samtools.faidx as samtools_faidx {
+        input :
+            reference=reference
     }
 
     # Merge files for the pipeline 
     Array[File] bowtie_index_ = flatten(select_all([bowtie_index, bowtie_idx.bowtie_indexes]))
     Array[File] fastqfiles = flatten(select_all([fastqfile, fastqfile_]))
-    File reference_index_ = select_first([reference_index, samtools_faidx.faidx_file])
 
     scatter (eachfastq in fastqfiles) {
         call fastqc.fastqc {
@@ -260,7 +246,7 @@ workflow seaseq {
             input :
                 feature=gtf_feature,
                 gtffile=gtf,
-                chromsizes=chromsizes,
+                chromsizes=samtools_faidx.chromsizes,
                 bamfile=markdup.mkdupbam,
                 bamindex=mkdup.indexbam,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAM_Density'
@@ -280,7 +266,7 @@ workflow seaseq {
         call motifs.motifs {
             input:
                 reference=reference,
-                reference_index=reference_index_,
+                reference_index=samtools_faidx.faidx_file,
                 bedfile=macs.peakbedfile,
                 motif_databases=motif_databases,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
@@ -295,7 +281,7 @@ workflow seaseq {
         call motifs.motifs as flank {
             input:
                 reference=reference,
-                reference_index=reference_index_,
+                reference_index=samtools_faidx.faidx_file,
                 bedfile=flankbed.flankbedfile,
                 motif_databases=motif_databases,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
@@ -318,7 +304,7 @@ workflow seaseq {
             input :
                 gtffile=gtf,
                 bedfile=macs.peakbedfile,
-                chromsizes=chromsizes,
+                chromsizes=samtools_faidx.chromsizes,
                 summitfile=macs.summitsfile,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Annotation'
         }
@@ -326,7 +312,7 @@ workflow seaseq {
         call viz.visualization {
             input:
                 wigfile=macs.wigfile,
-                chromsizes=chromsizes,
+                chromsizes=samtools_faidx.chromsizes,
                 xlsfile=macs.peakxlsfile,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Display'
         }
@@ -334,7 +320,7 @@ workflow seaseq {
         call viz.visualization as vizall {
             input:
                 wigfile=all.wigfile,
-                chromsizes=chromsizes,
+                chromsizes=samtools_faidx.chromsizes,
                 xlsfile=all.peakxlsfile,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Display'
         }
@@ -342,7 +328,7 @@ workflow seaseq {
         call viz.visualization as viznomodel {
             input:
                 wigfile=nomodel.wigfile,
-                chromsizes=chromsizes,
+                chromsizes=samtools_faidx.chromsizes,
                 xlsfile=nomodel.peakxlsfile,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Display'
         }
