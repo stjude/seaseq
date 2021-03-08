@@ -69,20 +69,41 @@ Outputs are grouped into subdirectories:
 9. Annotation of peaks in genic regions.
 10. Assessment of quality by calculating relevant metrics including those recommmended by the [ENCODE consortium]. More information is provided [here](#qc-metrics).
 
-## SEAseq on St. Jude cloud
+## Creating a workspace
 
 Before you can run one of our workflows, you must first create a workspace in
 DNAnexus for the run. Refer to [the general workflow
-guide](https://university.stjude.cloud/docs/genomics-platform/analyzing-data/running-sj-workflows#getting-started) to learn 
+guide](../../analyzing-data/running-sj-workflows/#getting-started) to learn 
 how to create a DNAnexus workspace for each workflow run.
 
 You can navigate to the SEAseq workflow page
 [here](https://platform.stjude.cloud/workflows/seaseq).
 
+## Uploading Input Files
+
+SEAseq requires at least the genome reference sequence, gene annotation and motif database 
+files to be uploaded as [input](#inputs).
+
+Refer to [the general workflow 
+guide](../../analyzing-data/running-sj-workflows/#uploading-files) to learn how to upload input
+files to the workspace you just created.
+
+## Running the Workflow
+
+Refer to [the general workflow 
+guide](../../analyzing-data/running-sj-workflows/#running-the-workflow) to learn how to launch
+the workflow, hook up input files, adjust parameters, start a run, and monitor run progress.
+
 ## Analysis of Results
 
 All results will be organized in the outputs sub-directories as shown in the 
 [Outputs Section](#outputs) for easy exploration of results.
+
+Refer to [the general workflow
+guide](../../analyzing-data/running-sj-workflows/#raw-results-files) to learn how to access raw
+results files.
+
+SEAseq results will be in the parent `/` folder unless otherwise specified. 
 
 ## Interpreting results
 
@@ -201,11 +222,21 @@ SEAseq metrics calculated to infer quality are:
 
 ## Frequently asked questions
 
-If you have any questions not covered here, feel free to .
+If you have any questions not covered here, feel free to reach out
+on [our contact
+form](https://hospital.stjude.org/apps/forms/fb/st-jude-cloud-contact/).
 
 # References
 
 None yet!
+
+# Similar Topics
+
+[Running our Workflows](../../analyzing-data/running-sj-workflows.md)
+
+[Working with our Data Overview](../../managing-data/working-with-our-data.md)
+
+[Upload/Download Data (local)](../../managing-data/upload-local.md)
 
 [SRR10259398]: https://www.pnas.org/content/117/28/16516
 [RefSeq]: https://ftp.ncbi.nlm.nih.gov/refseq/
@@ -232,4 +263,3 @@ None yet!
 [AME]: https://meme-suite.org/meme/tools/ame
 [MEME-ChIP]: https://meme-suite.org/meme/tools/meme-chip
 [seaseq]: https://github.com/stjude/seaseq
-≈
