@@ -13,7 +13,6 @@ task rose {
         String default_location = "PEAKS_files/STITCHED_REGIONS"
         String outputname = basename(bamfile)
 
-        String feature = "gene"
         String species = "hg19"
         Int tss = 2000
         Int stitch = 12500
@@ -27,7 +26,6 @@ task rose {
         ln -s ~{bamindex} ~{basename(bamindex)}
 
         GTFFILE=~{gtffile}
-        FEATURE=~{feature}
         SPECIES=~{species}
         BAMFILE=~{basename(bamfile)}
         TSS=~{tss}
@@ -45,25 +43,58 @@ task rose {
         echo "BAM file: $BAMFILE"
         echo "Output directory: $OUTPUTDIR"
         echo "Species: $SPECIES"
-        echo "Feature type: $FEATURE"
         #================================================================================
+
         # 
         # GENERATING UCSC REFSEQ FILE
         #
         mkdir -p annotation
-        echo -e "#bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\tX\tX\tX\t\tX\tname2" > annotation/$SPECIES"_refseq.ucsc"
 
-        if [[ $FEATURE == "gene" ]]; then
-        awk -F'[\t ]' '{
-            if($3=="gene")
-                print "0\t" $14 "\tchr" $1 "\t" $7 "\t" $4 "\t" $5 "\t" $4 "\t" $5 "\t.\t.\t.\t.\t" $18}' $GTFFILE | sed s/\"//g >> annotation/$SPECIES"_refseq.ucsc"
+        python <<CODE
 
-        elif [[ $FEATURE == "transcript" ]]; then
-        awk -F'[\t ]' '{
-            if($3=="transcript")
-                print "0\t" $14 "\tchr" $1 "\t" $7 "\t" $4 "\t" $5 "\t" $4 "\t" $5 "\t.\t.\t.\t.\t" $18}' $GTFFILE | sed s/\"//g >> annotation/$SPECIES"_refseq.ucsc"
-        fi
-        echo "Annotation file: "$SPECIES"_refseq.ucsc"
+        import re
+        import sys
+        
+        gtf_input = open("~{gtffile}",'r')
+        print (gtf_input)
+        refseq_output = open("annotation/~{species}_refseq.ucsc",'w')
+
+        refseq_output.write("#bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\tX\tX\tX\t\tX\tname2\n")
+
+        #reading the feature type to be used
+        feature_dict = {}
+        for line in gtf_input:
+            if not line.startswith('#'):
+                lines = line.split("\t")
+                feature_dict[lines[2]] = lines[2]
+
+        if 'transcript' in feature_dict:
+            feature = "transcript"
+        elif 'gene' in feature_dict:
+            feature = "gene"
+        else:
+            sys.exit("ERROR :\tGTF with either transcript/gene annotation is needed")
+        print("NOTE :\tFeature type used is '%s'" %(feature))
+
+        #organize gtf file
+        gtf_input = open("~{gtffile}",'r')
+        for line in gtf_input:
+            if not line.startswith('#'):
+                lines = line.split("\t")
+                newline = lines[8].split(' ')
+                gene_name = re.sub('[\"\;]', '', newline[1]) #clean gene_name
+                transcript_id = re.sub('[\"\;]', '', newline[3]) #clean transcript_id
+                if lines[2] == feature:
+                    if re.match("chr", lines[0]):
+                        new_chr_name = lines[0]
+                    else:
+                        new_chr_name = "chr"+lines[0]
+                    
+                    results = ("0\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t.\t.\t.\t.\t{7}".format(transcript_id, new_chr_name, lines[6], lines[3], lines[4], lines[3], lines[4], gene_name))
+
+                    #extract chromosomal coordinates and store in outputfiles
+                    refseq_output.write(results + "\n")
+        CODE
 
         #
         # GENERATING MERGE BED FILES
