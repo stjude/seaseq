@@ -9,7 +9,6 @@ task bamtogff {
 
         File gtffile
         File chromsizes
-        String feature = "gene"
         Int distance = 2000 #distance from site
 
         String samplename = basename(bamfile,'.bam')
@@ -25,7 +24,6 @@ task bamtogff {
         ln -s ~{bamindex} ~{basename(bamindex)}
 
         GTFFILE=~{gtffile}
-        FEATURE=~{feature}
         BAMFILE=~{basename(bamfile)}
         CHROMSIZES=~{chromsizes}
         SAMPLENAME=~{samplename}
@@ -37,11 +35,10 @@ task bamtogff {
         echo "#############################################"
 
         echo "BAM file: $BAMFILE"
-        echo "FEATURE type: $FEATURE"
         echo "Sample Name: $SAMPLENAME"
 
         echo "Extracting GENE regions"
-        BAM2GFF_gtftogenes.py -g $GTFFILE -f $FEATURE -c $CHROMSIZES -d ~{distance}
+        BAM2GFF_gtftogenes.py -g $GTFFILE -c $CHROMSIZES -d ~{distance}
 
         mkdir -p $MATRIXFILES
         echo "Working on Promoter Region"

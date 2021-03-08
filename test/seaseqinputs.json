@@ -7,7 +7,6 @@
     "seaseq.reference" : "./hg19/CHR21INDEX/hg19_chr21.fa",
     "seaseq.blacklist" : "./hg19/hg19-blacklist.v2_chr21.bed",
     "seaseq.gtf" : "./hg19/GRCh37_latest_genomic_chr21.gtf",
-    "seaseq.gtf_feature" : "gene",
     "seaseq.motif_databases" : 
     [
         "./hg19/motifs/JASPAR2018_CORE_vertebrates_redundant.meme",

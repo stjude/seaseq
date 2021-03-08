@@ -14,7 +14,6 @@ import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/r
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sortbed.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sratoolkit.wdl" as sra
 
-
 workflow seaseq {
     String pipeline_ver = 'v1.0.0'
 
@@ -67,8 +66,6 @@ workflow seaseq {
         Array[String]? sra_id 
         Array[File]? fastqfile
 
-        # group: pipeline_parameter        
-        String? gtf_feature = "transcript"
     }
 
     parameter_meta {
@@ -107,12 +104,6 @@ workflow seaseq {
             group: 'input_genomic_data',
             help: 'Define if you want to analyze uploaded FASTQ files.'
         }
-        gtf_feature: {
-            description: 'Gene Annotation feature',
-            group: 'pipeline_parameter',
-            help: 'Gene feature. Default is transcript',
-            example: ['gene', 'transcript']
-        }     
     }
 
     if ( defined(sra_id) ) {
@@ -244,7 +235,6 @@ workflow seaseq {
         
         call bamtogff.bamtogff {
             input :
-                feature=gtf_feature,
                 gtffile=gtf,
                 chromsizes=samtools_faidx.chromsizes,
                 bamfile=markdup.mkdupbam,
@@ -291,7 +281,6 @@ workflow seaseq {
 
         call rose.rose {
             input :
-                feature=gtf_feature,
                 gtffile=gtf,
                 bamfile=downstream_bam,
                 bamindex=rose_indexbam,
