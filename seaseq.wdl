@@ -46,11 +46,6 @@ workflow seaseq {
                 title: 'Input FASTQ data',
                 description: 'Genomic input files for experiment.',
                 help: 'Input one or more sample data and/or SRA identifiers.'
-            },
-            pipeline_parameter: {
-                title: 'Pipeline Parameter',
-                description: 'SEASEQ pipeline type.',
-                help: 'Specify parameter gene feature type.'
             } 
         }
     }
@@ -76,33 +71,33 @@ workflow seaseq {
         blacklist: {
             description: 'Blacklist file in BED format',
             group: 'reference_genome',
-            help: 'If it is defined, regions listed will be filtered out after reference alignement.'
+            help: 'If defined, blacklist regions listed are excluded after reference alignment.'
         }
         gtf: {
             description: 'gene annotation file (.gtf)',
-            group: 'reference_genome'
+            group: 'reference_genome',
+            help: 'Input gene annotation file from RefSeq or GENCODE (.gtf).'
         }
         bowtie_index: {
             description: 'bowtie v1 index files (*.ebwt)',
             group: 'reference_genome',
-            help: 'If not defined, bowtie v1 index files will be generated, will take a longer compute time.'
+            help: 'If not defined, bowtie v1 index files are generated, will take a longer compute time.'
         }
         motif_databases: {
             description: 'One or more of the MEME suite motif databases (*.meme)',
             group: 'reference_genome',
             help: 'Input one or more motif databases available from the MEME suite (https://meme-suite.org/meme/db/motifs).'
         }
-
         sra_id: {
             description: 'One or more SRA (Sequence Read Archive) run identifiers',
             group: 'input_genomic_data',
-            help: 'Define if you want to analyze publicly available FASTQs (SRR). Multiple SRRs are separated by commas (,).',
+            help: 'Input publicly available FASTQs (SRRs). Multiple SRRs are separated by commas (,).',
             example: 'SRR12345678'
         }
         fastqfile: {
             description: 'One or more FASTQs',
             group: 'input_genomic_data',
-            help: 'Define if you want to analyze uploaded FASTQ files.'
+            help: 'Upload zipped FASTQ files.'
         }
     }
 
