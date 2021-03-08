@@ -20,8 +20,8 @@
 1. Build wdl workflow
 
     ```
-    #using dxWDL-v1.48
-    java -jar dxWDL-v1.48.jar compile seaseq.wdl \
+    #using dxWDL-v1.50
+    java -jar dxWDL-v1.50.jar compile seaseq.wdl \
         -project project-id \
         -extras extras.json \
         -folder /apps
