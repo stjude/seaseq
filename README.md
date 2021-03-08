@@ -69,9 +69,20 @@ Outputs are grouped into subdirectories:
 9. Annotation of peaks in genic regions.
 10. Assessment of quality by calculating relevant metrics including those recommmended by the [ENCODE consortium]. More information is provided [here](#qc-metrics).
 
+
+## SEAseq on Linux or HPC
+
+SEAseq pipeline requires the [Cromwell](https://github.com/broadinstitute/cromwell/releases) runner, docker/singularity,
+and about 30GB of supplemental data. 
+```bash
+java -jar cromwell.jar run seaseq.wdl -i inputs.json -o options.json
+```
+View `/test` folder for example usage and further instructions.
+
+
 ## SEAseq on St. Jude cloud
 
-Before you can run one of our workflows, you must first create a workspace in
+Before you can run SEAseq on St. Jude Cloud, you must first create a workspace in
 DNAnexus for the run. Refer to [the general workflow
 guide](https://university.stjude.cloud/docs/genomics-platform/analyzing-data/running-sj-workflows#getting-started) to learn 
 how to create a DNAnexus workspace for each workflow run.
