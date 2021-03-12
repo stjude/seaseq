@@ -34,7 +34,8 @@ main() {
     cd seaseq
     git checkout 1.0
     cd dnanexus
-    reorg_id=$(dx build seaseq-reorg | jq -r '.id')
+    dx mkdir ${DX_PROJECT_CONTEXT_ID}:/apps/
+    reorg_id=$(dx build -d ${DX_PROJECT_CONTEXT_ID}:/apps/ -f seaseq-reorg | jq -r '.id')
     echo "Reorg applet ID: ${reorg_id}"
     sed -ibak "s/applet-Fx40j6091FfQp1P99p6b5k2x/${reorg_id}/" extras.json
     cd ..
