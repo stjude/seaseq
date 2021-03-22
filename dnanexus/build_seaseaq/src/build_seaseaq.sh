@@ -34,7 +34,7 @@ main() {
     cd seaseq
     git checkout 1.0
     cd dnanexus
-    dx mkdir ${DX_PROJECT_CONTEXT_ID}:/apps/
+    dx mkdir -p ${DX_PROJECT_CONTEXT_ID}:/apps/
     reorg_id=$(dx build -d ${DX_PROJECT_CONTEXT_ID}:/apps/ -f seaseq-reorg | jq -r '.id')
     echo "Reorg applet ID: ${reorg_id}"
     sed -ibak "s/applet-Fx40j6091FfQp1P99p6b5k2x/${reorg_id}/" extras.json
@@ -42,6 +42,6 @@ main() {
     wget https://github.com/dnanexus/dxWDL/releases/download/v1.50/dxWDL-v1.50.jar
     echo '476621564b3b310b17598ee1f02a1865 dxWDL-v1.50.jar' > dxWDL-v1.50.jar.md5
     md5sum -c dxWDL-v1.50.jar.md5    
-    java -jar dxWDL-v1.50.jar compile seaseq.wdl -project ${DX_PROJECT_CONTEXT_ID} -extras dnanexus/extras.json -folder /apps
-    
+    wf_id=$(java -jar dxWDL-v1.50.jar compile seaseq.wdl -project ${DX_PROJECT_CONTEXT_ID} -extras dnanexus/extras.json -folder /apps -archive)
+    echo "Workflow ID: ${wf_id}"
 }
