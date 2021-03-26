@@ -9,7 +9,9 @@
       "label": "Config",
       "help": "",
       "class": "file",
-      "patterns": ["*"],
+      "patterns": [
+        "*"
+      ],
       "optional": true
     },
     {
@@ -39,7 +41,7 @@
     "project": "CONTRIBUTE"
   },
   "authorizedUsers": [
-    "org-stjude_cloud", 
+    "org-stjude_cloud",
     "org-stjude_cloud_app_runners"
   ],
   "ignoreReuse": true,
