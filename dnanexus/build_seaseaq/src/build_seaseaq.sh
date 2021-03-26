@@ -41,7 +41,23 @@ main() {
     cd ..
     wget https://github.com/dnanexus/dxWDL/releases/download/v1.50/dxWDL-v1.50.jar
     echo '476621564b3b310b17598ee1f02a1865 dxWDL-v1.50.jar' > dxWDL-v1.50.jar.md5
-    md5sum -c dxWDL-v1.50.jar.md5    
-    wf_id=$(java -jar dxWDL-v1.50.jar compile seaseq.wdl -project ${DX_PROJECT_CONTEXT_ID} -extras dnanexus/extras.json -folder /apps -archive)
+    md5sum -c dxWDL-v1.50.jar.md5
+    # Test without the extras since running this way doesn't upload outputs to the project.
+    # -extras dnanexus/extras.json 
+    wf_id=$(java -jar dxWDL-v1.50.jar compile seaseq.wdl -project ${DX_PROJECT_CONTEXT_ID} -folder /apps -archive)
     echo "Workflow ID: ${wf_id}"
+    
+
+    echo "LAUNCHING WORKFLOW"
+    jq 'walk( if type == "object" then with_entries( .key |= if startswith("$dnanexus") then . else sub( "^"; "stage-common.") end)  else . end )' /home/dnanexus/job_input.json > /home/dnanexus/wf_input.json
+    cat /home/dnanexus/wf_input.json
+    folder=$(jq -r ".folder" /home/dnanexus/dnanexus-job.json)
+    echo "Project: ${DX_PROJECT_CONTEXT_ID}"
+    echo "Output folder: ${folder}"
+    echo "Running SEAseq: dx run -y \"$wf_id\" --brief -f /home/dnanexus/wf_input.json --extra-args '{\"executionPolicy\": {\"onNonRestartableFailure\": \"failStage\"}}' --destination ${DX_PROJECT_CONTEXT_ID}:${folder}"
+    analysis_id=$(dx run -y "$wf_id" --brief -f /home/dnanexus/wf_input.json --extra-args '{"executionPolicy": {"onNonRestartableFailure": "failStage"}}' --destination ${DX_PROJECT_CONTEXT_ID}:${folder})
+    echo "Waiting for $analysis_id to complete..."
+    dx wait "$analysis_id"
+    dx describe --json "$analysis_id" | jq ".output" | jq 'walk(if type == "object"  then with_entries(select(.key | test("^stage-outputs|dnanexus_link|^___$") )) else . end) | walk( if type == "object" then with_entries( .key |= if startswith("stage-outputs") then sub( "^stage-outputs."; "") else . end  )  else . end ) |walk( if type == "object" then with_entries( .key |= if endswith("___dxfiles") then sub( "___dxfiles$"; "") else . end  )  else . end )  | walk (if (type == "object" and has("___")) then .|=.___ else . end)' > /home/dnanexus/job_output.json
+    cat /home/dnanexus/job_output.json
 }
