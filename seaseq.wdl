@@ -66,27 +66,32 @@ workflow seaseq {
     parameter_meta {
         reference: {
             description: 'Reference FASTA file',
-            group: 'reference_genome'
+            group: 'reference_genome',
+            patterns: ["*.fa"]
         }
         blacklist: {
             description: 'Blacklist file in BED format',
             group: 'reference_genome',
-            help: 'If defined, blacklist regions listed are excluded after reference alignment.'
+            help: 'If defined, blacklist regions listed are excluded after reference alignment.',
+            patterns: ["*.bed"]
         }
         gtf: {
             description: 'gene annotation file (.gtf)',
             group: 'reference_genome',
-            help: 'Input gene annotation file from RefSeq or GENCODE (.gtf).'
+            help: 'Input gene annotation file from RefSeq or GENCODE (.gtf).',
+            patterns: ["*.gtf"]
         }
         bowtie_index: {
             description: 'bowtie v1 index files (*.ebwt)',
             group: 'reference_genome',
-            help: 'If not defined, bowtie v1 index files are generated, will take a longer compute time.'
+            help: 'If not defined, bowtie v1 index files are generated, will take a longer compute time.',
+            patterns: ["*.ebwt"]
         }
         motif_databases: {
             description: 'One or more of the MEME suite motif databases (*.meme)',
             group: 'reference_genome',
-            help: 'Input one or more motif databases available from the MEME suite (https://meme-suite.org/meme/db/motifs).'
+            help: 'Input one or more motif databases available from the MEME suite (https://meme-suite.org/meme/db/motifs).',
+            patterns: ["*.meme"]
         }
         sra_id: {
             description: 'One or more SRA (Sequence Read Archive) run identifiers',
@@ -97,7 +102,8 @@ workflow seaseq {
         fastqfile: {
             description: 'One or more FASTQs',
             group: 'input_genomic_data',
-            help: 'Upload zipped FASTQ files.'
+            help: 'Upload zipped FASTQ files.',
+            patterns: ["*.fq.gz", "*.fastq.gz"]
         }
     }
 
