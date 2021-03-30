@@ -38,7 +38,8 @@
     "network": [
       "*"
     ],
-    "project": "CONTRIBUTE"
+    "project": "CONTRIBUTE",
+    "allProjects": "CONTRIBUTE"
   },
   "authorizedUsers": [
     "org-stjude_cloud",

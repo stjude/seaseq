@@ -35,7 +35,10 @@
       "name": "bowtie_index",
       "class": "array:file",
       "optional": true,
-      "help": "If not defined, bowtie v1 index files are generated, will take a longer compute time."
+      "help": "If not defined, bowtie v1 index files are generated, will take a longer compute time.",
+      "patterns": [
+        "*.ebwt"
+      ]
     },
     {
       "name": "motif_databases",
