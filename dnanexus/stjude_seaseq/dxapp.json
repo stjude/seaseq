@@ -1,0 +1,511 @@
+{
+  "name": "stjude_seaseaq",
+  "title": "Run the St. Jude SEAseq workflow",
+  "summary": "stjude_seaseaq",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "inputSpec": [
+    {
+      "name": "reference",
+      "class": "file",
+      "optional": false,
+      "help": "Reference FASTA file.",
+      "patterns": [
+        "*.fa"
+      ]
+    },
+    {
+      "name": "blacklist",
+      "class": "file",
+      "optional": true,
+      "help": "If defined, blacklist regions listed are excluded after reference alignment."
+    },
+    {
+      "name": "gtf",
+      "class": "file",
+      "optional": false,
+      "help": "Input gene annotation file from RefSeq or GENCODE (.gtf).",
+      "patterns": [
+        "*.gff",
+        "*.gtf",
+        "*.gff3"
+      ]
+    },
+    {
+      "name": "bowtie_index",
+      "class": "array:file",
+      "optional": true,
+      "help": "If not defined, bowtie v1 index files are generated, will take a longer compute time.",
+      "patterns": [
+        "*.ebwt"
+      ]
+    },
+    {
+      "name": "motif_databases",
+      "class": "array:file",
+      "optional": false,
+      "help": "Input one or more motif databases available from the MEME suite (https://meme-suite.org/meme/db/motifs).",
+      "patterns": [
+        "*.meme"
+      ]
+    },
+    {
+      "name": "sra_id",
+      "class": "array:string",
+      "optional": true,
+      "help": "Input publicly available FASTQs (SRRs). Multiple SRRs are separated by commas (,). e.g. SRR12345678"
+    },
+    {
+      "name": "fastqfile",
+      "class": "array:file",
+      "optional": true,
+      "help": "Upload zipped FASTQ files.",
+      "patterns": [
+        "*.fq",
+        "*.fastq",
+        "*.fq.gz",
+        "*.fastq.gz"
+      ]
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "e_to_g_enhancers",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "stitch_enhancers",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "gene_comparison",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "summit_meme",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "m_promoters",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "png_h_promoters",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "mapped_union",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "summit_ame_tsv",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "peakxlsfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "summitsfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "bam_htmlfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "summit_meme_summary",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "zipfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "densityplot",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "peak_comparison",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "union_enhancers",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "pdf_h_gene",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "mkdup_indexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "ame_tsv",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "e_to_g_super_enhancers",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "n_tdffile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "pdf_promoters",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "m_genebody",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "meme_summary",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "nm_wigfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "gff_file",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "summit_ame_html",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "gff_union",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "flankbedfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "peak_window",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "pdf_comparison",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "qc_statsfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "ame_html",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "all_wigfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "n_norm_wig",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "scoreisland",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "a_tdffile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "peak_closest",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "pdf_h_promoters",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "norm_wig",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "pdf_gene",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "sicer_wigfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "a_norm_wig",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "nm_summitsfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "peak_promoters",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "all_peakbedfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "g_to_e_enhancers",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "g_to_e_super_enhancers",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "mapped_stitch",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "bklistbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "ame_seq",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "meme",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "qc_htmlfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "bklist_indexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "peak_genebody",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "htmlfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "wigfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "summit_ame_seq",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "nm_peakxlsfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "n_bigwig",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "all_peakxlsfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "nm_peakbedfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "mkdupbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "bigwig",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "png_h_gene",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "bam_zipfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "tdffile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "peakbedfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "pngfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "super_enhancers",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "qc_textfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "sortedbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "metrics_out",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "a_bigwig",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "enhancers",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "m_upstream",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "all_summitsfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "m_downstream",
+      "class": "array:file",
+      "optional": true
+    }
+  ],
+  "runSpec": {
+    "timeoutPolicy": {
+      "*": {
+        "hours": 48
+      }
+    },
+    "interpreter": "bash",
+    "file": "src/stjude_seaseaq.sh",
+    "distribution": "Ubuntu",
+    "release": "20.04",
+    "version": "0",
+    "execDepends": [
+      {
+        "name": "openjdk-11-jre-headless"
+      }
+    ]
+  },
+  "access": {
+    "network": [
+      "*"
+    ],
+    "project": "CONTRIBUTE"
+  },
+  "authorizedUsers": [
+    "org-stjude_cloud",
+    "org-stjude_cloud_app_runners"
+  ],
+  "regionalOptions": {
+    "aws:us-east-1": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem1_ssd1_v2_x4"
+        }
+      }
+    },
+    "azure:westus": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "azure:mem1_ssd1_x4"
+        }
+      }
+    }
+  }
+}

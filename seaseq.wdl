@@ -443,7 +443,7 @@ workflow seaseq {
         Array[File?] pdf_h_promoters = bamtogff.pdf_h_promoters
         Array[File?] png_h_promoters = bamtogff.png_h_promoters
 
-	#PEAKS-ANNOTATION
+        #PEAKS-ANNOTATION
         Array[File?] peak_promoters = peaksanno.peak_promoters
         Array[File?] peak_genebody = peaksanno.peak_genebody
         Array[File?] peak_window = peaksanno.peak_window
