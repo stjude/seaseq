@@ -1,7 +1,7 @@
 {
-  "name": "build_seaseaq",
-  "title": "Build SEAseq workflow",
-  "summary": "build_seaseaq",
+  "name": "stjude_seaseaq",
+  "title": "Run the St. Jude SEAseq workflow",
+  "summary": "stjude_seaseaq",
   "dxapi": "1.0.0",
   "version": "0.0.1",
   "inputSpec": [
@@ -472,7 +472,7 @@
       }
     },
     "interpreter": "bash",
-    "file": "src/build_seaseaq.sh",
+    "file": "src/stjude_seaseaq.sh",
     "distribution": "Ubuntu",
     "release": "20.04",
     "version": "0",

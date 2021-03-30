@@ -1,4 +1,4 @@
-# build_seaseaq Developer Readme
+# stjude_seaseaq Developer Readme
 
 <!--
 TODO: Please edit this Readme.developer.md file to include information
