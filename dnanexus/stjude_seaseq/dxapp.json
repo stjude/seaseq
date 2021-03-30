@@ -488,6 +488,10 @@
     ],
     "project": "CONTRIBUTE"
   },
+  "authorizedUsers": [
+    "org-stjude_cloud",
+    "org-stjude_cloud_app_runners"
+  ],
   "regionalOptions": {
     "aws:us-east-1": {
       "systemRequirements": {
