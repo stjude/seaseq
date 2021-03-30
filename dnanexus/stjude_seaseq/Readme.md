@@ -1,7 +1,7 @@
 <!-- dx-header -->
-# Run St. Jude SEAseq workflow (DNAnexus Platform App)
+# Run SEAseq workflow (DNAnexus Platform App)
 
-Run the SEAseq workflow
+SEAseq workflow
 
 This is the source code for an app that runs on the DNAnexus Platform.
 For more information about how to run or modify it, see
