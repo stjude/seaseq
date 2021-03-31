@@ -18,8 +18,8 @@ workflow seaseq {
     String pipeline_ver = 'v1.0.0'
 
     meta {
-        title: 'SEASEQ Pipeline'
-        summary: 'Single-End Antibody Sequencing (SEASEQ) Pipeline'
+        title: 'SEAseq Analysis'
+        summary: 'Single-End Antibody Sequencing (SEAseq) Pipeline'
         description: 'A comprehensive automated computational pipeline for all ChIP-Seq/CUT&RUN data analysis.'
         version: '1.0.0'
         details: {
@@ -31,7 +31,7 @@ workflow seaseq {
             upstreamUrl: 'https://github.com/stjude/seaseq',
             whatsNew: [
                 {
-                    version: "1.1",
+                    version: "1.0",
                     changes: ["Initial release"]
                 }
             ]
