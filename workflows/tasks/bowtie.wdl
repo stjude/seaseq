@@ -66,6 +66,7 @@ task index {
             gunzip -c ~{reference} > ~{sub(basename(reference),'.gz','')}
         else
            ln -s ~{reference} ~{sub(basename(reference),'.gz','')}
+        fi
 
         bowtie-build --threads ~{ncpu} ~{sub(basename(reference),'.gz','')} ~{sub(basename(reference),'.gz','')}-index
     >>>

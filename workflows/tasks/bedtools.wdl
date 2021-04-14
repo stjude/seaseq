@@ -24,11 +24,13 @@ task intersect {
             gunzip -c ~{fileA} > ~{sub(basename(fileA),'.gz','')}
         else
            ln -s ~{fileA} ~{sub(basename(fileA),'.gz','')}
+        fi
 
         if [[ "~{fileB}" == *"gz" ]]; then
             gunzip -c ~{fileB} > ~{sub(basename(fileB),'.gz','')}
         else
            ln -s ~{fileB} ~{sub(basename(fileB),'.gz','')}
+        fi
 
         intersectBed \
             ~{true="-v" false="" nooverlap} \
@@ -90,6 +92,7 @@ task bedfasta {
             gunzip -c ~{reference} > ~{sub(basename(reference),'.gz','')}
         else
            ln -s ~{reference} ~{sub(basename(reference),'.gz','')}
+        fi
 
         ln -s ~{reference_index} ~{basename(reference_index)}
 

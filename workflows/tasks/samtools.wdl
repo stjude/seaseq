@@ -107,6 +107,7 @@ task faidx {
             gunzip -c ~{reference} > ~{sub(basename(reference),'.gz','')}
         else
            ln -s ~{reference} ~{sub(basename(reference),'.gz','')}
+        fi
 
         samtools faidx ~{sub(basename(reference),'.gz','')} -o ~{sub(basename(reference),'.gz','')}.fai
         cut -f1,2 ~{sub(basename(reference),'.gz','')}.fai > ~{sub(basename(reference),'.gz','')}.tab
