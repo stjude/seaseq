@@ -83,7 +83,7 @@ workflow seaseq {
             description: 'gene annotation file (.gtf)',
             group: 'reference_genome',
             help: 'Input gene annotation file from RefSeq or GENCODE (.gtf).',
-            patterns: ["*.gtf"]
+            patterns: ["*.gtf", "*.gtf.gz", "*.gff", "*.gff.gz"]
         }
         bowtie_index: {
             description: 'bowtie v1 index files (*.ebwt)',
@@ -107,7 +107,7 @@ workflow seaseq {
             description: 'One or more FASTQs',
             group: 'input_genomic_data',
             help: 'Upload zipped FASTQ files.',
-            patterns: ["*.fq.gz", "*.fastq.gz"]
+            patterns: ["*fq", "*.fq.gz", "*.fastq", "*.fastq.gz"]
         }
     }
 
