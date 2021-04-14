@@ -103,9 +103,13 @@ task faidx {
         Int ncpu = 1
     }
     command <<<
-        ln -s ~{reference} ~{basename(reference)}
-        samtools faidx ~{basename(reference)} -o ~{basename(reference)}.fai
-        cut -f1,2 ~{basename(reference)}.fai > ~{basename(reference)}.tab
+        if [[ "~{reference}" == *"gz" ]]; then
+            gunzip -c ~{reference} > ~{sub(basename(reference),'.gz','')}
+        else
+           ln -s ~{reference} ~{sub(basename(reference),'.gz','')}
+
+        samtools faidx ~{sub(basename(reference),'.gz','')} -o ~{sub(basename(reference),'.gz','')}.fai
+        cut -f1,2 ~{sub(basename(reference),'.gz','')}.fai > ~{sub(basename(reference),'.gz','')}.tab
     >>>
     runtime {
         memory: memory_gb + " GB"
@@ -114,7 +118,7 @@ task faidx {
         cpu: ncpu
     }
     output {
-	File faidx_file = "~{basename(reference)}.fai"
-        File chromsizes = "~{basename(reference)}.tab"
+	File faidx_file = "~{sub(basename(reference),'.gz','')}.fai"
+        File chromsizes = "~{sub(basename(reference),'.gz','')}.tab"
     }
 }
