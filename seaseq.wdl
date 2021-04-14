@@ -7,6 +7,7 @@ import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/m
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bamtogff.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sicer.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/workflows/motifs.wdl"
+#import "/Users/madetunj/Desktop/seaseq/workflows/workflows/motifs.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/rose.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/util.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/workflows/visualization.wdl" as viz
@@ -55,7 +56,7 @@ workflow seaseq {
         File? blacklist
         File gtf
         Array[File]? bowtie_index
-        Array[File]+ motif_databases
+        Array[File]? motif_databases
         
         # group: input_genomic_data
         Array[String]? sra_id 
@@ -67,13 +68,13 @@ workflow seaseq {
         reference: {
             description: 'Reference FASTA file',
             group: 'reference_genome',
-            patterns: ["*.fa"]
+            patterns: ["*.fa", "*.fasta", "*.fa.gz", "*.fasta.gz"]
         }
         blacklist: {
             description: 'Blacklist file in BED format',
             group: 'reference_genome',
             help: 'If defined, blacklist regions listed are excluded after reference alignment.',
-            patterns: ["*.bed"]
+            patterns: ["*.bed", "*.bed.gz"]
         }
         gtf: {
             description: 'gene annotation file (.gtf)',
@@ -254,28 +255,34 @@ workflow seaseq {
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/BROAD_peaks'
         }
         
-        call motifs.motifs {
-            input:
-                reference=reference,
-                reference_index=samtools_faidx.faidx_file,
-                bedfile=macs.peakbedfile,
-                motif_databases=motif_databases,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
-        }
-    
-        call util.flankbed {
-            input :
-                bedfile=macs.summitsfile,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
-        }
+        if ( defined(motif_databases) ) {
+            # motif prediction and enrichment analysis
+
+            Array[String] fake_motif_databases = [1]
+            Array[File] motif_databases_ = select_first([motif_databases, fake_motif_databases])
+            call motifs.motifs {
+                input:
+                    reference=reference,
+                    reference_index=samtools_faidx.faidx_file,
+                    bedfile=macs.peakbedfile,
+                    motif_databases=motif_databases_,
+                    default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
+            }
         
-        call motifs.motifs as flank {
-            input:
-                reference=reference,
-                reference_index=samtools_faidx.faidx_file,
-                bedfile=flankbed.flankbedfile,
-                motif_databases=motif_databases,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
+            call util.flankbed {
+                input :
+                    bedfile=macs.summitsfile,
+                    default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
+            }
+            
+            call motifs.motifs as flank {
+                input:
+                    reference=reference,
+                    reference_index=samtools_faidx.faidx_file,
+                    bedfile=flankbed.flankbedfile,
+                    motif_databases=motif_databases_,
+                    default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
+            }
         }
 
         File rose_indexbam = select_first([bklist.indexbam, indexstats.indexbam])
@@ -373,9 +380,6 @@ workflow seaseq {
         #BASICMETRICS
         Array[File] metrics_out = bfs.metrics_out
 
-        #FLANKBED
-        Array[File] flankbedfile = flankbed.flankbedfile
-
         #BAMFILES
         Array[File] sortedbam = viewsort.sortedbam
         Array[File] mkdupbam = markdup.mkdupbam
@@ -418,17 +422,19 @@ workflow seaseq {
         Array[File?] g_to_e_super_enhancers = rose.g_to_e_super_enhancers
 
         #MOTIFS
+        Array[File?] flankbedfile = flankbed.flankbedfile
+
         Array[File?] ame_tsv = motifs.ame_tsv
         Array[File?] ame_html = motifs.ame_html
         Array[File?] ame_seq = motifs.ame_seq
-        Array[File] meme = motifs.meme_out
-        Array[File] meme_summary = motifs.meme_summary
+        Array[File?] meme = motifs.meme_out
+        Array[File?] meme_summary = motifs.meme_summary
 
         Array[File?] summit_ame_tsv = flank.ame_tsv
         Array[File?] summit_ame_html = flank.ame_html
         Array[File?] summit_ame_seq = flank.ame_seq
-        Array[File] summit_meme = flank.meme_out
-        Array[File] summit_meme_summary = flank.meme_summary
+        Array[File?] summit_meme = flank.meme_out
+        Array[File?] summit_meme_summary = flank.meme_summary
 
         #BAM2GFF
         Array[File] m_downstream = bamtogff.m_downstream
