@@ -233,10 +233,16 @@ task peaksanno {
 
         cd ~{default_location}
 
+        if [[ "~{gtffile}" == *"gz" ]]; then
+            gunzip -c ~{gtffile} > ~{sub(basename(gtffile),'.gz','')}
+        else
+           ln -s ~{gtffile} ~{sub(basename(gtffile),'.gz','')}
+        fi
+
         peaksanno.py \
         -p ~{bedfile} \
         -s ~{summitfile} \
-        -g ~{gtffile} \
+        -g ~{sub(basename(gtffile),'.gz','')} \
         -c ~{chromsizes}
     >>>
     runtime {

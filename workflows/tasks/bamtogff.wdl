@@ -23,7 +23,13 @@ task bamtogff {
         ln -s ~{bamfile} ~{basename(bamfile)}
         ln -s ~{bamindex} ~{basename(bamindex)}
 
-        GTFFILE=~{gtffile}
+        if [[ "~{gtffile}" == *"gz" ]]; then
+            gunzip -c ~{gtffile} > ~{sub(basename(gtffile),'.gz','')}
+        else
+           ln -s ~{gtffile} ~{sub(basename(gtffile),'.gz','')}
+        fi
+
+        GTFFILE=~{sub(basename(gtffile),'.gz','')}
         BAMFILE=~{basename(bamfile)}
         CHROMSIZES=~{chromsizes}
         SAMPLENAME=~{samplename}
