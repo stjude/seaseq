@@ -20,10 +20,22 @@ task intersect {
     command <<<
         mkdir -p ~{default_location} && cd ~{default_location}
 
+        if [[ "~{fileA}" == *"gz" ]]; then
+            gunzip -c ~{fileA} > ~{sub(basename(fileA),'.gz','')}
+        else
+           ln -s ~{fileA} ~{sub(basename(fileA),'.gz','')}
+        fi
+
+        if [[ "~{fileB}" == *"gz" ]]; then
+            gunzip -c ~{fileB} > ~{sub(basename(fileB),'.gz','')}
+        else
+           ln -s ~{fileB} ~{sub(basename(fileB),'.gz','')}
+        fi
+
         intersectBed \
             ~{true="-v" false="" nooverlap} \
-            -a ~{fileA} \
-            -b ~{fileB} \
+            -a ~{sub(basename(fileA),'.gz','')} \
+            -b ~{sub(basename(fileB),'.gz','')} \
             ~{true="-c" false="" countoverlap} \
             ~{true="-sorted" false="" sorted} \
             > ~{outputfile}~{suffixname}
@@ -76,11 +88,17 @@ task bedfasta {
         Int ncpu = 1
     }
     command {
-        ln -s ~{reference} ~{basename(reference)}
+        if [[ "~{reference}" == *"gz" ]]; then
+            gunzip -c ~{reference} > ~{sub(basename(reference),'.gz','')}
+        else
+           ln -s ~{reference} ~{sub(basename(reference),'.gz','')}
+        fi
+
         ln -s ~{reference_index} ~{basename(reference_index)}
+
         bedtools \
             getfasta \
-            -fi ~{basename(reference)} \
+            -fi ~{sub(basename(reference),'.gz','')} \
             -bed ~{bedfile} \
             -fo ~{outputfile}
     }

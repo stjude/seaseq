@@ -55,7 +55,7 @@ workflow seaseq {
         File? blacklist
         File gtf
         Array[File]? bowtie_index
-        Array[File]+ motif_databases
+        Array[File]? motif_databases
         
         # group: input_genomic_data
         Array[String]? sra_id 
@@ -67,19 +67,19 @@ workflow seaseq {
         reference: {
             description: 'Reference FASTA file',
             group: 'reference_genome',
-            patterns: ["*.fa"]
+            patterns: ["*.fa", "*.fasta", "*.fa.gz", "*.fasta.gz"]
         }
         blacklist: {
             description: 'Blacklist file in BED format',
             group: 'reference_genome',
             help: 'If defined, blacklist regions listed are excluded after reference alignment.',
-            patterns: ["*.bed"]
+            patterns: ["*.bed", "*.bed.gz"]
         }
         gtf: {
             description: 'gene annotation file (.gtf)',
             group: 'reference_genome',
             help: 'Input gene annotation file from RefSeq or GENCODE (.gtf).',
-            patterns: ["*.gtf"]
+            patterns: ["*.gtf", "*.gtf.gz", "*.gff", "*.gff.gz"]
         }
         bowtie_index: {
             description: 'bowtie v1 index files (*.ebwt)',
@@ -103,7 +103,7 @@ workflow seaseq {
             description: 'One or more FASTQs',
             group: 'input_genomic_data',
             help: 'Upload zipped FASTQ files.',
-            patterns: ["*.fq.gz", "*.fastq.gz"]
+            patterns: ["*fq", "*.fq.gz", "*.fastq", "*.fastq.gz"]
         }
     }
 
@@ -218,7 +218,16 @@ workflow seaseq {
                 keep_dup="auto",
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-p9_kd-auto'
         }
-    
+
+        call util.peaksanno {
+            input :
+                gtffile=gtf,
+                bedfile=macs.peakbedfile,
+                chromsizes=samtools_faidx.chromsizes,
+                summitfile=macs.summitsfile,
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Annotation/NARROW_peaks'+'/'+sub(basename(macs.peakbedfile),'\_peaks.bed','')
+        }
+
         call macs.macs as all {
             input :
                 bamfile=downstream_bam,
@@ -226,7 +235,16 @@ workflow seaseq {
                 keep_dup="all",
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-p9_kd-all'
         }
-        
+
+        call util.peaksanno as all_peaksanno {
+            input :
+                gtffile=gtf,
+                bedfile=all.peakbedfile,
+                chromsizes=samtools_faidx.chromsizes,
+                summitfile=all.summitsfile,
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Annotation/NARROW_peaks'+'/'+sub(basename(all.peakbedfile),'\_peaks.bed','')
+        }
+
         call macs.macs as nomodel {
             input :
                 bamfile=downstream_bam,
@@ -234,6 +252,15 @@ workflow seaseq {
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-nm'
         }
         
+        call util.peaksanno as nomodel_peaksanno {
+            input :
+                gtffile=gtf,
+                bedfile=nomodel.peakbedfile,
+                chromsizes=samtools_faidx.chromsizes,
+                summitfile=nomodel.summitsfile,
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Annotation/NARROW_peaks'+'/'+sub(basename(nomodel.peakbedfile),'\_peaks.bed','')
+        }
+
         call bamtogff.bamtogff {
             input :
                 gtffile=gtf,
@@ -253,29 +280,43 @@ workflow seaseq {
                 bedfile=bamtobed.bedfile,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/BROAD_peaks'
         }
-        
-        call motifs.motifs {
-            input:
-                reference=reference,
-                reference_index=samtools_faidx.faidx_file,
-                bedfile=macs.peakbedfile,
-                motif_databases=motif_databases,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
-        }
-    
-        call util.flankbed {
+
+        call util.peaksanno as sicer_peaksanno {
             input :
-                bedfile=macs.summitsfile,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
+                gtffile=gtf,
+                bedfile=sicer.scoreisland,
+                chromsizes=samtools_faidx.chromsizes,
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Annotation/BROAD_peaks'
         }
         
-        call motifs.motifs as flank {
-            input:
-                reference=reference,
-                reference_index=samtools_faidx.faidx_file,
-                bedfile=flankbed.flankbedfile,
-                motif_databases=motif_databases,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
+        if ( defined(motif_databases) ) {
+            # motif prediction and enrichment analysis
+
+            Array[String] fake_motif_databases = [1]
+            Array[File] motif_databases_ = select_first([motif_databases, fake_motif_databases])
+            call motifs.motifs {
+                input:
+                    reference=reference,
+                    reference_index=samtools_faidx.faidx_file,
+                    bedfile=macs.peakbedfile,
+                    motif_databases=motif_databases_,
+                    default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
+            }
+        
+            call util.flankbed {
+                input :
+                    bedfile=macs.summitsfile,
+                    default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
+            }
+            
+            call motifs.motifs as flank {
+                input:
+                    reference=reference,
+                    reference_index=samtools_faidx.faidx_file,
+                    bedfile=flankbed.flankbedfile,
+                    motif_databases=motif_databases_,
+                    default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/MOTIFS'
+            }
         }
 
         File rose_indexbam = select_first([bklist.indexbam, indexstats.indexbam])
@@ -288,15 +329,6 @@ workflow seaseq {
                 bedfile_auto=macs.peakbedfile,
                 bedfile_all=all.peakbedfile,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/STITCHED_peaks'
-        }
-
-        call util.peaksanno {
-            input :
-                gtffile=gtf,
-                bedfile=macs.peakbedfile,
-                chromsizes=samtools_faidx.chromsizes,
-                summitfile=macs.summitsfile,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Annotation'
         }
 
         call viz.visualization {
@@ -373,9 +405,6 @@ workflow seaseq {
         #BASICMETRICS
         Array[File] metrics_out = bfs.metrics_out
 
-        #FLANKBED
-        Array[File] flankbedfile = flankbed.flankbedfile
-
         #BAMFILES
         Array[File] sortedbam = viewsort.sortedbam
         Array[File] mkdupbam = markdup.mkdupbam
@@ -418,17 +447,19 @@ workflow seaseq {
         Array[File?] g_to_e_super_enhancers = rose.g_to_e_super_enhancers
 
         #MOTIFS
+        Array[File?] flankbedfile = flankbed.flankbedfile
+
         Array[File?] ame_tsv = motifs.ame_tsv
         Array[File?] ame_html = motifs.ame_html
         Array[File?] ame_seq = motifs.ame_seq
-        Array[File] meme = motifs.meme_out
-        Array[File] meme_summary = motifs.meme_summary
+        Array[File?] meme = motifs.meme_out
+        Array[File?] meme_summary = motifs.meme_summary
 
         Array[File?] summit_ame_tsv = flank.ame_tsv
         Array[File?] summit_ame_html = flank.ame_html
         Array[File?] summit_ame_seq = flank.ame_seq
-        Array[File] summit_meme = flank.meme_out
-        Array[File] summit_meme_summary = flank.meme_summary
+        Array[File?] summit_meme = flank.meme_out
+        Array[File?] summit_meme_summary = flank.meme_summary
 
         #BAM2GFF
         Array[File] m_downstream = bamtogff.m_downstream
@@ -451,6 +482,27 @@ workflow seaseq {
         Array[File?] peak_comparison = peaksanno.peak_comparison
         Array[File?] gene_comparison = peaksanno.gene_comparison
         Array[File?] pdf_comparison = peaksanno.pdf_comparison
+        Array[File?] all_peak_promoters = all_peaksanno.peak_promoters
+        Array[File?] all_peak_genebody = all_peaksanno.peak_genebody
+        Array[File?] all_peak_window = all_peaksanno.peak_window
+        Array[File?] all_peak_closest = all_peaksanno.peak_closest
+        Array[File?] all_peak_comparison = all_peaksanno.peak_comparison
+        Array[File?] all_gene_comparison = all_peaksanno.gene_comparison
+        Array[File?] all_pdf_comparison = all_peaksanno.pdf_comparison
+        Array[File?] nomodel_peak_promoters = nomodel_peaksanno.peak_promoters
+        Array[File?] nomodel_peak_genebody = nomodel_peaksanno.peak_genebody
+        Array[File?] nomodel_peak_window = nomodel_peaksanno.peak_window
+        Array[File?] nomodel_peak_closest = nomodel_peaksanno.peak_closest
+        Array[File?] nomodel_peak_comparison = nomodel_peaksanno.peak_comparison
+        Array[File?] nomodel_gene_comparison = nomodel_peaksanno.gene_comparison
+        Array[File?] nomodel_pdf_comparison = nomodel_peaksanno.pdf_comparison
+        Array[File?] sicer_peak_promoters = sicer_peaksanno.peak_promoters
+        Array[File?] sicer_peak_genebody = sicer_peaksanno.peak_genebody
+        Array[File?] sicer_peak_window = sicer_peaksanno.peak_window
+        Array[File?] sicer_peak_closest = sicer_peaksanno.peak_closest
+        Array[File?] sicer_peak_comparison = sicer_peaksanno.peak_comparison
+        Array[File?] sicer_gene_comparison = sicer_peaksanno.gene_comparison
+        Array[File?] sicer_pdf_comparison = sicer_peaksanno.pdf_comparison
 
         #VISUALIZATION
         Array[File] bigwig = visualization.bigwig

@@ -62,7 +62,13 @@ task index {
         Int ncpu = 20
     }
     command <<<
-        bowtie-build --threads ~{ncpu} ~{reference} ~{basename(reference)}
+        if [[ "~{reference}" == *"gz" ]]; then
+            gunzip -c ~{reference} > ~{sub(basename(reference),'.gz','')}
+        else
+           ln -s ~{reference} ~{sub(basename(reference),'.gz','')}
+        fi
+
+        bowtie-build --threads ~{ncpu} ~{sub(basename(reference),'.gz','')} ~{sub(basename(reference),'.gz','')}-index
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
@@ -71,6 +77,6 @@ task index {
         cpu: ncpu
     }
     output {
-        Array[File] bowtie_indexes = glob("~{basename(reference)}*")
+        Array[File] bowtie_indexes = glob("~{sub(basename(reference),'.gz','')}-index*")
     }
 }

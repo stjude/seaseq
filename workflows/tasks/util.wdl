@@ -3,7 +3,7 @@ version 1.0
 task basicfastqstats {
     input {
         File fastqfile
-        String outputfile = sub(basename(fastqfile),'\.f.*q\.gz', '-fastq.metrics.txt')
+        String outputfile = sub(basename(fastqfile),'\.f.*q\.gz', '-fastq.readlength_dist.txt')
         String default_location = "QC_files/STATS"
 
         Int max_retries = 1
@@ -218,7 +218,7 @@ task peaksanno {
 
     input {
         File bedfile
-	File summitfile
+	File? summitfile
         String default_location = "PEAKSAnnotation"
 
         File gtffile
@@ -233,10 +233,16 @@ task peaksanno {
 
         cd ~{default_location}
 
+        if [[ "~{gtffile}" == *"gz" ]]; then
+            gunzip -c ~{gtffile} > ~{sub(basename(gtffile),'.gz','')}
+        else
+           ln -s ~{gtffile} ~{sub(basename(gtffile),'.gz','')}
+        fi
+
         peaksanno.py \
         -p ~{bedfile} \
-        -s ~{summitfile} \
-        -g ~{gtffile} \
+        ~{if defined(summitfile) then "-s " + summitfile else ""} \
+        -g ~{sub(basename(gtffile),'.gz','')} \
         -c ~{chromsizes}
     >>>
     runtime {

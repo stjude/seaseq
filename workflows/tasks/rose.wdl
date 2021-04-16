@@ -25,7 +25,13 @@ task rose {
         ln -s ~{bamfile} ~{basename(bamfile)}
         ln -s ~{bamindex} ~{basename(bamindex)}
 
-        GTFFILE=~{gtffile}
+        if [[ "~{gtffile}" == *"gz" ]]; then
+            gunzip -c ~{gtffile} > ~{sub(basename(gtffile),'.gz','')}
+        else
+           ln -s ~{gtffile} ~{sub(basename(gtffile),'.gz','')}
+        fi
+
+
         SPECIES=~{species}
         BAMFILE=~{basename(bamfile)}
         TSS=~{tss}
@@ -55,7 +61,7 @@ task rose {
         import re
         import sys
         
-        gtf_input = open("~{gtffile}",'r')
+        gtf_input = open("~{sub(basename(gtffile),'.gz','')}",'r')
         print (gtf_input)
         refseq_output = open("annotation/~{species}_refseq.ucsc",'w')
 
@@ -77,7 +83,7 @@ task rose {
         print("NOTE :\tFeature type used is '%s'" %(feature))
 
         #organize gtf file
-        gtf_input = open("~{gtffile}",'r')
+        gtf_input = open("~{sub(basename(gtffile),'.gz','')}",'r')
         for line in gtf_input:
             if not line.startswith('#'):
                 lines = line.split("\t")

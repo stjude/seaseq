@@ -20,8 +20,10 @@ Output files provided are :
 	2) peaks overlapping genes regions in __*peaks_within_genebody.regions.txt*__
 	3) peaks overlapping promoters in __*peaks_within_promoter.regions.txt*__
 	4) peaks overlapping windows in __*peaks_within_window.regions.txt*__
-	5) peaks identified in previous overlapping regions and comparison of all regions in __*peaks_compared_regions.peaks.txt*__
-	6) genes identified in previous overlapping regions and comparison of all regions in __*peaks_compared_regions.genes.txt*__
+	5) peaks identified in previous overlapping regions and comparison of
+           all regions in __*peaks_compared_regions.peaks.txt*__
+	6) genes identified in previous overlapping regions and comparison of
+           all regions in __*peaks_compared_regions.genes.txt*__
 	7) distribution graphs in __*peaks_compared_regions.distribution.pdf*__
 
 Definitions of annotation regions:
@@ -36,7 +38,7 @@ Dependencies of script:
 
 ==================================================================
 '''
-    
+
 import os
 import sys
 import re
@@ -49,8 +51,7 @@ from collections import defaultdict
 
 if not os.path.exists('annotation'):
     os.makedirs('annotation')
-    
-    
+
 def parse_genelocations(chromz, results, up_dist, down_dist, tss=True):
     """ Parse genomic regions
     Args:
@@ -164,30 +165,32 @@ def gtf_to_genes(chrom_sizes_file, gtf_file):
                 genebody_output.write(final_output)
 
 
-def annotate_regions(macs_summits_file, region_file, output_file):
+def annotate_regions(region_file, output_file, macs_summits_file=None):
     """ Annotate Peaks based on genomic features
     Args:
-        macs_summits_file (file) : MACS summits file
         region_file (file) : Region file
         output_file (string) : Output file name
+        macs_summits_file (file) : MACS summits file
     """
-    
+
     #initialize chromosomal positions based on gff provided
     opt_chrom = 0
     opt_start = 1
     opt_stop = 2
     opt_peakid = 3
     opt_score = 4
+    opt_none = 6
     opt_gene = 8
     opt_transcript = 9
 
-    #read summits file
-    summits_input = open(macs_summits_file, 'r')
     summits_dict = {}
-    for line in summits_input:
-        line = line.strip('\n').split('\t')
-        string_identifier = line[opt_start], line[opt_stop]
-        summits_dict[line[opt_peakid]] = string_identifier
+    if macs_summits_file:
+        #read summits file
+        summits_input = open(macs_summits_file, 'r')
+        for line in summits_input:
+            line = line.strip('\n').split('\t')
+            string_identifier = line[opt_start], line[opt_stop]
+            summits_dict[line[opt_peakid]] = string_identifier
 
     #read intersectbed file
     intersect_input = open(region_file, 'r')
@@ -198,20 +201,22 @@ def annotate_regions(macs_summits_file, region_file, output_file):
     peak_region = []
     for line in intersect_input:
         line = line.strip('\n').split('\t')
-        string_identifier = line[opt_chrom], line[opt_start], line[opt_stop]
-        peaks_dict[string_identifier] = line[opt_peakid]
-        peaks_score[line[opt_peakid]] = line[opt_score]
-        peak_region.append(string_identifier)
+        #print(line[opt_none],"\n")
+        if int(line[opt_none]) != -1:
+            string_identifier = line[opt_chrom], line[opt_start], line[opt_stop]
+            peaks_dict[string_identifier] = line[opt_peakid]
+            peaks_score[line[opt_peakid]] = line[opt_score]
+            peak_region.append(string_identifier)
 
-        if string_identifier in gene_dict:
-            gene_dict[string_identifier] = ("{0},{1}".format(gene_dict[string_identifier],
-                                                             line[opt_gene]))
-            transcript_dict[string_identifier] = ("{0},{1}".
-                                                  format(transcript_dict[string_identifier],
-                                                         line[opt_transcript]))
-        else:
-            gene_dict[string_identifier] = line[opt_gene]
-            transcript_dict[string_identifier] = line[opt_transcript]
+            if string_identifier in gene_dict:
+                gene_dict[string_identifier] = ("{0},{1}".format(gene_dict[string_identifier],
+                                                                 line[opt_gene]))
+                transcript_dict[string_identifier] = ("{0},{1}".
+                                                      format(transcript_dict[string_identifier],
+                                                             line[opt_transcript]))
+            else:
+                gene_dict[string_identifier] = line[opt_gene]
+                transcript_dict[string_identifier] = line[opt_transcript]
 
     #each peak id is unique
     unique_peak_region = []
@@ -221,19 +226,32 @@ def annotate_regions(macs_summits_file, region_file, output_file):
 
     #write to output file
     final_output = open(output_file, 'w')
-    final_output.write("peak_id\tchrom\tpeak_start\tpeak_end\t"
-                       "summit_start\tsummit_end\tgene_name\t"
-                       "transcript_id\tpeak_score\n")
 
-    #print regions identified
-    for chromregion in unique_peak_region:
-        peakid = peaks_dict[chromregion]
-        final_output.write("%s\t%s\t%s\t%s\t%s\t%s\n"
-                           %(peakid, '\t'.join(chromregion), '\t'.join(summits_dict[peakid]),
-                             ','.join(unique(gene_dict[chromregion])),
-                             ','.join(unique(transcript_dict[chromregion])),
-                             peaks_score[peakid]))
+    if macs_summits_file:
+        final_output.write("peak_id\tchrom\tpeak_start\tpeak_end\t"
+                           "summit_start\tsummit_end\tgene_name\t"
+                           "transcript_id\tpeak_score\n")
 
+        #print regions identified
+        for chromregion in unique_peak_region:
+            peakid = peaks_dict[chromregion]
+            final_output.write("%s\t%s\t%s\t%s\t%s\t%s\n"
+                               %(peakid, '\t'.join(chromregion), '\t'.join(summits_dict[peakid]),
+                                 ','.join(unique(gene_dict[chromregion])),
+                                 ','.join(unique(transcript_dict[chromregion])),
+                                 peaks_score[peakid]))
+    else:
+        final_output.write("peak_id\tchrom\tpeak_start\tpeak_end\t"
+                           "gene_name\ttranscript_id\tpeak_score\n")
+
+        #print regions identified
+        for chromregion in unique_peak_region:
+            peakid = peaks_dict[chromregion]
+            final_output.write("%s\t%s\t%s\t%s\t%s\n"
+                               %(peakid, '\t'.join(chromregion),
+                                 ','.join(unique(gene_dict[chromregion])),
+                                 ','.join(unique(transcript_dict[chromregion])),
+                                 peaks_score[peakid]))
 
 def unique(list1):
     """ Get unique list
@@ -258,14 +276,14 @@ def include_genes(macs_peaks_file, file_name):
         macs_peaks_file (file) : MACS peaks file
         output_file (string) : Output file name
     """
-    peaks_input = open(macs_peaks_file,'r')
+    peaks_input = open(macs_peaks_file, 'r')
     peaks_chr_dict = {}
     peaks_count = 0
     for line in peaks_input:
         line = line.strip('\n').split('\t')
         peaks_count += 1
         peaks_chr_dict[line[3]] = (line[0:3])
-        
+
     #reading the gtf genes file
     gene_names_dict = {}
     gene_names_input = open("tempPrefix.genes.names", 'r')
@@ -287,7 +305,9 @@ def include_genes(macs_peaks_file, file_name):
             region_dict[region_name.upper()][(line[8], line[9])] = (line[8], line[9])
             peaks_id_dict[region_name.upper()][line[3]] = (line[0:3])
     peaks_id_list = peaks_chr_dict.keys()
-    peaks_id_list = sorted(peaks_id_list, key=lambda item: (int(item[10:]) if item[10:].isdigit() else print(item[10:],type(item[10:])), item))
+    peaks_id_list = sorted(peaks_id_list, key=lambda item:
+                           (int(item[10:]) if item[10:].isdigit()
+                            else print(item[10:], type(item[10:])), item))
 
     #order regions and gene names
     region_names_list.sort()
@@ -321,10 +341,10 @@ def include_genes(macs_peaks_file, file_name):
                 barcodepeaks_id_dict[eachpeaks_id] += str(found)
             else:
                 barcodepeaks_id_dict[eachpeaks_id] = str(found)
-   
+
     #write to output file
-    gene_file_name = file_name.replace('.txt','.genes.txt')
-    
+    gene_file_name = file_name.replace('.txt', '.genes.txt')
+
     final_output = open(gene_file_name, 'w')
     final_output.write("GeneName\tTranscript_ID\tBARCODE\t%s\tEVER\n"
                        %('\t'.join(region_names_list)))
@@ -341,50 +361,55 @@ def include_genes(macs_peaks_file, file_name):
             string_identifier.append("0")
 
         final_output.write("%s\t%s\n" %('\t'.join(eachgene), '\t'.join(string_identifier)))
-        
-    peaks_file_name = file_name.replace('.txt','.peaks.txt')
-    pdf_file_name = file_name.replace('.txt','.distribution.pdf')
+
+    peaks_file_name = file_name.replace('.txt', '.peaks.txt')
+    pdf_file_name = file_name.replace('.txt', '.distribution.pdf')
     final_output_peaks = open(peaks_file_name, 'w')
     final_output_peaks.write("chrom\tstart\tstop\tpeak_id\tBARCODE\t%s\n"
-                       %('\t'.join(region_names_list)))
+                             %('\t'.join(region_names_list)))
     for eachpeaks_id in peaks_id_list:
         string_identifier = [barcodepeaks_id_dict[eachpeaks_id]]
         for eachkey in region_names_list:
             string_identifier.append(str(master_peaksid_dict[eachkey][eachpeaks_id]))
 
-        final_output_peaks.write("%s\t%s\t%s\n" %('\t'.join(peaks_chr_dict[eachpeaks_id]), eachpeaks_id, '\t'.join(string_identifier)))
-    
-    
+        final_output_peaks.write("%s\t%s\t%s\n"
+                                 %('\t'.join(peaks_chr_dict[eachpeaks_id]),
+                                   eachpeaks_id, '\t'.join(string_identifier)))
+
     #the bar plot
-    region_count_dict = {}    
+    region_count_dict = {}
     #for eachregion in region_count_dict:
-    region_count_dict["Promoter\n(1kb up/down TSS)"] = round(len(peaks_id_dict["PROMOTER"])*100/peaks_count)
-    region_count_dict["Genebody\n(1kb up TSS/TES)"] = round(len(peaks_id_dict["GENEBODY"])*100/peaks_count)
-    region_count_dict["Window\n(10kb up TSS/3kb down TES)"] = round(len(peaks_id_dict["WINDOW"])*100/peaks_count)
-    
-    rects = plt.bar(region_count_dict.keys(),region_count_dict.values(), width=0.4)
+    region_count_dict["Promoter\n(1kb up/down TSS)"] = round(
+        len(peaks_id_dict["PROMOTER"])*100/peaks_count)
+    region_count_dict["Genebody\n(1kb up TSS/TES)"] = round(
+        len(peaks_id_dict["GENEBODY"])*100/peaks_count)
+    region_count_dict["Window\n(10kb up TSS/3kb down TES)"] = round(
+        len(peaks_id_dict["WINDOW"])*100/peaks_count)
+
+    rects = plt.bar(region_count_dict.keys(), region_count_dict.values(), width=0.4)
     axes = plt.gca()
-    axes.set_ylim([0,100])
-    peaks_title=Path(macs_peaks_file).stem
+    axes.set_ylim([0, 100])
+    peaks_title = Path(macs_peaks_file).stem
     plt.title(peaks_title.split('.sorted')[0])
     plt.ylabel("% of peaks")
 
     #label the bars
-    xpos='center'
+    xpos = 'center'
     ha = {'center': 'center', 'right': 'left', 'left': 'right'}
     offset = {'center': 0.5, 'right': 0.57, 'left': 0.43}  # x_txt = x + w*off
 
     for rect in rects:
         height = rect.get_height()
         plt.text(rect.get_x() + rect.get_width()*offset[xpos], 1.01*height,
-                '{}%'.format(height), ha=ha[xpos], va='bottom')
-        
+                 '{}%'.format(height), ha=ha[xpos], va='bottom')
+
     #save figure
     plt.savefig(pdf_file_name)
 
-    for eachregion in ("PROMOTER","GENEBODY","WINDOW"):
-        print("Total number of %s = %d" %(eachregion,len(peaks_id_dict[eachregion])))
-        print ("Percentage of %s = %.3f" %(eachregion,len(peaks_id_dict[eachregion])*100/peaks_count))
+    for eachregion in ("PROMOTER", "GENEBODY", "WINDOW"):
+        print("Total number of %s = %d" %(eachregion, len(peaks_id_dict[eachregion])))
+        print("Percentage of %s = %.3f" %(eachregion,
+                                          len(peaks_id_dict[eachregion])*100/peaks_count))
 
 
 def main():
@@ -395,9 +420,9 @@ def main():
                  window: 10kb upstream --> 3kb downstream of genebody
                  genebody: 1kb upstream of TSS --> TTS/TES (transcription termination/end site)
                  TSS: TSS (transcription start site)
-                 
+
     Annotate Peaks based on genomic features listed above
-    
+
     Comparison master files for all genes/transcripts
         and their genomic regions within peaks called.
     Genomic regions are specified based on regions provided,
@@ -409,48 +434,80 @@ def main():
                         help="Enter .gtf/gff file to be processed.")
     parser.add_argument("-c", "--chrom", dest="chrom_sizes", required=True,
                         help="Enter ucsc chrom sizes file to be processed.")
-    parser.add_argument("-p", "--peaks", dest="macs_peaks", required=True, 
+    parser.add_argument("-p", "--peaks", dest="macs_peaks", required=True,
                         help="Enter MACS peaks bed file.")
-    parser.add_argument("-s", "--summit", dest="macs_summits", required=True,
+    parser.add_argument("-s", "--summit", dest="macs_summits", required=False,
                         help="Enter MACS summit bed file.")
 
     options = parser.parse_args()
     #print(options)
-    
-    #stage 1
+
+    # Stage 1
+    # Extract genomic regions of interest
     gtf_to_genes(options.chrom_sizes, options.gtf)
-    
-    command = "cut -f1,4,5,9,10 annotation/TSS-region_genes.gff | sort -k1,1 -k2,2n > tempPrefix-sorted.TSS; " + \
-              "cat " + options.macs_peaks + ' | awk -F\\\\t ' + "'" + \
+
+    # Turn 4 column bed to 5 (for SICER peaks: include unique id)
+    command = "awk -F'\\t' '{print NF; exit}' " + options.macs_peaks
+    numberofcolumns = int(subprocess.check_output(command,shell=True).strip())
+    new_macs_peaks = options.macs_peaks
+    if numberofcolumns == 4:
+        new_macs_peaks = options.macs_peaks + ".tempPrefix"
+        # command = "cat " + options.macs_peaks + ' | awk -F\\\\t ' + "'" + \
+        #           '{print $1 "\\t" $2 "\\t" $3 "\\t" $1":"$2"-"$3 "\\t" $4}' + \
+        #           "' > tempPrefix-new.macs_peaks.bed"
+        # print(command)
+        # os.system(command)
+        macs_peaks_output = open(new_macs_peaks, 'w')
+        macs_peaks_input = open(options.macs_peaks,'r')
+        macs_peaks_count = 1
+        for line in macs_peaks_input:
+            line = line.strip('\n').split('\t')
+            new_peaks_id = "SICERpeak_" + str(macs_peaks_count)
+            results = ("{0}\t{1}\t{2}\n".format("\t".join(line[0:3]), new_peaks_id, line[3]))
+            macs_peaks_output.write(results)
+            macs_peaks_count += 1
+        macs_peaks_output.close()
+        
+    # Convert TSS to compatible bedtools (closestBed) format and obtain center of peaks coordinate
+    command = "cut -f1,4,5,9,10 annotation/TSS-region_genes.gff | sort -k1,1 -k2,2n " + \
+              "> tempPrefix-sorted.TSS; " + \
+              "cat " + new_macs_peaks + ' | awk -F\\\\t ' + "'" + \
               '{print $1 "\\t" int(($2+$3)/2) "\\t" int(($2+$3)/2) "\\t" $4 "\\t" $5}' + \
               "' | sort -k1,1 -k2,2n > tempPrefix-centerofpeaks.bed;" + \
-              "closestBed -t all -a tempPrefix-centerofpeaks.bed -b tempPrefix-sorted.TSS > closest.tempPrefix"
+              "closestBed -t all -a tempPrefix-centerofpeaks.bed -b tempPrefix-sorted.TSS" + \
+              "> closest.tempPrefix"
     os.system(command)
-    
-    #stage 2
+
+    # Stage 2
+    # Annotate peaks based on previously extracted genomic coordinates
     for region in ("promoter", "genebody", "window"):
-        command = 'intersectBed -b ' + options.macs_peaks + ' -a annotation/' + region + \
+        command = 'intersectBed -b ' + new_macs_peaks + ' -a annotation/' + region + \
                   '-region_genes.gff -wb | cut -f1,4,5,9,10,11,12,13,14,15 |' + "awk -F\\\\t '" + \
-                  '{print $6 "\\t" $7 "\\t" $8 "\\t" $9 "\\t" $10 "\\t" $1 "\\t" $2 "\\t" $3 "\\t" $4 "\\t" $5}' + \
+                  '{print $6 "\\t" $7 "\\t" $8 "\\t" $9 "\\t" $10 "\\t" $1 "\\t" $2 "\\t" $3 ' + \
+                  '"\\t" $4 "\\t" $5}' + \
                   "' > " + region + ".tempPrefix"
         os.system(command)
-        
+
+    # Convert annotated regions to tab delimited file and include summit location
     for region in ("promoter", "genebody", "window", "closest"):
         region_file = region + ".tempPrefix"
         output_file = "peaks_within_" + region + ".regions.txt"
-        annotate_regions(options.macs_summits, region_file, output_file)
-        
+        if options.macs_summits:
+            annotate_regions(region_file, output_file, options.macs_summits)
+        else:
+            annotate_regions(region_file, output_file)
+
     command = "mv peaks_within_closest.regions.txt centerofpeaks_closest.regions.txt; \
               cut -f 9,10 annotation/original_genes.gff > tempPrefix.genes.names"
     os.system(command)
 
-    #stage 3
-    include_genes(options.macs_peaks, "peaks_compared_regions.txt")
-    
+    # Stage 3
+    # Binary matrix of all genes
+    include_genes(new_macs_peaks, "peaks_compared_regions.txt")
+
     command = "rm -rf *tempPrefix*"
-    os.system(command)
+    #os.system(command)
 
 
 if __name__ == "__main__":
     main()
-
