@@ -1,7 +1,6 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bedtools.wdl"
-#import "/home/madetunj/EDITS/seaseq/workflows/tasks/bedtools.wdl"
 
 workflow motifs {
     input {
