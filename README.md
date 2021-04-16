@@ -189,7 +189,7 @@ thresholds where possible.
 
 The metrics are color flagged for easy visualization of overall performance in HTML format as shown for [SRR10259398].
 
-<img src="images/SRR10259398%20QC.png">
+<img src="images/SRR10259398-QC.png">
 
 SEAseq metrics calculated to infer quality are:
 | Quality Metric	| Definition	|

@@ -1,7 +1,7 @@
 version 1.0
 
-#import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bedtools.wdl"
-import "/Users/madetunj/Desktop/seaseq/workflows/tasks/bedtools.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bedtools.wdl"
+#import "/home/madetunj/EDITS/seaseq/workflows/tasks/bedtools.wdl"
 
 workflow motifs {
     input {
@@ -78,7 +78,7 @@ task meme {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/memesuite:v5.1.1'
+        docker: 'abralab/memesuite:v5.3.3'
         cpu: ncpu
     }
     output {
@@ -115,7 +115,7 @@ task ame {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/memesuite:v5.1.1'
+        docker: 'abralab/memesuite:v5.3.3'
         cpu: ncpu
     }
     output {

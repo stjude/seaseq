@@ -1,16 +1,12 @@
 version 1.0
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/fastqc.wdl"
-#import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bedtools.wdl"
-import "/Users/madetunj/Desktop/seaseq/workflows/tasks/bedtools.wdl"
-#import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bowtie.wdl"
-import "/Users/madetunj/Desktop/seaseq/workflows/tasks/bowtie.wdl"
-#import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/samtools.wdl"
-import "/Users/madetunj/Desktop/seaseq/workflows/tasks/samtools.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bedtools.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bowtie.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/samtools.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/macs.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bamtogff.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sicer.wdl"
-#import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/workflows/motifs.wdl"
-import "/Users/madetunj/Desktop/seaseq/workflows/workflows/motifs.wdl"
+import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/workflows/motifs.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/rose.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/util.wdl"
 import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/workflows/visualization.wdl" as viz
@@ -222,7 +218,16 @@ workflow seaseq {
                 keep_dup="auto",
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-p9_kd-auto'
         }
-    
+
+        call util.peaksanno {
+            input :
+                gtffile=gtf,
+                bedfile=macs.peakbedfile,
+                chromsizes=samtools_faidx.chromsizes,
+                summitfile=macs.summitsfile,
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Annotation/NARROW_peaks'+'/'+sub(basename(macs.peakbedfile),'\_peaks.bed','')
+        }
+
         call macs.macs as all {
             input :
                 bamfile=downstream_bam,
@@ -230,7 +235,16 @@ workflow seaseq {
                 keep_dup="all",
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-p9_kd-all'
         }
-        
+
+        call util.peaksanno as all_peaksanno {
+            input :
+                gtffile=gtf,
+                bedfile=all.peakbedfile,
+                chromsizes=samtools_faidx.chromsizes,
+                summitfile=all.summitsfile,
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Annotation/NARROW_peaks'+'/'+sub(basename(all.peakbedfile),'\_peaks.bed','')
+        }
+
         call macs.macs as nomodel {
             input :
                 bamfile=downstream_bam,
@@ -238,6 +252,15 @@ workflow seaseq {
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/NARROW_peaks'+'/'+basename(downstream_bam,'\.bam') +'-nm'
         }
         
+        call util.peaksanno as nomodel_peaksanno {
+            input :
+                gtffile=gtf,
+                bedfile=nomodel.peakbedfile,
+                chromsizes=samtools_faidx.chromsizes,
+                summitfile=nomodel.summitsfile,
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Annotation/NARROW_peaks'+'/'+sub(basename(nomodel.peakbedfile),'\_peaks.bed','')
+        }
+
         call bamtogff.bamtogff {
             input :
                 gtffile=gtf,
@@ -256,6 +279,14 @@ workflow seaseq {
             input :
                 bedfile=bamtobed.bedfile,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/BROAD_peaks'
+        }
+
+        call util.peaksanno as sicer_peaksanno {
+            input :
+                gtffile=gtf,
+                bedfile=sicer.scoreisland,
+                chromsizes=samtools_faidx.chromsizes,
+                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Annotation/BROAD_peaks'
         }
         
         if ( defined(motif_databases) ) {
@@ -298,15 +329,6 @@ workflow seaseq {
                 bedfile_auto=macs.peakbedfile,
                 bedfile_all=all.peakbedfile,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/STITCHED_peaks'
-        }
-
-        call util.peaksanno {
-            input :
-                gtffile=gtf,
-                bedfile=macs.peakbedfile,
-                chromsizes=samtools_faidx.chromsizes,
-                summitfile=macs.summitsfile,
-                default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS_Annotation'
         }
 
         call viz.visualization {
@@ -460,6 +482,27 @@ workflow seaseq {
         Array[File?] peak_comparison = peaksanno.peak_comparison
         Array[File?] gene_comparison = peaksanno.gene_comparison
         Array[File?] pdf_comparison = peaksanno.pdf_comparison
+        Array[File?] all_peak_promoters = all_peaksanno.peak_promoters
+        Array[File?] all_peak_genebody = all_peaksanno.peak_genebody
+        Array[File?] all_peak_window = all_peaksanno.peak_window
+        Array[File?] all_peak_closest = all_peaksanno.peak_closest
+        Array[File?] all_peak_comparison = all_peaksanno.peak_comparison
+        Array[File?] all_gene_comparison = all_peaksanno.gene_comparison
+        Array[File?] all_pdf_comparison = all_peaksanno.pdf_comparison
+        Array[File?] nomodel_peak_promoters = nomodel_peaksanno.peak_promoters
+        Array[File?] nomodel_peak_genebody = nomodel_peaksanno.peak_genebody
+        Array[File?] nomodel_peak_window = nomodel_peaksanno.peak_window
+        Array[File?] nomodel_peak_closest = nomodel_peaksanno.peak_closest
+        Array[File?] nomodel_peak_comparison = nomodel_peaksanno.peak_comparison
+        Array[File?] nomodel_gene_comparison = nomodel_peaksanno.gene_comparison
+        Array[File?] nomodel_pdf_comparison = nomodel_peaksanno.pdf_comparison
+        Array[File?] sicer_peak_promoters = sicer_peaksanno.peak_promoters
+        Array[File?] sicer_peak_genebody = sicer_peaksanno.peak_genebody
+        Array[File?] sicer_peak_window = sicer_peaksanno.peak_window
+        Array[File?] sicer_peak_closest = sicer_peaksanno.peak_closest
+        Array[File?] sicer_peak_comparison = sicer_peaksanno.peak_comparison
+        Array[File?] sicer_gene_comparison = sicer_peaksanno.gene_comparison
+        Array[File?] sicer_pdf_comparison = sicer_peaksanno.pdf_comparison
 
         #VISUALIZATION
         Array[File] bigwig = visualization.bigwig
