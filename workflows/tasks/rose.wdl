@@ -13,7 +13,6 @@ task rose {
         String default_location = "PEAKS_files/STITCHED_REGIONS"
         String outputname = basename(bamfile)
 
-        String species = "hg19"
         Int tss = 2000
         Int stitch = 12500
 
@@ -32,7 +31,6 @@ task rose {
         fi
 
 
-        SPECIES=~{species}
         BAMFILE=~{basename(bamfile)}
         TSS=~{tss}
         STITCH=~{stitch}
@@ -48,13 +46,11 @@ task rose {
         echo "Input Bed File B: $FILEB"
         echo "BAM file: $BAMFILE"
         echo "Output directory: $OUTPUTDIR"
-        echo "Species: $SPECIES"
         #================================================================================
 
         # 
         # GENERATING UCSC REFSEQ FILE
         #
-        mkdir -p annotation
 
         python <<CODE
 
@@ -63,7 +59,7 @@ task rose {
         
         gtf_input = open("~{sub(basename(gtffile),'.gz','')}",'r')
         print (gtf_input)
-        refseq_output = open("annotation/~{species}_refseq.ucsc",'w')
+        refseq_output = open("genome_refseq.ucsc",'w')
 
         refseq_output.write("#bin\tname\tchrom\tstrand\ttxStart\ttxEnd\tcdsStart\tcdsEnd\tX\tX\tX\t\tX\tname2\n")
 
@@ -112,7 +108,7 @@ task rose {
         #
         # ROSE CALLER
         #
-        ROSE_main.py -s $STITCH -t $TSS -g $SPECIES -i unionpeaks.gff -r $BAMFILE -o $OUTPUTDIR
+        ROSE_main.py -s $STITCH -t $TSS --custom genome_refseq.ucsc -i unionpeaks.gff -r $BAMFILE -o $OUTPUTDIR
 
         mkdir -p ~{default_location}
         mv $OUTPUTDIR/* ~{default_location}
@@ -120,22 +116,22 @@ task rose {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/rose:v1.2.0'
+        docker: 'abralab/rose:v1.3.0'
         cpu: ncpu
     }
     output {
         File pngfile = "~{default_location}/unionpeaks_Plot_points.png"
         File? mapped_union = "~{default_location}/mappedGFF/unionpeaks_~{outputname}_MAPPED.gff"
         File? mapped_stitch = "~{default_location}/mappedGFF/unionpeaks_12.5KB_STITCHED_TSS_DISTAL_~{outputname}_MAPPED.gff"
-        File enhancers = "~{default_location}/unionpeaks_AllEnhancers.table.txt"
-        File super_enhancers = "~{default_location}/unionpeaks_SuperEnhancers.table.txt"
+        File enhancers = "~{default_location}/unionpeaks_AllStitched.table.txt"
+        File super_enhancers = "~{default_location}/unionpeaks_SuperStitched.table.txt"
         File? gff_file = "~{default_location}/gff/unionpeaks.gff"
         File? gff_union = "~{default_location}/gff/unionpeaks_12.5KB_STITCHED_TSS_DISTAL.gff"
-        File? union_enhancers = "~{default_location}/unionpeaks_Enhancers_withSuper.bed"
-        File? stitch_enhancers = "~{default_location}/unionpeaks_12.5KB_STITCHED_TSS_DISTAL_ENHANCER_REGION_MAP.txt"
-        File? e_to_g_enhancers = "~{default_location}/unionpeaks_AllEnhancers_ENHANCER_TO_GENE.txt"
-        File? g_to_e_enhancers = "~{default_location}unionpeaks_AllEnhancers_GENE_TO_ENHANCER.txt"
-        File? e_to_g_super_enhancers = "~{default_location}/unionpeaks_SuperEnhancers_ENHANCER_TO_GENE.txt"
-        File? g_to_e_super_enhancers = "~{default_location}/unionpeaks_SuperEnhancers_GENE_TO_ENHANCER.txt"
+        File? union_enhancers = "~{default_location}/unionpeaks_Stitched_withSuper.bed"
+        File? stitch_enhancers = "~{default_location}/unionpeaks_12.5KB_STITCHED_TSS_DISTAL_REGION_MAP.txt"
+        File? e_to_g_enhancers = "~{default_location}/unionpeaks_AllStitched_REGION_TO_GENE.txt"
+        File? g_to_e_enhancers = "~{default_location}/unionpeaks_AllStitched_GENE_TO_REGION.txt"
+        File? e_to_g_super_enhancers = "~{default_location}/unionpeaks_SuperStitched_REGION_TO_GENE.txt"
+        File? g_to_e_super_enhancers = "~{default_location}/unionpeaks_SuperStitched_GENE_TO_REGION.txt"
     }
 }

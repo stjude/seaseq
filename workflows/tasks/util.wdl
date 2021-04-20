@@ -41,7 +41,7 @@ task basicfastqstats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:latest'
+        docker: 'abralab/seaseq:v1.1.0'
         cpu: ncpu
     }
     output {
@@ -86,7 +86,7 @@ task flankbed {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:latest'
+        docker: 'abralab/seaseq:v1.1.0'
         cpu: ncpu
     }
     output {
@@ -140,7 +140,7 @@ task summarystats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:latest'
+        docker: 'abralab/seaseq:v1.1.0'
         cpu: ncpu
     }
     output {
@@ -205,7 +205,7 @@ task normalize {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:latest'
+        docker: 'abralab/seaseq:v1.1.0'
         cpu: ncpu
     }
     output {
@@ -248,7 +248,7 @@ task peaksanno {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:latest'
+        docker: 'abralab/seaseq:v1.1.0'
         cpu: ncpu
     }
     output {
