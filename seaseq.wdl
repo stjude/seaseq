@@ -1,18 +1,18 @@
 version 1.0
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/fastqc.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bedtools.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bowtie.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/samtools.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/macs.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/bamtogff.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sicer.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/workflows/motifs.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/rose.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/util.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/workflows/visualization.wdl" as viz
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/runspp.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sortbed.wdl"
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/sratoolkit.wdl" as sra
+import "workflows/tasks/fastqc.wdl"
+import "workflows/tasks/bedtools.wdl"
+import "workflows/tasks/bowtie.wdl"
+import "workflows/tasks/samtools.wdl"
+import "workflows/tasks/macs.wdl"
+import "workflows/tasks/bamtogff.wdl"
+import "workflows/tasks/sicer.wdl"
+import "workflows/workflows/motifs.wdl"
+import "workflows/tasks/rose.wdl"
+import "workflows/tasks/util.wdl"
+import "workflows/workflows/visualization.wdl" as viz
+import "workflows/tasks/runspp.wdl"
+import "workflows/tasks/sortbed.wdl"
+import "workflows/tasks/sratoolkit.wdl" as sra
 
 workflow seaseq {
     String pipeline_ver = 'v1.0.0'
@@ -111,8 +111,8 @@ workflow seaseq {
         # download sample file(s) from SRA database
         # outputs:
         #    fastqdump.fastqfile : downloaded sample files in fastq.gz format 
-        Array[String] fake_sra = [1] #buffer to allow for sra_id optionality
-        Array[String] sra_id_ = select_first([sra_id, fake_sra])
+        Array[String] string_sra = [1] #buffer to allow for sra_id optionality
+        Array[String] sra_id_ = select_first([sra_id, string_sra])
         scatter (eachsra in sra_id_) {
             call sra.fastqdump {
                 input :
@@ -132,13 +132,25 @@ workflow seaseq {
         }
     }
 
+    if ( defined(bowtie_index) ) {
+        Array[String] string_bowtie_index = [1] #buffer to allow for bowtie_index optionality
+        Array[File] int_bowtie_index = select_first([bowtie_index, string_bowtie_index])
+        if ( length(int_bowtie_index) != 6 ) {
+            # create bowtie index if 6 index files aren't provided
+            call bowtie.index as bowtie_idx_2 {
+                input :
+                    reference=reference
+            }
+        }
+    }
+
     call samtools.faidx as samtools_faidx {
         input :
             reference=reference
     }
 
     # Merge files for the pipeline 
-    Array[File] bowtie_index_ = flatten(select_all([bowtie_index, bowtie_idx.bowtie_indexes]))
+    Array[File] bowtie_index_ = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
     Array[File] fastqfiles = flatten(select_all([fastqfile, fastqfile_]))
 
     scatter (eachfastq in fastqfiles) {
@@ -181,8 +193,8 @@ workflow seaseq {
     
         if (defined(blacklist)) {
             # remove blacklist regions
-            String fake_blacklist = "" #buffer to allow for blacklist optionality
-            File blacklist_ = select_first([blacklist, fake_blacklist])
+            String string_blacklist = "" #buffer to allow for blacklist optionality
+            File blacklist_ = select_first([blacklist, string_blacklist])
             call bedtools.intersect as rmblklist {
                 input :
                     fileA=viewsort.sortedbam,
@@ -292,8 +304,8 @@ workflow seaseq {
         if ( defined(motif_databases) ) {
             # motif prediction and enrichment analysis
 
-            Array[String] fake_motif_databases = [1]
-            Array[File] motif_databases_ = select_first([motif_databases, fake_motif_databases])
+            Array[String] string_motif_databases = [1]
+            Array[File] motif_databases_ = select_first([motif_databases, string_motif_databases])
             call motifs.motifs {
                 input:
                     reference=reference,

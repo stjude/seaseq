@@ -25,6 +25,7 @@ workflow visualization {
     call igvtdf {
         input:
             wigfile=normalize.norm_wig,
+            chromsizes=chromsizes,
             default_location=default_location
     }
     
@@ -70,9 +71,8 @@ task wigtobigwig {
 task igvtdf {
     input {
         File wigfile
+        File chromsizes
         String default_location = "PEAKDisplay_files"
-
-        String genome = "hg19"
 
         String outputfile = sub(basename(wigfile),'\.wig\.gz', '.tdf')
 
@@ -82,12 +82,13 @@ task igvtdf {
     }
     command <<<
         mkdir -p ~{default_location} && cd ~{default_location}
+        ln -s ~{chromsizes} genome.chrom.sizes
 
         igvtools \
             toTDF \
             ~{wigfile} \
             ~{outputfile} \
-            ~{genome}
+            genome.chrom.sizes
     >>> 
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
