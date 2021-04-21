@@ -7,7 +7,7 @@ use warnings;
 use File::Basename;
 use Getopt::Long;
 
-my ($help, $manual, $sppout, $bambed, $countsfile, $peaksxls, $bamflag, $rmdupflag, $bkflag, $outfile, $fastqmetrics, $fastqczip, $rosedir, $samplename);
+my ($help, $manual, $sppout, $bambed, $countsfile, $peaksxls, $bamflag, $rmdupflag, $bkflag, $outfile, $fastqmetrics, $fastqczip, $rose_stitched, $rose_superstitched, $samplename);
 my $usage = "perl $0 -s <spp file> -c <countsfile> -b <bambed> -px <peaks xls> -fmetric <fastq metrics> -rose <rose directory> -bamflag <bamflagstat> -fqc <fastqczipfile> [-bkflag <bklistflagstat>] [-rmdupflag <rmdupflagstat>] -outfile <outputfile>\n";
 # USAGE DETAILS
 #<spp file> : run_spp.R output file
@@ -21,8 +21,12 @@ my $usage = "perl $0 -s <spp file> -c <countsfile> -b <bambed> -px <peaks xls> -
 #<bklistflagstat> : mapping bam+bklist samtools flagstat
 #<rmdupflagstat> : mapping bam+rmdup samtools flagstat
 
-GetOptions ("s|spp=s"=>\$sppout,"b|bed=s"=>\$bambed,"c|count=s"=>\$countsfile,"px|peakxls=s"=>\$peaksxls,"bamflag=s"=>\$bamflag,"rmdupflag=s"=>\$rmdupflag,"bkflag=s"=>\$bkflag,"fqc|fastqczip=s"=>\$fastqczip,"fmetric|fx=s"=>\$fastqmetrics, "rose|r=s"=>\$rosedir, "outfile|o=s"=>\$outfile);
-unless ($sppout || $bambed || $countsfile || $peaksxls || $bamflag || $rmdupflag || $bkflag || $fastqczip || $fastqmetrics || $rosedir) { die $usage;}
+GetOptions (
+            "s|spp=s"=>\$sppout,"b|bed=s"=>\$bambed,"c|count=s"=>\$countsfile,
+            "px|peakxls=s"=>\$peaksxls,"bamflag=s"=>\$bamflag,"rmdupflag=s"=>\$rmdupflag,
+            "bkflag=s"=>\$bkflag,"fqc|fastqczip=s"=>\$fastqczip,"fmetric|fx=s"=>\$fastqmetrics,
+            "roseenhancers|re=s"=>\$rose_stitched, "rosesuper|rs=s"=>\$rose_superstitched, "outfile|o=s"=>\$outfile);
+unless ($sppout || $bambed || $countsfile || $peaksxls || $bamflag || $rmdupflag || $bkflag || $fastqczip || $fastqmetrics || $rose_stitched || $rose_superstitched) { die $usage;}
 
 #Filenames
 my ($statsout, $htmlfile, $textfile);
@@ -235,10 +239,10 @@ if ($peaksxls) {
 } #end if peaksxls
  
 #Stitched regions & Superenhancers
-if ($rosedir){
+if ($rose_stitched && $rose_superstitched){
   print "Processing ROSE counts ...";
-  my $enhancers = `wc -l $rosedir/unionpeaks_AllEnhancers.table.txt | awk '{print \$1-6}'`; chop $enhancers;
-  my $superenhancers = `wc -l $rosedir/unionpeaks_SuperEnhancers.table.txt | awk '{print \$1-6}'`; chop $superenhancers;
+  my $enhancers = `wc -l $rose_stitched | awk '{print \$1-6}'`; chop $enhancers;
+  my $superenhancers = `wc -l $rose_superstitched | awk '{print \$1-6}'`; chop $superenhancers;
   unless ($enhancers > 0 ) { $enhancers = 0; }  #making sure enhancers  is numeric
   unless ($superenhancers > 0 ) { $superenhancers = 0; } #making sure superenhancers is numeric
   print OUT "Total number of Linear Stitched Peaks (Enhancers) = ", $enhancers,"\n";
@@ -264,7 +268,7 @@ if ($rosedir){
     if (($OvQual{'SE-like Enriched Regions'}{'value'}/$OvQual{'Linear Stitched Peaks'}{'value'}) >= 0.2) {$OvQual{'SE-like Enriched Regions'}{'score'} = -2;}
     if ($OvQual{'SE-like Enriched Regions'}{'value'} <= 1) {$OvQual{'SE-like Enriched Regions'}{'score'} = -2;}
   }
-} # end if rosedir
+} # end if rose
 
 close(OUT);
 
