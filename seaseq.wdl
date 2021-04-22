@@ -478,7 +478,7 @@ workflow seaseq {
         Array[File] m_upstream = bamtogff.m_upstream
         Array[File] m_genebody = bamtogff.m_genebody
         Array[File] m_promoters = bamtogff.m_promoters
-        Array[File] densityplot = bamtogff.densityplot
+        Array[File?] densityplot = bamtogff.densityplot
         Array[File?] pdf_gene = bamtogff.pdf_gene
         Array[File?] pdf_h_gene = bamtogff.pdf_h_gene
         Array[File?] png_h_gene = bamtogff.png_h_gene

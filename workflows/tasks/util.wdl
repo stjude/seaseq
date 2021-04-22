@@ -122,9 +122,6 @@ task summarystats {
 
         cd ~{default_location}
 
-        ln -s ~{enhancers} ~{basename(enhancers)}
-        ln -s ~{superenhancers} ~{basename(superenhancers)}
-
         summaryfacts.pl \
             -b ~{bambed} \
             -s ~{sppfile} \
@@ -134,7 +131,8 @@ task summarystats {
             ~{if defined(bkflag) then "-bkflag " + bkflag else ""} \
             -fqc ~{fastqczip} \
             -fx ~{fastqmetrics} \
-            -rose $(pwd) \
+            -re ~{enhancers} \
+            -rs ~{superenhancers} \
             -outfile ~{outputfile}
     >>> 
     runtime {

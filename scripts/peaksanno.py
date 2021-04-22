@@ -153,16 +153,19 @@ def gtf_to_genes(chrom_sizes_file, gtf_file):
                                                        "\t".join(lines[1:8]),
                                                        gene_name, transcript_id))
 
-                #extract chromosomal coordinates and store in outputfiles
-                original_output.write(results + "\n")
-                final_output = parse_genelocations(chrom_sizes_dict, results, 1000, 1000, False)
-                promoters_output.write(final_output)
-                final_output = parse_genelocations(chrom_sizes_dict, results, 10000, 3000, True)
-                window_output.write(final_output)
-                final_output = parse_genelocations(chrom_sizes_dict, results, 0, 0, False)
-                tss_output.write(final_output)
-                final_output = parse_genelocations(chrom_sizes_dict, results, 1000, 0, True)
-                genebody_output.write(final_output)
+                try:
+                    if chrom_sizes_dict[new_chr_name]:
+                        original_output.write(results + "\n")
+                        final_output = parse_genelocations(chrom_sizes_dict, results, 1000, 1000, False)
+                        promoters_output.write(final_output)
+                        final_output = parse_genelocations(chrom_sizes_dict, results, 10000, 3000, True)
+                        window_output.write(final_output)
+                        final_output = parse_genelocations(chrom_sizes_dict, results, 0, 0, False)
+                        tss_output.write(final_output)
+                        final_output = parse_genelocations(chrom_sizes_dict, results, 1000, 0, True)
+                        genebody_output.write(final_output)
+                except KeyError:
+                    continue
 
 
 def annotate_regions(region_file, output_file, macs_summits_file=None):
