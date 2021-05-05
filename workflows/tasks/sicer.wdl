@@ -4,9 +4,9 @@ task sicer {
 
     input {
         File bedfile
+        File chromsizes
         String default_location = "PEAKS_files/BROAD_peaks"
 
-        String species = "hg19"
         Int redundancy = 1
         Int window = 200
         Int fragment_size = 150
@@ -25,7 +25,7 @@ task sicer {
 
         sicer \
             -t ~{bedfile} \
-            -s ~{species} \
+            -sc ~{chromsizes} \
             -rt ~{redundancy} \
             -w ~{window} \
             -f ~{fragment_size} \
@@ -39,7 +39,7 @@ task sicer {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/sicer:v1.0.2'
+        docker: 'abralab/sicer:v1.1.0'
         cpu: ncpu
     }
     output {

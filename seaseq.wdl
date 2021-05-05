@@ -290,6 +290,7 @@ workflow seaseq {
         call sicer.sicer {
             input :
                 bedfile=bamtobed.bedfile,
+                chromsizes=samtools_faidx.chromsizes,
                 default_location=sub(basename(eachfastq),'\.f.*q\.gz','')+'/PEAKS/BROAD_peaks'
         }
 
