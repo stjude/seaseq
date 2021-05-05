@@ -63,11 +63,11 @@ task bamtogff {
         BAM2GFF_plots.R -n $SAMPLENAME -d ~{distance} -f $MATRIXFILES
 
         #create a custom R script to recreate plots
-        head -n 461 /opt/BAM2GFF-1.2.0/bin/BAM2GFF_plots.R > $RSCRIPT
+        head -n 400 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R > $RSCRIPT
         echo 'folder = "'$MATRIXFILES'"' >> $RSCRIPT
         echo 'samplename = "'$SAMPLENAME'"' >> $RSCRIPT
         echo 'distance = round(~{distance}/1000,1)' >> $RSCRIPT
-        tail -n 53 /opt/BAM2GFF-1.2.0/bin/BAM2GFF_plots.R >> $RSCRIPT 
+        tail -n 53 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R >> $RSCRIPT 
         echo "Done!"
 
         mv $RSCRIPT $MATRIXFILES *png *pdf ~{default_location}
@@ -75,7 +75,7 @@ task bamtogff {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/bamtogff:v1.2.0'
+        docker: 'abralab/bamtogff:v1.2.1'
         cpu: ncpu
     }
     output {
@@ -83,7 +83,7 @@ task bamtogff {
 	File m_upstream = "~{default_location}/matrixfiles/upstream.txt"
 	File m_genebody = "~{default_location}/matrixfiles/genebody.txt"
 	File m_promoters = "~{default_location}/matrixfiles/promoters.txt"
-        File densityplot = "~{default_location}/densityplots.R"
+        File? densityplot = "~{default_location}/densityplots.R"
         File? pdf_gene = "~{default_location}/~{samplename}-entiregene.pdf"
         File? pdf_h_gene = "~{default_location}/~{samplename}-heatmap.entiregene.pdf"
         File? png_h_gene = "~{default_location}/~{samplename}-heatmap.entiregene.png"
