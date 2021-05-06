@@ -164,20 +164,20 @@ def gtf_to_genes(chrom_sizes_file, gtf_file):
                     if re.search("; transcript_id", lines[8]):
                         transcript_id = [s for s in newline if "transcript_id " in s]
                     else:
-                        transcript_id = newline[0:1]
+                        transcript_id = newline[0]
                     if re.search("; gene_name", lines[8]):
                         gene_name = [s for s in newline if "gene_name " in s]
                     else:
-                        gene_name = newline[0:1]
+                        gene_name = newline[0]
                     transcript_id = re.sub('[\"\;]', '', transcript_id.split(' ')[-1]) #clean transcript_id
                     gene_name = re.sub('[\"\;]', '', gene_name.split(' ')[-1]) #clean gene_name
                     
-                results = ("{0}\t{1}\t{2}\t{3}".format(new_chr_name,
+                results = ("{0}\t{1}\t{2}\t{3}".format(lines[0],
                                                        "\t".join(lines[1:8]),
                                                        gene_name, transcript_id))
 
                 try:
-                    if chrom_sizes_dict[new_chr_name]:
+                    if chrom_sizes_dict[lines[0]]:
                         original_output.write(results + "\n")
                         final_output = parse_genelocations(chrom_sizes_dict, results, 1000, 1000, False)
                         promoters_output.write(final_output)
