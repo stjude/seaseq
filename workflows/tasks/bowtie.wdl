@@ -45,7 +45,7 @@ task bowtie {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'quay.io/biocontainers/bowtie:1.2.3--py36hf1ae8f4_2'
+        docker: 'abralab/bowtie:v1.2.3'
         cpu: ncpu
     }
     output {
@@ -73,7 +73,7 @@ task index {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'quay.io/biocontainers/bowtie:1.2.3--py36hf1ae8f4_2'
+        docker: 'abralab/bowtie:v1.2.3'
         cpu: ncpu
     }
     output {

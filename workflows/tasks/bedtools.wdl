@@ -43,7 +43,7 @@ task intersect {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'quay.io/biocontainers/bedtools:2.25.0--he860b03_5'
+        docker: 'abralab/bedtools:v2.25.0'
         cpu: ncpu
     }
     output {
@@ -68,7 +68,7 @@ task bamtobed {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'quay.io/biocontainers/bedtools:2.25.0--he860b03_5'
+        docker: 'abralab/bedtools:v2.25.0'
         cpu: ncpu
     }
     output {
@@ -105,7 +105,7 @@ task bedfasta {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'quay.io/biocontainers/bedtools:2.25.0--he860b03_5'
+        docker: 'abralab/bedtools:v2.25.0'
         cpu: ncpu
     }
     output {

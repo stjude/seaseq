@@ -18,7 +18,7 @@ task sortbed {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'quay.io/biocontainers/bedops:2.4.37--hc9558a2_0'
+        docker: 'abralab/bedops:v2.4.37'
         cpu: ncpu
     }
     output {
