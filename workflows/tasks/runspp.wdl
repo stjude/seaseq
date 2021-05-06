@@ -13,10 +13,16 @@ task runspp {
     }
     command <<<
         ln -s ~{bamfile} ~{basename(bamfile)}
-        run_spp.R \
-            -c=~{basename(bamfile)} \
-            ~{true="-savp" false="" crosscorr} \
-            -out=~{outputfile}
+
+        mappedreads=$(samtools view -F 0x0204 ~{basename(bamfile)} | wc -l)
+        if [ $mappedreads -gt 0 ]; then
+            run_spp.R \
+                -c=~{basename(bamfile)} \
+                ~{true="-savp" false="" crosscorr} \
+                -out=~{outputfile}
+        else
+            touch ~{outputfile}
+        fi
     >>> 
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
