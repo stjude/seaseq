@@ -98,13 +98,13 @@ task rose {
                     gene_name = re.sub('[\"\;]', '', gene_name.split('=')[-1]) #clean gene_name
                 elif gtf_name.split('.')[-1] == 'gtf':
                     if re.search("; transcript_id", lines[8]):
-                        transcript_id = [s for s in newline if "transcript_id " in s]
+                        transcript_id = [s for s in newline if "transcript_id " in s][0]
                     else:
-                        transcript_id = newline[0:1]
+                        transcript_id = newline[0]
                     if re.search("; gene_name", lines[8]):
-                        gene_name = [s for s in newline if "gene_name " in s]
+                        gene_name = [s for s in newline if "gene_name " in s][0]
                     else:
-                        gene_name = newline[0:1]
+                        gene_name = newline[0]
                     transcript_id = re.sub('[\"\;]', '', transcript_id.split(' ')[-1]) #clean transcript_id
                     gene_name = re.sub('[\"\;]', '', gene_name.split(' ')[-1]) #clean gene_name
                 if lines[2] == feature:
