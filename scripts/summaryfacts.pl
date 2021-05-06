@@ -163,7 +163,7 @@ if ($sppout) {
   $RSC = sprintf ("%.4f", $RSC);
   print OUT "Normalized Strand cross-correlation Coefficient (NSC) = $NSC\n";
   print OUT "Relative Strand cross-correlation Coefficient (RSC) = $RSC\n";
-  print OUT "Phantom Quality = $PhantomQual"; chop $PhantomQual;
+  chop $PhantomQual; print OUT "Phantom Quality = $PhantomQual\n";
   print ".. Done\n";
   
   #QCdash
@@ -172,7 +172,7 @@ if ($sppout) {
 
   $OvQual{'NSC'}{'value'} = $NSC;
   $OvQual{'RSC'}{'value'} = $RSC;
-  #$OvQual{'Phantom Quality'}{'value'} = $PhantomQual; #removed from Overall Quality
+  #$OvQual{'Phantom Quality'}{'value'} = $PhantomQual; #removed from Overall Quality because it's scale of NSC & RSC (redundant)
   $OvQual{'NSC'}{'score'} = -2;
   $OvQual{'RSC'}{'score'} = -2;
   #$OvQual{'Phantom Quality'}{'score'} = $PhantomQual; #removed from Overall Quality
