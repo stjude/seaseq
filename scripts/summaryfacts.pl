@@ -172,7 +172,7 @@ if ($sppout) {
 
   $OvQual{'NSC'}{'value'} = $NSC;
   $OvQual{'RSC'}{'value'} = $RSC;
-  #$OvQual{'Phantom Quality'}{'value'} = $PhantomQual; #removed from Overall Quality
+  #$OvQual{'Phantom Quality'}{'value'} = $PhantomQual; #removed from Overall Quality because it's scale of NSC & RSC (redundant)
   $OvQual{'NSC'}{'score'} = -2;
   $OvQual{'RSC'}{'score'} = -2;
   #$OvQual{'Phantom Quality'}{'score'} = $PhantomQual; #removed from Overall Quality
