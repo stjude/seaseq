@@ -123,3 +123,59 @@ task faidx {
         File chromsizes = "~{sub(basename(reference),'.gz','')}.tab"
     }
 }
+
+task mergebam {
+    input {
+        Array[File] bamfiles
+        String outputfile = 'AllMapped.' + length(bamfiles) + '_merge.bam'
+        String default_location = "BAM_files"
+
+        Int memory_gb = 5
+        Int max_retries = 1
+        Int ncpu = 20
+    }
+    command {
+        mkdir -p ~{default_location} && cd ~{default_location}
+
+        samtools merge --threads ~{ncpu} ~{outputfile} ~{sep=' ' bamfiles}
+    }
+    runtime {
+        memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'abralab/samtools:v1.9'
+        cpu: ncpu
+    }
+    output {
+        File mergebam = "~{default_location}/~{outputfile}"
+    }
+}
+
+task checkmapped {
+    input {
+        File bamfile
+        String default_location = "BAM_files"
+        String outputfile = basename(sub(bamfile,"\.bam$", "-mappedcount.txt"))
+
+        Int memory_gb = 5
+	Int max_retries = 1
+        Int ncpu = 1
+    }
+    command {
+        mkdir -p ~{default_location} && cd ~{default_location}
+
+        mappedreads=$(samtools view -F 0x0204 ~{bamfile} | wc -l)
+
+        if [ $mappedreads -gt 0 ]; then
+            echo $mappedreads > ~{outputfile}
+        fi
+    }
+    runtime {
+	memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'abralab/samtools:v1.9'
+        cpu: ncpu
+    }
+    output {
+        File? outputfile = "~{default_location}/~{outputfile}"
+    }
+}
