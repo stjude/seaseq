@@ -6,11 +6,11 @@ USAGE
 All inclusive script for Annotation of ChIP-Seq peaks.
 This is included in the SEASEQ pipeline.
     ```
-    python PEAKSANNO.py -g <GTF> -c <CHROM SIZES> -p <MACS PEAKS bed> -s <MACS SUMMITS bed>
+    python PEAKSANNO.py -g <GTF/GFF/GFF3> -c <CHROM SIZES> -p <MACS PEAKS bed> -s <MACS SUMMITS bed>
 	```
 
 The script input requirements are :
-- GTF : GTF having either gene or transcript (prefered) annotation
+- GTF : GTF/GFF/GFF3 having either gene or transcript (prefered) annotation
 - CHROM SIZES : chrom.sizes file
 - MACS PEAKS bed : MACS peaks bed file
 - MACS SUMMITS bed : MACS peaks summit file
@@ -108,17 +108,19 @@ def gtf_to_genes(chrom_sizes_file, gtf_file):
     tss_output = open('annotation/TSS-region_genes.gff', 'w')
     genebody_output = open('annotation/genebody-region_genes.gff', 'w')
 
+    haschr = False #check 'chr' prefix in gtf file
+    
     #read ucsc chrom sizes, gtf
     chrom_sizes_input = open(chrom_sizes_file, 'r')
     chrom_sizes_dict = {}
     for line in chrom_sizes_input:
         lines = line.split('\t')
         chrom_sizes_dict[lines[0]] = lines[1].rstrip("\n")
+        if lines[0].startswith('chr'):
+            haschr = True
 
     #feature = options.feature
     feature_dict = {}
-    if not gtf_file.split('.')[-1] == 'gtf':
-        sys.exit("ERROR :\tGTF required")
 
     #reading the feature type to be used
     gtf_input = open(gtf_file, 'r')
@@ -132,29 +134,50 @@ def gtf_to_genes(chrom_sizes_file, gtf_file):
     elif 'gene' in feature_dict:
         feature = "gene"
     else:
-        sys.exit("ERROR :\tGTF with either transcript/gene annotation is needed")
+        sys.exit("ERROR :\tGTF/GFF with either transcript/gene annotation is needed")
     print("NOTE :\tFeature type used is '%s'" %(feature))
 
     #organize gtf file
     gtf_input = open(gtf_file, 'r')
     for line in gtf_input:
         if not line.startswith('#'):
-            lines = line.split("\t")
-            newline = lines[8].split(' ')
-            gene_name = re.sub('[\"\;]', '', newline[1]) #clean gene_name
-            transcript_id = re.sub('[\"\;]', '', newline[3]) #clean transcript_id
+            lines = line.rstrip("\n").split("\t")
+            if haschr and not lines[0].startswith('chr'):
+                lines[0] = "chr"+lines[0]
+            elif not haschr and lines[0].startswith('chr'):
+                lines[0] = lines[0][3:]
             if lines[2] == feature:
-                if re.match("chr", lines[0]):
-                    new_chr_name = lines[0]
-                else:
-                    new_chr_name = "chr"+lines[0]
-
-                results = ("{0}\t{1}\t{2}\t{3}".format(new_chr_name,
+                newline = lines[8].split(';')
+                
+                if gtf_file.split('.')[-1] == 'gff' or gtf_file.split('.')[-1] == 'gff3':
+                    if re.search(";transcript_id", lines[8]):
+                        transcript_id = [s for s in newline if "transcript_id=" in s][0]
+                    else:
+                        transcript_id = newline[0]
+                    if re.search(";gene_name", lines[8]):
+                        gene_name = [s for s in newline if "gene_name=" in s][0]
+                    else:
+                        gene_name = newline[0]
+                    transcript_id = re.sub('[\"\;]', '', transcript_id.split('=')[-1]) #clean transcript_id
+                    gene_name = re.sub('[\"\;]', '', gene_name.split('=')[-1]) #clean gene_name
+                elif gtf_file.split('.')[-1] == 'gtf':
+                    if re.search("; transcript_id", lines[8]):
+                        transcript_id = [s for s in newline if "transcript_id " in s][0]
+                    else:
+                        transcript_id = newline[0]
+                    if re.search("; gene_name", lines[8]):
+                        gene_name = [s for s in newline if "gene_name " in s][0]
+                    else:
+                        gene_name = newline[0]
+                    transcript_id = re.sub('[\"\;]', '', transcript_id.split(' ')[-1]) #clean transcript_id
+                    gene_name = re.sub('[\"\;]', '', gene_name.split(' ')[-1]) #clean gene_name
+                    
+                results = ("{0}\t{1}\t{2}\t{3}".format(lines[0],
                                                        "\t".join(lines[1:8]),
                                                        gene_name, transcript_id))
 
                 try:
-                    if chrom_sizes_dict[new_chr_name]:
+                    if chrom_sizes_dict[lines[0]]:
                         original_output.write(results + "\n")
                         final_output = parse_genelocations(chrom_sizes_dict, results, 1000, 1000, False)
                         promoters_output.write(final_output)

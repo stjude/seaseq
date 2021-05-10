@@ -6,8 +6,7 @@ task bowtie {
         File? metricsfile
         Array[File]+ index_files
 
-        String outputfile = sub(basename(fastqfile),'\_R*[12]\_.+[0-9]\.f.*q\.gz','.sam')
-        String outputfile_ = sub(basename(fastqfile),'\.f.*q\.gz','.sam')
+        String outputfile = sub(basename(fastqfile),'\.f.*q\.gz','.sam')
         
         Int? read_length = 75
         Int limit_alignments = 2
@@ -25,12 +24,6 @@ task bowtie {
             readlength=~{read_length}
         fi
 
-        if [ "~{outputfile}" = "~{basename(fastqfile)}" ]; then
-            samfile=~{outputfile_}
-        else
-            samfile=~{outputfile}
-        fi
-
         bowtie \
             -l $readlength \
             -p ~{ncpu} \
@@ -40,12 +33,12 @@ task bowtie {
             -S \
             ~{sub(index_files[0], "(\.rev)?\.[0-9]\.ebwt$", "")} \
             ~{fastqfile} \
-            > $samfile
+            > ~{outputfile}
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'quay.io/biocontainers/bowtie:1.2.3--py36hf1ae8f4_2'
+        docker: 'abralab/bowtie:v1.2.3'
         cpu: ncpu
     }
     output {
@@ -73,7 +66,7 @@ task index {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'quay.io/biocontainers/bowtie:1.2.3--py36hf1ae8f4_2'
+        docker: 'abralab/bowtie:v1.2.3'
         cpu: ncpu
     }
     output {

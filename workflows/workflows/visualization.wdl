@@ -1,37 +1,44 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/stjude/seaseq/master/workflows/tasks/util.wdl"
+import "../tasks/util.wdl"
 
 workflow visualization {
     input {
-        File xlsfile
+        File? xlsfile
         File wigfile
         File chromsizes
         String default_location = "PEAKDisplay_files"
     }
     
-    call util.normalize {
-        input:
-            wigfile=wigfile,
-            xlsfile=xlsfile,
-            default_location=default_location
+    if ( defined(xlsfile) ) {
+        String string_xlsfile = "" #buffer to allow optionality
+        File xlsfile_ = select_first([xlsfile, string_xlsfile])
+        call util.normalize {
+            input:
+                wigfile=wigfile,
+                xlsfile=xlsfile_,
+                default_location=default_location
+        }
     }
+
+    File processed_wigfile = select_first([normalize.norm_wig, wigfile])
+
     call wigtobigwig {
         input:
             chromsizes=chromsizes,
-            wigfile=normalize.norm_wig,
+            wigfile=processed_wigfile,
             default_location=default_location
     }
     call igvtdf {
         input:
-            wigfile=normalize.norm_wig,
+            wigfile=processed_wigfile,
             chromsizes=chromsizes,
             default_location=default_location
     }
     
     output {
         File bigwig = wigtobigwig.bigwig
-        File norm_wig = normalize.norm_wig
+        File? norm_wig = normalize.norm_wig
         File tdffile = igvtdf.tdffile
     }
     

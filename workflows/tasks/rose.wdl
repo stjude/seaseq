@@ -58,6 +58,7 @@ task rose {
         import sys
         
         gtf_input = open("~{sub(basename(gtffile),'.gz','')}",'r')
+        gtf_name = "~{sub(basename(gtffile),'.gz','')}"
         print (gtf_input)
         refseq_output = open("genome_refseq.ucsc",'w')
 
@@ -75,17 +76,37 @@ task rose {
         elif 'gene' in feature_dict:
             feature = "gene"
         else:
-            sys.exit("ERROR :\tGTF with either transcript/gene annotation is needed")
+            sys.exit("ERROR :\tGTF/GFF with either transcript/gene annotation is needed")
         print("NOTE :\tFeature type used is '%s'" %(feature))
 
         #organize gtf file
         gtf_input = open("~{sub(basename(gtffile),'.gz','')}",'r')
         for line in gtf_input:
             if not line.startswith('#'):
-                lines = line.split("\t")
-                newline = lines[8].split(' ')
-                gene_name = re.sub('[\"\;]', '', newline[1]) #clean gene_name
-                transcript_id = re.sub('[\"\;]', '', newline[3]) #clean transcript_id
+                lines = line.rstrip("\n").split("\t")
+                newline = lines[8].split(';')
+                if gtf_name.split('.')[-1] == 'gff' or gtf_name.split('.')[-1] == 'gff3':
+                    if re.search(";transcript_id", lines[8]):
+                        transcript_id = [s for s in newline if "transcript_id=" in s][0]
+                    else:
+                        transcript_id = newline[0]
+                    if re.search(";gene_name", lines[8]):
+                        gene_name = [s for s in newline if "gene_name=" in s][0]
+                    else:
+                        gene_name = newline[0]
+                    transcript_id = re.sub('[\"\;]', '', transcript_id.split('=')[-1]) #clean transcript_id
+                    gene_name = re.sub('[\"\;]', '', gene_name.split('=')[-1]) #clean gene_name
+                elif gtf_name.split('.')[-1] == 'gtf':
+                    if re.search("; transcript_id", lines[8]):
+                        transcript_id = [s for s in newline if "transcript_id " in s][0]
+                    else:
+                        transcript_id = newline[0]
+                    if re.search("; gene_name", lines[8]):
+                        gene_name = [s for s in newline if "gene_name " in s][0]
+                    else:
+                        gene_name = newline[0]
+                    transcript_id = re.sub('[\"\;]', '', transcript_id.split(' ')[-1]) #clean transcript_id
+                    gene_name = re.sub('[\"\;]', '', gene_name.split(' ')[-1]) #clean gene_name
                 if lines[2] == feature:
                     if re.match("chr", lines[0]):
                         new_chr_name = lines[0]

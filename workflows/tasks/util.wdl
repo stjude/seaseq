@@ -96,20 +96,20 @@ task flankbed {
 
 task summarystats {
     input {
-        File bambed
-        File sppfile
-        File countsfile
-        File peaksxls
-        File bamflag
-        File rmdupflag
+        File? bambed
+        File? sppfile
+        File? countsfile
+        File? peaksxls
+        File? bamflag
+        File? rmdupflag
         File? bkflag
         File fastqczip
-        File fastqmetrics
-        File enhancers
-        File superenhancers
+        File? fastqmetrics
+        File? enhancers
+        File? superenhancers
 
         String default_location = "QC_files/STATS"
-        String outputfile = sub(basename(fastqczip),'_fastqc.zip', '_seaseq-summary-stats.out')
+        String outputfile = sub(basename(fastqczip),'_fastqc.zip', '_seaseq-summary-stats.csv')
         String outputhtml = sub(basename(fastqczip),'_fastqc.zip', '_seaseq-summary-stats.html')
         String outputtext = sub(basename(fastqczip),'_fastqc.zip', '_seaseq-summary-stats.txt')
 
@@ -123,16 +123,16 @@ task summarystats {
         cd ~{default_location}
 
         summaryfacts.pl \
-            -b ~{bambed} \
-            -s ~{sppfile} \
-            -c ~{countsfile} \
-            -px ~{peaksxls} \
-            -bamflag ~{bamflag} \
+            ~{if defined(bambed) then "-b " + bambed else ""} \
+            ~{if defined(sppfile) then "-s " + sppfile else ""} \
+            ~{if defined(countsfile) then "-c " + countsfile else ""} \
+            ~{if defined(peaksxls) then "-px " + peaksxls else ""} \
+            ~{if defined(bamflag) then "-bamflag " + bamflag else ""} \
             ~{if defined(bkflag) then "-bkflag " + bkflag else ""} \
-            -fqc ~{fastqczip} \
-            -fx ~{fastqmetrics} \
-            -re ~{enhancers} \
-            -rs ~{superenhancers} \
+            ~{if defined(fastqczip) then "-fqc " + fastqczip else ""} \
+            ~{if defined(fastqmetrics) then "-fx " + fastqmetrics else ""} \
+            ~{if defined(enhancers) then "-re " + enhancers else ""} \
+            ~{if defined(superenhancers) then "-rs " + superenhancers else ""} \
             -outfile ~{outputfile}
     >>> 
     runtime {
@@ -261,3 +261,31 @@ task peaksanno {
     }
 }
 
+task mergehtml {
+    input {
+        Array[File] htmlfiles
+        String default_location = "QC_files"
+        String outputfile 
+
+        Int memory_gb = 10
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+        mkdir -p ~{default_location}
+
+        cd ~{default_location}
+
+        mergeoutput=$(cat ~{sep='; tail -n 1 ' htmlfiles})
+        echo $mergeoutput > ~{outputfile}
+    >>>
+    runtime {
+        memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'abralab/seaseq:v1.1.0'
+        cpu: ncpu
+    }
+    output {
+        File outputfile = "~{default_location}/~{outputfile}"
+    }
+}

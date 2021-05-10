@@ -22,7 +22,7 @@ task fastqc {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'quay.io/biocontainers/fastqc:0.11.9--0'
+        docker: 'abralab/fastqc:v0.11.9'
         cpu: ncpu
     }
     output {

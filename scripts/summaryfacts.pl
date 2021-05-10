@@ -39,14 +39,14 @@ my $output_counter = 6;
 
 #output file name
 unless ($outfile) { 
-  $statsout = "summarystats-stats.out"; 
+  $statsout = "summarystats-stats.csv"; 
 } else {
-  unless ($outfile =~ /\-stats.out$/) { $statsout = fileparse($outfile, qr/(\.[\w\d]+)$/)."-stats.out"; }
+  unless ($outfile =~ /\-stats.csv$/) { $statsout = fileparse($outfile, qr/(\.[\w\d]+)$/)."-stats.csv"; }
   else { $statsout = $outfile; }
 }
 #html output file name
-$htmlfile = $statsout; $htmlfile =~ s/stats.out/stats.html/; #creating html file
-$textfile = $statsout; $textfile =~ s/stats.out/stats.txt/; #creating html file
+$htmlfile = $statsout; $htmlfile =~ s/stats.csv/stats.html/; #creating html file
+$textfile = $statsout; $textfile =~ s/stats.csv/stats.txt/; #creating html file
 open (OUT, ">$statsout"); #opening outputfile
 $samplename = (split('\.', $statsout))[0];
 # - - - - - - - - -
@@ -57,9 +57,9 @@ if ($fastqczip) {
   $totalreads = `unzip -p $fastqczip */fastqc_data.txt | grep "Total Sequences" | awk -F' ' '{print \$NF}'`;
   my $basequality = `unzip -p $fastqczip */fastqc_data.txt | grep "base sequence quality" | awk -F' ' '{print \$NF}'`;
   my $seqrep = `unzip -p $fastqczip */fastqc_data.txt | grep "Overrepresented sequences" | awk -F' ' '{print \$NF}'`;
-  print OUT "Raw Reads = $totalreads"; chop $totalreads;
-  print OUT "Base Quality = $basequality"; chop $basequality;
-  print OUT "Sequence Diversity = $seqrep"; chop $seqrep;
+  print OUT "Raw Reads,$totalreads"; chop $totalreads;
+  print OUT "Base Quality,$basequality"; chop $basequality;
+  print OUT "Sequence Diversity,$seqrep"; chop $seqrep;
   
   #QCdash
   $OVAL{0} = 'Raw Reads';
@@ -82,11 +82,11 @@ if ($fastqczip) {
 #working with Flagstat
 if ($bamflag) {
   my $mappedreads = `head -n 5 $bamflag | tail -n 1 | awk -F" " '{print \$1}'`;
-  print OUT "Total Mapped Reads = $mappedreads"; chop $mappedreads;
+  print OUT "Total Mapped Reads,$mappedreads"; chop $mappedreads;
   
   if ($fastqczip) {
     $alignedpercent = sprintf ("%.3f", ($mappedreads/$totalreads * 100));
-    print OUT "Aligned percentage = ",$alignedpercent, "\n";
+    print OUT "Aligned percentage,",$alignedpercent, "\n";
     
     #QCdash
     $OVAL{3} = 'Aligned Percent';
@@ -101,12 +101,12 @@ if ($bamflag) {
 
 if ($bkflag) {
   my $bklistreads = `head -n 5 $bkflag | tail -n 1 | awk -F" " '{print \$1}'`;
-  print OUT "Total After RM BlackList regions = ",$bklistreads;
+  print OUT "Total After RM BlackList regions,",$bklistreads;
 }
 
 if ($rmdupflag) {
   my $rmdupreads = `head -n 5 $rmdupflag | tail -n 1 | awk -F" " '{print \$1}'`;
-  print OUT "Total After RM Duplicates = ",$rmdupreads;
+  print OUT "Total After RM Duplicates,",$rmdupreads;
 }
 
 
@@ -134,7 +134,7 @@ if ($bambed) {
     $NRF = sprintf ("%.4f", ($Uniquecnt/$Totalcnt));
     $PBC = sprintf ("%.4f", ($Oneread/$Uniquecnt));
   } else { $NRF = 0; $PBC = 0; }
-  print OUT "Unique Genomic Locations = $Uniquecnt\nNRF score = $NRF\nPCR Bottleneck Coefficient = $PBC\n";
+  print OUT "Unique Genomic Locations,$Uniquecnt\nNRF score,$NRF\nPCR Bottleneck Coefficient,$PBC\n";
   print ".. Done\n";
   
   #QCdash
@@ -161,9 +161,9 @@ if ($sppout) {
   my ($NSC, $RSC,$PhantomQual) = (split("\t", <IN>))[8,9,10]; close(IN);
   $NSC = sprintf ("%.4f", $NSC);
   $RSC = sprintf ("%.4f", $RSC);
-  print OUT "Normalized Strand cross-correlation Coefficient (NSC) = $NSC\n";
-  print OUT "Relative Strand cross-correlation Coefficient (RSC) = $RSC\n";
-  print OUT "Phantom Quality = $PhantomQual"; chop $PhantomQual;
+  print OUT "Normalized Strand cross-correlation Coefficient (NSC),$NSC\n";
+  print OUT "Relative Strand cross-correlation Coefficient (RSC),$RSC\n";
+  print OUT "Phantom Quality,$PhantomQual"; chop $PhantomQual;
   print ".. Done\n";
   
   #QCdash
@@ -172,7 +172,7 @@ if ($sppout) {
 
   $OvQual{'NSC'}{'value'} = $NSC;
   $OvQual{'RSC'}{'value'} = $RSC;
-  #$OvQual{'Phantom Quality'}{'value'} = $PhantomQual; #removed from Overall Quality
+  #$OvQual{'Phantom Quality'}{'value'} = $PhantomQual; #removed from Overall Quality because it's scale of NSC & RSC (redundant)
   $OvQual{'NSC'}{'score'} = -2;
   $OvQual{'RSC'}{'score'} = -2;
   #$OvQual{'Phantom Quality'}{'score'} = $PhantomQual; #removed from Overall Quality
@@ -192,7 +192,7 @@ if ($countsfile) {
     $peaks++; 
   } close (IN);
   $FRIP = sprintf ("%.4f", ($Fripcnt/$Totalcnt));
-  print OUT "Total Peaks = $peaks\nFRIP score = $FRIP\n";
+  print OUT "Total Peaks,$peaks\nFRIP score,$FRIP\n";
   print ".. Done\n";
 
   #QCdash
@@ -216,11 +216,11 @@ if ($countsfile) {
 if ($peaksxls) {
   print "Processing Fragment width & Tag length score ... ";
   my $fragmentwidth = `grep "\# d = " $peaksxls | head -n 1 | awk '{print \$NF}'`;
-  print OUT "Estimated Fragment Width = $fragmentwidth"; chop $fragmentwidth;
+  print OUT "Estimated Fragment Width,$fragmentwidth"; chop $fragmentwidth;
   
   #Estimated Tag Length
   my $predictedtaglength = `grep "\# tag size is determined" $peaksxls | head -n 1 | awk '{print \$(NF-1)}'`;
-  print OUT "Estimated Tag Length = $predictedtaglength"; chop $predictedtaglength;
+  print OUT "Estimated Tag Length,$predictedtaglength"; chop $predictedtaglength;
   print ".. Done\n";
 
   #QCdash
@@ -245,8 +245,8 @@ if ($rose_stitched && $rose_superstitched){
   my $superenhancers = `wc -l $rose_superstitched | awk '{print \$1-6}'`; chop $superenhancers;
   unless ($enhancers > 0 ) { $enhancers = 0; }  #making sure enhancers  is numeric
   unless ($superenhancers > 0 ) { $superenhancers = 0; } #making sure superenhancers is numeric
-  print OUT "Total number of Linear Stitched Peaks (Enhancers) = ", $enhancers,"\n";
-  print OUT "Total number of SE-like Enriched Regions (Superenhancers) = ", $superenhancers,"\n";
+  print OUT "Total number of Linear Stitched Peaks (Enhancers),", $enhancers,"\n";
+  print OUT "Total number of SE-like Enriched Regions (Superenhancers),", $superenhancers,"\n";
   print ".. Done\n";
   
   #QCdash
