@@ -80,7 +80,7 @@
       "name": "filename_prefix",
       "class": "string",
       "optional": true,
-      "help": "Input results name prefix (recommended if multiple FASTQs are provided).",
+      "help": "Input results name prefix (recommended if multiple FASTQs are provided)."
     }
   ],
   "outputSpec": [
