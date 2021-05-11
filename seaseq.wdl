@@ -261,11 +261,11 @@ workflow seaseq {
                 default_location='EACH_FASTQ/' + sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAM_files'
         }
 
-        call bedtools.bamtobed as indv_tobed {
-            input :
-                bamfile=indv_afterbklist
-        }
-    
+       call bedtools.bamtobed as indv_tobed {
+           input :
+               bamfile=indv_afterbklist
+       }
+
         call runspp.runspp as indv_runspp {
             input:
                 bamfile=indv_afterbklist
@@ -273,7 +273,6 @@ workflow seaseq {
 
         call util.summarystats {
             input:
-                bambed=indv_tobed.bedfile,
                 sppfile=indv_runspp.spp_out,
                 bamflag=indexstats.flagstats,
                 rmdupflag=indv_mkdup.flagstats,
@@ -391,9 +390,9 @@ workflow seaseq {
             default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/BAM_files'
     }
 
-    File? checkmapped_file = checkmapped.outputfile
+    Array[File] checkmapped_file = select_all([checkmapped.outputfile, downstream_bam])
 
-    if ( defined(checkmapped_file) ) {
+    if ( length(checkmapped_file) == 2 ) {
         call macs.macs {
             input :
                 bamfile=downstream_bam,
@@ -595,13 +594,12 @@ workflow seaseq {
             }
         }
     } # end if #reads map to genome
-    if ( !defined(checkmapped_file) ) {
+    if ( length(checkmapped_file) == 1 ) {
         # SUMMARY STATISTICS
         if ( length(viewsort.sortedbam) == 1 ) {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             call util.summarystats as uno_nomappedsummarystats {
                 input:
-                    bambed=indv_tobed.bedfile[0],
                     fastqmetrics=bfs.metrics_out[0],
                     sppfile=indv_runspp.spp_out[0],
                     bamflag=indexstats.flagstats[0],
@@ -615,7 +613,6 @@ workflow seaseq {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             call util.summarystats as nomappedsummarystats {
                 input:
-                    bambed=tobed.bedfile,
                     sppfile=runspp.spp_out,
                     bamflag=mergeindexstats.flagstats,
                     rmdupflag=mkdup.flagstats,
@@ -627,9 +624,6 @@ workflow seaseq {
     } # end if #NO reads map to genome
         
     output {
-        
-        #CHECK if reads are mapped
-        File? checked_map = checkmapped.outputfile
         
         #FASTQC
         Array[File] htmlfile = fastqc.htmlfile
