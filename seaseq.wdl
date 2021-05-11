@@ -261,10 +261,10 @@ workflow seaseq {
                 default_location='EACH_FASTQ/' + sub(basename(eachfastq),'\.f.*q\.gz','')+'/BAM_files'
         }
 
-       call bedtools.bamtobed as indv_tobed {
-           input :
-               bamfile=indv_afterbklist
-       }
+        call bedtools.bamtobed as indv_tobed {
+            input :
+                bamfile=indv_afterbklist
+        }
 
         call runspp.runspp as indv_runspp {
             input:
