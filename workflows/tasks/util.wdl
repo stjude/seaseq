@@ -289,3 +289,27 @@ task mergehtml {
         File outputfile = "~{default_location}/~{outputfile}"
     }
 }
+
+task linkname {
+    input {
+        String prefix
+        File in_fastq
+
+        Int memory_gb = 10
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+        mv ~{in_fastq} ~{prefix}.fastq.gz
+        
+    >>>
+    runtime {
+        memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'abralab/seaseq:v1.1.0'
+        cpu: ncpu
+    }
+    output {
+        File out_fastq = "~{prefix}.fastq.gz"
+    }
+}

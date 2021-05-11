@@ -2,7 +2,7 @@
 ## Test WDL script using samplefiles provided.
 
 # CROMWELL on local machine
-local_cromwell="/Users/madetunj/Downloads/cromwell-51.jar"
+local_cromwell="/Users/madetunj/Downloads/cromwell-61.jar"
 
 # CROMWELL on St. Jude hpc user directory
 sjhpc_cromwell="/home/madetunj/.software/cromwell-52.jar"
