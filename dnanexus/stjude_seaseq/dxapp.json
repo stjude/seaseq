@@ -12,14 +12,21 @@
       "optional": false,
       "help": "Reference FASTA file.",
       "patterns": [
-        "*.fa"
+        "*.fa",
+        "*.fa.gz",
+        "*.fasta",
+        "*.fasta.gz"
       ]
     },
     {
       "name": "blacklist",
       "class": "file",
       "optional": true,
-      "help": "If defined, blacklist regions listed are excluded after reference alignment."
+      "help": "If defined, blacklist regions listed are excluded after reference alignment.",
+      "patterns": [
+        "*.bed",
+        "*.bed.gz"
+      ]
     },
     {
       "name": "gtf",
@@ -29,7 +36,10 @@
       "patterns": [
         "*.gff",
         "*.gtf",
-        "*.gff3"
+        "*.gff3",
+        "*.gff.gz",
+        "*.gtf.gz",
+        "*.gff3.gz"
       ]
     },
     {
@@ -44,7 +54,7 @@
     {
       "name": "motif_databases",
       "class": "array:file",
-      "optional": false,
+      "optional": true,
       "help": "Input one or more motif databases available from the MEME suite (https://meme-suite.org/meme/db/motifs).",
       "patterns": [
         "*.meme"
@@ -62,71 +72,20 @@
       "optional": true,
       "help": "Upload zipped FASTQ files.",
       "patterns": [
-        "*.fq",
-        "*.fastq",
         "*.fq.gz",
         "*.fastq.gz"
       ]
+    },
+    {
+      "name": "filename_prefix",
+      "class": "string",
+      "optional": true,
+      "help": "Input results name prefix (recommended if multiple FASTQs are provided).",
     }
   ],
   "outputSpec": [
     {
-      "name": "e_to_g_enhancers",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "stitch_enhancers",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "gene_comparison",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "summit_meme",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "m_promoters",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "png_h_promoters",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "mapped_union",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "summit_ame_tsv",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "peakxlsfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "summitsfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "bam_htmlfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "summit_meme_summary",
+      "name": "htmlfile",
       "class": "array:file",
       "optional": true
     },
@@ -136,267 +95,7 @@
       "optional": true
     },
     {
-      "name": "densityplot",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "peak_comparison",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "union_enhancers",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "pdf_h_gene",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "mkdup_indexbam",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "ame_tsv",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "e_to_g_super_enhancers",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "n_tdffile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "pdf_promoters",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "m_genebody",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "meme_summary",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "nm_wigfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "gff_file",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "summit_ame_html",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "gff_union",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "flankbedfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "peak_window",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "pdf_comparison",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "qc_statsfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "ame_html",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "all_wigfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "n_norm_wig",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "indexbam",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "scoreisland",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "a_tdffile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "peak_closest",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "pdf_h_promoters",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "norm_wig",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "pdf_gene",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "sicer_wigfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "a_norm_wig",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "nm_summitsfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "peak_promoters",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "all_peakbedfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "g_to_e_enhancers",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "g_to_e_super_enhancers",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "mapped_stitch",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "bklistbam",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "ame_seq",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "meme",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "qc_htmlfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "bklist_indexbam",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "peak_genebody",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "htmlfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "wigfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "summit_ame_seq",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "nm_peakxlsfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "n_bigwig",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "all_peakxlsfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "nm_peakbedfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "mkdupbam",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "bigwig",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "png_h_gene",
+      "name": "bam_htmlfile",
       "class": "array:file",
       "optional": true
     },
@@ -406,22 +105,587 @@
       "optional": true
     },
     {
-      "name": "tdffile",
+      "name": "metrics_out",
       "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "uno_metrics_out",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "mergebam_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "mergebam_zipfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_zipfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_bam_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_bam_zipfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sortedbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_bkbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_bkindexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_rmbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_rmindexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "uno_sortedbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "uno_indexstatsbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "uno_bkbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "uno_bkindexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "uno_rmbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "uno_rmindexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "mergebamfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "mergebamindex",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "bkbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "bkindexbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "rmbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "rmindexbam",
+      "class": "file",
       "optional": true
     },
     {
       "name": "peakbedfile",
-      "class": "array:file",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "peakxlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "summitsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "all_peakbedfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "all_peakxlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "all_summitsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "all_wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nm_peakbedfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nm_peakxlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nm_summitsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nm_wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "scoreisland",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sicer_wigfile",
+      "class": "file",
       "optional": true
     },
     {
       "name": "pngfile",
-      "class": "array:file",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "mapped_union",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "mapped_stitch",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "enhancers",
+      "class": "file",
       "optional": true
     },
     {
       "name": "super_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "gff_file",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "gff_union",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "union_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "stitch_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "e_to_g_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "g_to_e_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "e_to_g_super_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "g_to_e_super_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "flankbedfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "ame_tsv",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "ame_html",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "ame_seq",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "meme",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "meme_summary",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "summit_ame_tsv",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "summit_ame_html",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "summit_ame_seq",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "summit_meme",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "summit_meme_summary",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "m_downstream",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "m_upstream",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "m_genebody",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "m_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "densityplot",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "pdf_gene",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "pdf_h_gene",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "png_h_gene",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "pdf_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "pdf_h_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "png_h_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "peak_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "peak_genebody",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "peak_window",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "peak_closest",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "peak_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "gene_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "pdf_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "all_peak_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "all_peak_genebody",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "all_peak_window",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "all_peak_closest",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "all_peak_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "all_gene_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "all_pdf_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nomodel_peak_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nomodel_peak_genebody",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nomodel_peak_window",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nomodel_peak_closest",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nomodel_peak_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nomodel_gene_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nomodel_pdf_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sicer_peak_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sicer_peak_genebody",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sicer_peak_window",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sicer_peak_closest",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sicer_peak_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sicer_gene_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sicer_pdf_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "normwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "n_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "n_normwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "n_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "a_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "a_normwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "a_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_normwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "qc_statsfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "qc_htmlfile",
       "class": "array:file",
       "optional": true
     },
@@ -431,38 +695,68 @@
       "optional": true
     },
     {
-      "name": "sortedbam",
-      "class": "array:file",
+      "name": "qc_mergehtml",
+      "class": "file",
       "optional": true
     },
     {
-      "name": "metrics_out",
-      "class": "array:file",
+      "name": "mergeqc_statsfile",
+      "class": "file",
       "optional": true
     },
     {
-      "name": "a_bigwig",
-      "class": "array:file",
+      "name": "mergeqc_htmlfile",
+      "class": "file",
       "optional": true
     },
     {
-      "name": "enhancers",
-      "class": "array:file",
+      "name": "mergeqc_textfile",
+      "class": "file",
       "optional": true
     },
     {
-      "name": "m_upstream",
-      "class": "array:file",
+      "name": "unoqc_statsfile",
+      "class": "file",
       "optional": true
     },
     {
-      "name": "all_summitsfile",
-      "class": "array:file",
+      "name": "unoqc_htmlfile",
+      "class": "file",
       "optional": true
     },
     {
-      "name": "m_downstream",
-      "class": "array:file",
+      "name": "unoqc_textfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nomappedqc_statsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nomappedqc_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nomappedqc_textfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_nomappedqc_statsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_nomappedqc_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_nomappedqc_textfile",
+      "class": "file",
       "optional": true
     }
   ],
