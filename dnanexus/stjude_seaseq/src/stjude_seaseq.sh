@@ -16,7 +16,10 @@ main() {
     echo '476621564b3b310b17598ee1f02a1865 dxWDL-v1.50.jar' > dxWDL-v1.50.jar.md5
     md5sum -c dxWDL-v1.50.jar.md5
 
-    sed -ibak "s/cloud=\"false\"/cloud=\"true\"/" seaseq.wdl
+    sed -i "s/cloud=\"false\"/cloud=\"true\"/" seaseq.wdl
+    sed -i "s/import \"..\/tasks\/util\.wdl/import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\/util\.wdl/" workflows/workflows/visualization.wdl
+    sed -i "s/import \"..\/tasks\/bedtools\.wdl/import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\/bedtools\.wdl/" workflows/workflows/motifs.wdl
+
     dx mkdir -p "${DX_PROJECT_CONTEXT_ID}":/app-$timestamp/
     wf_id=$(java -jar dxWDL-v1.50.jar compile seaseq.wdl -project "${DX_PROJECT_CONTEXT_ID}" -folder /apps -force -extras dnanexus/extras.json)
     echo "Workflow ID: ${wf_id}"
