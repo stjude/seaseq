@@ -48,7 +48,7 @@ unless ($outfile) {
 $htmlfile = $statsout; $htmlfile =~ s/stats.csv/stats.html/; #creating html file
 $textfile = $statsout; $textfile =~ s/stats.csv/stats.txt/; #creating html file
 open (OUT, ">$statsout"); #opening outputfile
-$samplename = (split('\.', $statsout))[0];
+$samplename = (split('-stats', $statsout))[0];
 # - - - - - - - - -
 # Values
 # - - - - - - - - -
