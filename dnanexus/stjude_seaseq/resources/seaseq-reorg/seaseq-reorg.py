@@ -31,7 +31,7 @@ def main(reorg_conf___=None, reorg_status___=None):  # pylint: disable=unused-ar
                 )["runInput"]["default_location"]
                 folder = folder_location + "/" + default_location
                 project_container.new_folder(folder, parents=True)
-
+        
                 file_container = dxpy.describe(indvfile["$dnanexus_link"])["project"]
                 file_object = dxpy.bindings.DXFile(
                     indvfile["$dnanexus_link"], project=file_container
@@ -43,18 +43,15 @@ def main(reorg_conf___=None, reorg_status___=None):  # pylint: disable=unused-ar
                         dxpy.PROJECT_CONTEXT_ID, folder=folder
                     )
         elif isinstance(file_identifiers, dict):
-            for indvfile in [
-                _file for _list in file_identifiers.values() for _file in _list
-            ]:
+            if '$dnanexus_link' in file_identifiers:
                 default_location = dxpy.describe(
-                    dxpy.describe(indvfile["$dnanexus_link"])["createdBy"]["job"]
-                )["runInput"]["default_location"]
+                dxpy.describe(file_identifiers["$dnanexus_link"])["createdBy"]["job"])["runInput"]["default_location"]
                 folder = folder_location + "/" + default_location
                 project_container.new_folder(folder, parents=True)
-
-                file_container = dxpy.describe(indvfile["$dnanexus_link"])["project"]
+        
+                file_container = dxpy.describe(file_identifiers["$dnanexus_link"])["project"]
                 file_object = dxpy.bindings.DXFile(
-                    indvfile["$dnanexus_link"], project=file_container
+                    file_identifiers["$dnanexus_link"], project=file_container
                 )
                 if file_container == dxpy.PROJECT_CONTEXT_ID:
                     file_object.move(folder)

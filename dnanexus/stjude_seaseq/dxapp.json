@@ -176,32 +176,32 @@
     },
     {
       "name": "uno_sortedbam",
-      "class": "array:file",
+      "class": "file",
       "optional": true
     },
     {
       "name": "uno_indexstatsbam",
-      "class": "array:file",
+      "class": "file",
       "optional": true
     },
     {
       "name": "uno_bkbam",
-      "class": "array:file",
+      "class": "file",
       "optional": true
     },
     {
       "name": "uno_bkindexbam",
-      "class": "array:file",
+      "class": "file",
       "optional": true
     },
     {
       "name": "uno_rmbam",
-      "class": "array:file",
+      "class": "file",
       "optional": true
     },
     {
       "name": "uno_rmindexbam",
-      "class": "array:file",
+      "class": "file",
       "optional": true
     },
     {
@@ -625,7 +625,7 @@
       "optional": true
     },
     {
-      "name": "normwig",
+      "name": "norm_wig",
       "class": "file",
       "optional": true
     },
@@ -640,7 +640,7 @@
       "optional": true
     },
     {
-      "name": "n_normwig",
+      "name": "n_norm_wig",
       "class": "file",
       "optional": true
     },
@@ -655,7 +655,7 @@
       "optional": true
     },
     {
-      "name": "a_normwig",
+      "name": "a_norm_wig",
       "class": "file",
       "optional": true
     },
@@ -670,7 +670,7 @@
       "optional": true
     },
     {
-      "name": "s_normwig",
+      "name": "s_norm_wig",
       "class": "file",
       "optional": true
     },
@@ -715,17 +715,17 @@
       "optional": true
     },
     {
-      "name": "unoqc_statsfile",
+      "name": "uno_qc_statsfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "unoqc_htmlfile",
+      "name": "uno_qc_htmlfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "unoqc_textfile",
+      "name": "uno_qc_textfile",
       "class": "file",
       "optional": true
     },
