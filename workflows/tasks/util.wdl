@@ -272,9 +272,7 @@ task mergehtml {
         Int ncpu = 1
     }
     command <<<
-        mkdir -p ~{default_location}
-
-        cd ~{default_location}
+        mkdir -p ~{default_location} && cd ~{default_location}
 
         mergeoutput=$(cat ~{sep='; tail -n 1 ' htmlfiles})
         echo $mergeoutput > ~{outputfile}
@@ -286,7 +284,7 @@ task mergehtml {
         cpu: ncpu
     }
     output {
-        File outputfile = "~{default_location}/~{outputfile}"
+        File mergefile = "~{default_location}/~{outputfile}"
     }
 }
 

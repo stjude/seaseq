@@ -290,15 +290,15 @@ workflow seaseq {
         call util.mergehtml {
             input:
                 htmlfiles=summarystats.htmlfile,
-                default_location='EACH_FASTQ/',
-                outputfile = if defined(filename_prefix) then filename_prefix + '_seaseq-summary-stats.html' else 'AllMapped_' + length(viewsort.sortedbam) + '_seaseq-summary-stats.html'
+                default_location='EACH_FASTQ',
+                outputfile = if defined(filename_prefix) then filename_prefix + '_seaseq-summary-stats.html' else 'AllMapped_' + length(fastqfiles) + '_seaseq-summary-stats.html'
         }
 
         call samtools.mergebam {
             input:
                 bamfiles=viewsort.sortedbam,
                 default_location = if defined(filename_prefix) then filename_prefix + '/BAM_files' else 'AllMerge_' + length(viewsort.sortedbam) + '_mapped' + '/BAM_files',
-                outputfile = if defined(filename_prefix) then filename_prefix + '.sorted.bam' else 'AllMerge_' + length(viewsort.sortedbam) + '_mapped.sorted.bam'
+                outputfile = if defined(filename_prefix) then filename_prefix + '.sorted.bam' else 'AllMerge_' + length(fastqfiles) + '_mapped.sorted.bam'
         }
 
         call fastqc.fastqc as mergebamfqc {
@@ -885,7 +885,7 @@ workflow seaseq {
         Array[File?]? qc_statsfile = summarystats.statsfile
         Array[File?]? qc_htmlfile = summarystats.htmlfile
         Array[File?]? qc_textfile = summarystats.textfile
-        File? qc_mergehtml = mergehtml.outputfile
+        File? qc_mergehtml = mergehtml.mergefile
         File? mergeqc_statsfile = merge_summarystats.statsfile
         File? mergeqc_htmlfile = merge_summarystats.htmlfile
         File? mergeqc_textfile = merge_summarystats.textfile
