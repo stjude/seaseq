@@ -180,7 +180,9 @@ workflow seaseq {
 ### ---------------------------------------- ###
 
     # if multiple fastqfiles are provided
-    if ( length(fastqfiles) > 1) {
+    Boolean multi_fastq = if length(fastqfiles) > 1 then true else false
+    Boolean one_fastq = if length(fastqfiles) == 1 then true else false
+    if ( multi_fastq ) {
         scatter (eachfastq in fastqfiles) {
             # Execute analysis on each fastq file provided
             # Analysis executed:
@@ -355,7 +357,7 @@ workflow seaseq {
             input:
                 bamfile=mergebam_afterbklist
         }
-    } # end if length(fastqfiles) > 1
+    } # end if length(fastqfiles) > 1: multi_fastq
 
 ### ---------------------------------------- ###
 ### ------------ S E C T I O N 2 ----------- ###
@@ -363,7 +365,7 @@ workflow seaseq {
 ### ---------------------------------------- ###
 
     # if only one fastqfile is provided
-    if ( length(fastqfiles) == 1) {
+    if ( one_fastq ) {
         # Execute analysis on each fastq file provided
         # Analysis executed:
         #   FastQC
@@ -466,7 +468,7 @@ workflow seaseq {
             input:
                 bamfile=uno_afterbklist
         }
-    } # end if length(fastqfiles) == 1
+    } # end if length(fastqfiles) == 1: one_fastq
 
 ### ---------------------------------------- ###
 ### ------------ S E C T I O N 3 ----------- ###
@@ -492,8 +494,10 @@ workflow seaseq {
     }
 
     Array[File] checkmapped_file = select_all([checkmapped.outputfile, downstream_bam])
+    Boolean stage_two = if length(checkmapped_file) == 2 then true else false
+    Boolean nomapped = if length(checkmapped_file) == 1 then true else false
 
-    if ( length(checkmapped_file) == 2 ) {
+    if ( stage_two ) {
         call macs.macs {
             input :
                 bamfile=downstream_bam,
@@ -664,7 +668,7 @@ workflow seaseq {
 
         #SUMMARY STATISTICS
         String string_fzip = "" #buffer to allow for fastqczip optionality
-        if ( length(fastqfiles) == 1 ) {
+        if ( one_fastq ) {
             call util.summarystats as uno_summarystats {
                 # SUMMARY STATISTICS of sample file (only 1 sample file provided)
                 input:
@@ -681,9 +685,9 @@ workflow seaseq {
                     superenhancers=rose.super_enhancers,
                     default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
             }
-        }
+        } # end if one_fastq
 
-        if ( length(fastqfiles) > 1 ) {
+        if ( multi_fastq ) {
             call util.summarystats as merge_summarystats {
                 # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
                 input:
@@ -699,13 +703,13 @@ workflow seaseq {
                     superenhancers=rose.super_enhancers,
                     default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
             }
-        }
-    } # end if #reads map to genome
+        } # end if multi_fastq
+    } # end if #reads map to genome: stage_two is true
 
-    if ( length(checkmapped_file) == 1 ) {
+    if ( nomapped ) {
         # SUMMARY STATISTICS
         String no_string_fzip = "" #buffer to allow for fastqczip optionality
-        if ( length(fastqfiles) == 1 ) {
+        if ( one_fastq ) {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             call util.summarystats as uno_nomappedsummarystats {
                 input:
@@ -717,8 +721,8 @@ workflow seaseq {
                     fastqczip=select_first([uno_fastqc.zipfile, no_string_fzip]),
                     default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
             }
-        }
-        if ( length(fastqfiles) > 1 ) {
+        } # end if one_fastq
+        if ( multi_fastq ) {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             call util.summarystats as nomappedsummarystats {
                 input:
@@ -729,8 +733,8 @@ workflow seaseq {
                     fastqczip=select_first([mergebamfqc.zipfile, no_string_fzip]),
                     default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
             }
-        }
-    } # end if #NO reads map to genome
+        } # end if multi_fastq
+    } # end if #NO reads map to genome: nomapped
 
     output {
         #FASTQC
