@@ -153,7 +153,7 @@ task normalize {
     input {
         File wigfile
         File xlsfile
-        String default_location = "PEAKDisplay_files"
+        String default_location = "Coverage_files"
 
         String outputfile = sub(basename(wigfile),'\.wig\.gz', '.RPM.wig')
 

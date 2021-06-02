@@ -7,7 +7,7 @@ workflow motifs {
         File bedfile
         File reference 
         File reference_index
-        Array[File]+ motif_databases
+        Array[File]? motif_databases
         String default_location = "MOTIF_files"
     }
 
@@ -23,14 +23,18 @@ workflow motifs {
             inputfile=bedfasta.fastafile
     }
 
-    call ame {
-        input :
-            motif_databases=motif_databases,
-            fastafile=bedfasta.fastafile,
-            folder_output = select_first(process_motif_folder.placeholder_output),
-            default_location=default_location + '/' + basename(select_first(process_motif_folder.placeholder_output)) + '-ame_out',
+    if (defined(motif_databases)){
+        Array[String] string_motif_databases = [1]
+        Array[File] motif_databases_ = select_first([motif_databases, string_motif_databases])
+            
+        call ame {
+            input :
+                motif_databases=motif_databases_,
+                fastafile=bedfasta.fastafile,
+                folder_output = select_first(process_motif_folder.placeholder_output),
+                default_location=default_location + '/' + basename(select_first(process_motif_folder.placeholder_output)) + '-ame_out',
+        }
     }
-
     call meme {
         input :
             fastafile=bedfasta.fastafile,
