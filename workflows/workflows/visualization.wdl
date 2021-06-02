@@ -7,7 +7,7 @@ workflow visualization {
         File? xlsfile
         File wigfile
         File chromsizes
-        String default_location = "PEAKDisplay_files"
+        String default_location = "Coverage_files"
     }
     
     if ( defined(xlsfile) ) {
@@ -47,7 +47,7 @@ task wigtobigwig {
     input {
         File wigfile
         File chromsizes
-        String default_location = "PEAKDisplay_files"
+        String default_location = "Coverage_files"
 
         String outputfile = sub(basename(wigfile),'\.wig\.gz', '.bw')
 
@@ -79,7 +79,7 @@ task igvtdf {
     input {
         File wigfile
         File chromsizes
-        String default_location = "PEAKDisplay_files"
+        String default_location = "Coverage_files"
 
         String outputfile = sub(basename(wigfile),'\.wig\.gz', '.tdf')
 

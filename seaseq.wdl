@@ -577,35 +577,30 @@ workflow seaseq {
                 default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/BROAD_peaks'
         }
 
-        if ( defined(motif_databases) ) {
-            # motif prediction and enrichment analysis
+        # Motif Analysis 
+        call motifs.motifs {
+            input:
+                reference=reference,
+                reference_index=samtools_faidx.faidx_file,
+                bedfile=macs.peakbedfile,
+                motif_databases=motif_databases,
+                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+        }
 
-            Array[String] string_motif_databases = [1]
-            Array[File] motif_databases_ = select_first([motif_databases, string_motif_databases])
-            call motifs.motifs {
-                input:
-                    reference=reference,
-                    reference_index=samtools_faidx.faidx_file,
-                    bedfile=macs.peakbedfile,
-                    motif_databases=motif_databases_,
-                    default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/MOTIFS'
-            }
+        call util.flankbed {
+            input :
+                bedfile=macs.summitsfile,
+                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+        }
 
-            call util.flankbed {
-                input :
-                    bedfile=macs.summitsfile,
-                    default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/MOTIFS'
-            }
-
-            call motifs.motifs as flank {
-                input:
-                    reference=reference,
-                    reference_index=samtools_faidx.faidx_file,
-                    bedfile=flankbed.flankbedfile,
-                    motif_databases=motif_databases_,
-                    default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/MOTIFS'
-            }
-        } # end if motif analysis is requested
+        call motifs.motifs as flank {
+            input:
+                reference=reference,
+                reference_index=samtools_faidx.faidx_file,
+                bedfile=flankbed.flankbedfile,
+                motif_databases=motif_databases,
+                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+        }
 
         call rose.rose {
             input :
@@ -622,7 +617,7 @@ workflow seaseq {
                 wigfile=macs.wigfile,
                 chromsizes=samtools_faidx.chromsizes,
                 xlsfile=macs.peakxlsfile,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS_Display/NARROW_peaks'
+                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks'
         }
 
         call viz.visualization as vizall {
@@ -630,7 +625,7 @@ workflow seaseq {
                 wigfile=all.wigfile,
                 chromsizes=samtools_faidx.chromsizes,
                 xlsfile=all.peakxlsfile,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS_Display/NARROW_peaks'
+                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks'
         }
 
         call viz.visualization as viznomodel {
@@ -638,14 +633,14 @@ workflow seaseq {
                 wigfile=nomodel.wigfile,
                 chromsizes=samtools_faidx.chromsizes,
                 xlsfile=nomodel.peakxlsfile,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS_Display/NARROW_peaks'
+                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks'
         }
 
          call viz.visualization as vizsicer {
             input:
                 wigfile=sicer.wigfile,
                 chromsizes=samtools_faidx.chromsizes,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS_Display/BROAD_peaks'
+                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/BROAD_peaks'
         }
 
         call sortbed.sortbed {
