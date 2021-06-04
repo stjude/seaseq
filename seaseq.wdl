@@ -2,6 +2,7 @@ version 1.0
 import "workflows/tasks/fastqc.wdl"
 import "workflows/tasks/bedtools.wdl"
 import "workflows/tasks/bowtie.wdl"
+import "workflows/tasks/bowtie2.wdl"
 import "workflows/tasks/samtools.wdl"
 import "workflows/tasks/macs.wdl"
 import "workflows/tasks/bamtogff.wdl"
@@ -68,6 +69,7 @@ workflow seaseq {
 
         # group: analysis_parameter
         String? filename_prefix
+        Boolean run_bowtie2 = false
 
     }
 
@@ -143,26 +145,53 @@ workflow seaseq {
         Array[File] fastqfile_ = flatten(fastqdump.fastqfile)
     }
 
-    if ( !defined(bowtie_index) ) {
-        # create bowtie index when not provided
-        call bowtie.index as bowtie_idx {
-            input :
-                reference=reference
-        }
-    }
-
-    if ( defined(bowtie_index) ) {
-        # check total number of bowtie indexes provided
-        Array[String] string_bowtie_index = [1] #buffer to allow for bowtie_index optionality
-        Array[File] int_bowtie_index = select_first([bowtie_index, string_bowtie_index])
-        if ( length(int_bowtie_index) != 6 ) {
-            # create bowtie index if 6 index files aren't provided
-            call bowtie.index as bowtie_idx_2 {
+    if ( !run_bowtie2 ) {
+        # using bowtie1
+        if ( !defined(bowtie_index) ) {
+            # create bowtie index when not provided
+            call bowtie.index as bowtie_idx {
                 input :
                     reference=reference
             }
         }
-    }
+
+        if ( defined(bowtie_index) ) {
+            # check total number of bowtie indexes provided
+            Array[String] string_bowtie_index = [1] #buffer to allow for bowtie_index optionality
+            Array[File] int_bowtie_index = select_first([bowtie_index, string_bowtie_index])
+            if ( length(int_bowtie_index) != 6 ) {
+                # create bowtie index if 6 index files aren't provided
+                call bowtie.index as bowtie_idx_2 {
+                    input :
+                        reference=reference
+                }
+            }
+        }
+    } # end if NOT bowtie2
+
+    if ( run_bowtie2 ) {
+        # using bowtie2
+        if ( !defined(bowtie_index) ) {
+            # create bowtie index when not provided
+            call bowtie2.index as bowtie2_idx {
+                input :
+                    reference=reference
+            }
+        }
+
+        if ( defined(bowtie_index) ) {
+            # check total number of bowtie indexes provided
+            Array[String] string_bowtie2_index = [1] #buffer to allow for bowtie_index optionality
+            Array[File] int_bowtie2_index = select_first([bowtie_index, string_bowtie2_index])
+            if ( length(int_bowtie2_index) != 6 ) {
+                # create bowtie index if 6 index files aren't provided
+                call bowtie2.index as bowtie2_idx_2 {
+                    input :
+                        reference=reference
+                }
+            }
+        }
+    } # end if bowtie2
 
     call samtools.faidx as samtools_faidx {
         # create FASTA index and chrom sizes files
@@ -171,7 +200,7 @@ workflow seaseq {
     }
 
 
-    Array[File] bowtie_index_ = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
+    Array[File] bowtie_index_ = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie2_idx_2.bowtie_indexes, bowtie2_idx.bowtie_indexes, bowtie_index])
     Array[File] fastqfiles = flatten(select_all([fastqfile, fastqfile_]))
 
 ### ---------------------------------------- ###
@@ -207,16 +236,27 @@ workflow seaseq {
                     default_location='EACH_FASTQ/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/SummaryStats'
             }
 
-            call bowtie.bowtie {
-                input :
-                    fastqfile=eachfastq,
-                    index_files=bowtie_index_,
-                    metricsfile=bfs.metrics_out
+            if ( !run_bowtie2 ) {
+                call bowtie.bowtie {
+                    input :
+                        fastqfile=eachfastq,
+                        index_files=bowtie_index_,
+                        metricsfile=bfs.metrics_out
+                }
             }
+            if ( run_bowtie2 ) {
+                call bowtie2.bowtie2 {
+                    input :
+                        fastqfile=eachfastq,
+                        index_files=bowtie_index_
+                }
+            }
+
+            File bowtie_samfile = select_first(flatten(select_all([bowtie.samfile, bowtie2.samfile])))
 
             call samtools.viewsort {
                 input :
-                    samfile=select_first(bowtie.samfile),
+                    samfile=bowtie_samfile,
                     default_location='EACH_FASTQ/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/BAM_files'
             }
 
@@ -401,16 +441,27 @@ workflow seaseq {
                 default_location=sub(basename(uno_fastqfile),'\.f.*q\.gz','') + '/QC/SummaryStats'
         }
 
-        call bowtie.bowtie as uno_bowtie {
-            input :
-                fastqfile=uno_fastqfile,
-                index_files=bowtie_index_,
-                metricsfile=uno_bfs.metrics_out
+        if ( !run_bowtie2 ) {
+            call bowtie.bowtie as uno_bowtie {
+                input :
+                    fastqfile=uno_fastqfile,
+                    index_files=bowtie_index_,
+                    metricsfile=uno_bfs.metrics_out
+            }
         }
+        if ( run_bowtie2 ) {
+            call bowtie2.bowtie2 as uno_bowtie2 {
+                input :
+                    fastqfile=uno_fastqfile,
+                    index_files=bowtie_index_
+            }
+        }
+
+        File uno_bowtie_samfile = select_first(flatten(select_all([uno_bowtie.samfile, uno_bowtie2.samfile])))
 
         call samtools.viewsort as uno_viewsort {
             input :
-                samfile=select_first(uno_bowtie.samfile),
+                samfile=uno_bowtie_samfile,
                 default_location=sub(basename(uno_fastqfile),'\.f.*q\.gz','') + '/BAM_files'
         }
 
@@ -850,4 +901,3 @@ workflow seaseq {
         File? uno_qc_textfile = uno_summarystats.textfile
     }
 }
-
