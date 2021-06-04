@@ -728,36 +728,6 @@
       "name": "uno_qc_textfile",
       "class": "file",
       "optional": true
-    },
-    {
-      "name": "nomappedqc_statsfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "nomappedqc_htmlfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "nomappedqc_textfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "uno_nomappedqc_statsfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "uno_nomappedqc_htmlfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "uno_nomappedqc_textfile",
-      "class": "file",
-      "optional": true
     }
   ],
   "runSpec": {
