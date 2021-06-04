@@ -227,9 +227,9 @@ workflow seaseq {
             }
 
             call samtools.indexstats {
-            input :
-                bamfile=viewsort.sortedbam,
-                default_location='EACH_FASTQ/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/BAM_files'
+                input :
+                    bamfile=viewsort.sortedbam,
+                    default_location='EACH_FASTQ/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/BAM_files'
             }
 
             if ( defined(blacklist) ) {
@@ -486,250 +486,207 @@ workflow seaseq {
     #collate correct files for downstream analysis
     File downstream_bam = select_first([mergebam_afterbklist, uno_afterbklist])
 
-    #check if mapped reads
-    call samtools.checkmapped {
+    call macs.macs {
         input :
             bamfile=downstream_bam,
-            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/BAM_files'
+            pvalue = "1e-9",
+            keep_dup="auto",
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(downstream_bam,'\.bam') + '-p9_kd-auto'
     }
 
-    Array[File] checkmapped_file = select_all([checkmapped.outputfile, downstream_bam])
-    Boolean stage_two = if length(checkmapped_file) == 2 then true else false
-    Boolean nomapped = if length(checkmapped_file) == 1 then true else false
+    call util.peaksanno {
+        input :
+            gtffile=gtf,
+            bedfile=macs.peakbedfile,
+            chromsizes=samtools_faidx.chromsizes,
+            summitfile=macs.summitsfile,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(macs.peakbedfile),'\_peaks.bed','')
+    }
 
-    if ( stage_two ) {
-        call macs.macs {
-            input :
-                bamfile=downstream_bam,
-                pvalue = "1e-9",
-                keep_dup="auto",
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(downstream_bam,'\.bam') + '-p9_kd-auto'
-        }
+    call macs.macs as all {
+        input :
+            bamfile=downstream_bam,
+            pvalue = "1e-9",
+            keep_dup="all",
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(downstream_bam,'\.bam') + '-p9_kd-all'
+    }
 
-        call util.peaksanno {
-            input :
-                gtffile=gtf,
-                bedfile=macs.peakbedfile,
-                chromsizes=samtools_faidx.chromsizes,
-                summitfile=macs.summitsfile,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(macs.peakbedfile),'\_peaks.bed','')
-        }
+    call util.peaksanno as all_peaksanno {
+        input :
+            gtffile=gtf,
+            bedfile=all.peakbedfile,
+            chromsizes=samtools_faidx.chromsizes,
+            summitfile=all.summitsfile,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(all.peakbedfile),'\_peaks.bed','')
+    }
 
-        call macs.macs as all {
-            input :
-                bamfile=downstream_bam,
-                pvalue = "1e-9",
-                keep_dup="all",
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(downstream_bam,'\.bam') + '-p9_kd-all'
-        }
+    call macs.macs as nomodel {
+        input :
+            bamfile=downstream_bam,
+            nomodel=true,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(downstream_bam,'\.bam') + '-nm'
+    }
 
-        call util.peaksanno as all_peaksanno {
-            input :
-                gtffile=gtf,
-                bedfile=all.peakbedfile,
-                chromsizes=samtools_faidx.chromsizes,
-                summitfile=all.summitsfile,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(all.peakbedfile),'\_peaks.bed','')
-        }
+    call util.peaksanno as nomodel_peaksanno {
+        input :
+            gtffile=gtf,
+            bedfile=nomodel.peakbedfile,
+            chromsizes=samtools_faidx.chromsizes,
+            summitfile=nomodel.summitsfile,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','')
+    }
 
-        call macs.macs as nomodel {
-            input :
-                bamfile=downstream_bam,
-                nomodel=true,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(downstream_bam,'\.bam') + '-nm'
-        }
+    call bamtogff.bamtogff {
+        input :
+            gtffile=gtf,
+            chromsizes=samtools_faidx.chromsizes,
+            bamfile=select_first([markdup.mkdupbam, uno_markdup.mkdupbam]),
+            bamindex=select_first([mkdup.indexbam, uno_mkdup.indexbam]),
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/BAM_Density'
+    }
 
-        call util.peaksanno as nomodel_peaksanno {
-            input :
-                gtffile=gtf,
-                bedfile=nomodel.peakbedfile,
-                chromsizes=samtools_faidx.chromsizes,
-                summitfile=nomodel.summitsfile,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','')
-        }
+    call bedtools.bamtobed {
+        input :
+            bamfile=select_first([markdup.mkdupbam, uno_markdup.mkdupbam])
+    }
 
-        call bamtogff.bamtogff {
-            input :
-                gtffile=gtf,
-                chromsizes=samtools_faidx.chromsizes,
-                bamfile=select_first([markdup.mkdupbam, uno_markdup.mkdupbam]),
-                bamindex=select_first([mkdup.indexbam, uno_mkdup.indexbam]),
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/BAM_Density'
-        }
+    call sicer.sicer {
+        input :
+            bedfile=bamtobed.bedfile,
+            chromsizes=samtools_faidx.chromsizes,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS/BROAD_peaks'
+    }
 
-        call bedtools.bamtobed {
-            input :
-                bamfile=select_first([markdup.mkdupbam, uno_markdup.mkdupbam])
-        }
+    call util.peaksanno as sicer_peaksanno {
+        input :
+            gtffile=gtf,
+            bedfile=sicer.scoreisland,
+            chromsizes=samtools_faidx.chromsizes,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/BROAD_peaks'
+    }
 
-        call sicer.sicer {
-            input :
-                bedfile=bamtobed.bedfile,
-                chromsizes=samtools_faidx.chromsizes,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS/BROAD_peaks'
-        }
+    # Motif Analysis
+    call motifs.motifs {
+        input:
+            reference=reference,
+            reference_index=samtools_faidx.faidx_file,
+            bedfile=macs.peakbedfile,
+            motif_databases=motif_databases,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+    }
 
-        call util.peaksanno as sicer_peaksanno {
-            input :
-                gtffile=gtf,
-                bedfile=sicer.scoreisland,
-                chromsizes=samtools_faidx.chromsizes,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/BROAD_peaks'
-        }
+    call util.flankbed {
+        input :
+            bedfile=macs.summitsfile,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+    }
 
-        # Motif Analysis 
-        call motifs.motifs {
-            input:
-                reference=reference,
-                reference_index=samtools_faidx.faidx_file,
-                bedfile=macs.peakbedfile,
-                motif_databases=motif_databases,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/MOTIFS'
-        }
+    call motifs.motifs as flank {
+        input:
+            reference=reference,
+            reference_index=samtools_faidx.faidx_file,
+            bedfile=flankbed.flankbedfile,
+            motif_databases=motif_databases,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+    }
 
-        call util.flankbed {
-            input :
-                bedfile=macs.summitsfile,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/MOTIFS'
-        }
+    call rose.rose {
+        input :
+            gtffile=gtf,
+            bamfile=downstream_bam,
+            bamindex=select_first([merge_indexbam, uno_indexbam]),
+            bedfile_auto=macs.peakbedfile,
+            bedfile_all=all.peakbedfile,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS/STITCHED_peaks'
+    }
 
-        call motifs.motifs as flank {
-            input:
-                reference=reference,
-                reference_index=samtools_faidx.faidx_file,
-                bedfile=flankbed.flankbedfile,
-                motif_databases=motif_databases,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/MOTIFS'
-        }
+    call viz.visualization {
+        input:
+            wigfile=macs.wigfile,
+            chromsizes=samtools_faidx.chromsizes,
+            xlsfile=macs.peakxlsfile,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks'
+    }
 
-        call rose.rose {
-            input :
-                gtffile=gtf,
-                bamfile=downstream_bam,
-                bamindex=select_first([merge_indexbam, uno_indexbam]),
-                bedfile_auto=macs.peakbedfile,
-                bedfile_all=all.peakbedfile,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/PEAKS/STITCHED_peaks'
-        }
+    call viz.visualization as vizall {
+        input:
+            wigfile=all.wigfile,
+            chromsizes=samtools_faidx.chromsizes,
+            xlsfile=all.peakxlsfile,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks'
+    }
 
-        call viz.visualization {
-            input:
-                wigfile=macs.wigfile,
-                chromsizes=samtools_faidx.chromsizes,
-                xlsfile=macs.peakxlsfile,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks'
-        }
+    call viz.visualization as viznomodel {
+        input:
+            wigfile=nomodel.wigfile,
+            chromsizes=samtools_faidx.chromsizes,
+            xlsfile=nomodel.peakxlsfile,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks'
+    }
 
-        call viz.visualization as vizall {
-            input:
-                wigfile=all.wigfile,
-                chromsizes=samtools_faidx.chromsizes,
-                xlsfile=all.peakxlsfile,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks'
-        }
+     call viz.visualization as vizsicer {
+        input:
+            wigfile=sicer.wigfile,
+            chromsizes=samtools_faidx.chromsizes,
+            default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/BROAD_peaks'
+    }
 
-        call viz.visualization as viznomodel {
-            input:
-                wigfile=nomodel.wigfile,
-                chromsizes=samtools_faidx.chromsizes,
-                xlsfile=nomodel.peakxlsfile,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks'
-        }
+    call sortbed.sortbed {
+        input:
+            bedfile=select_first([tobed.bedfile, uno_tobed.bedfile])
+    }
 
-         call viz.visualization as vizsicer {
-            input:
-                wigfile=sicer.wigfile,
-                chromsizes=samtools_faidx.chromsizes,
-                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/BROAD_peaks'
-        }
-
-        call sortbed.sortbed {
-            input:
-                bedfile=select_first([tobed.bedfile, uno_tobed.bedfile])
-        }
-
-        call bedtools.intersect {
-            input:
-                fileA=macs.peakbedfile,
-                fileB=sortbed.sortbed_out,
-                countoverlap=true,
-                sorted=true
-        }
+    call bedtools.intersect {
+        input:
+            fileA=macs.peakbedfile,
+            fileB=sortbed.sortbed_out,
+            countoverlap=true,
+            sorted=true
+    }
 
 ### ---------------------------------------- ###
 ### ------------ S E C T I O N 4 ----------- ###
 ### ---------- Summary Statistics ---------- ###
 ### ---------------------------------------- ###
 
-        #SUMMARY STATISTICS
-        String string_fzip = "" #buffer to allow for fastqczip optionality
-        if ( one_fastq ) {
-            call util.summarystats as uno_summarystats {
-                # SUMMARY STATISTICS of sample file (only 1 sample file provided)
-                input:
-                    bambed=uno_tobed.bedfile,
-                    fastqmetrics=uno_bfs.metrics_out,
-                    sppfile=uno_runspp.spp_out,
-                    bamflag=uno_indexstats.flagstats,
-                    rmdupflag=uno_mkdup.flagstats,
-                    bkflag=uno_bklist.flagstats,
-                    fastqczip=select_first([uno_fastqc.zipfile, string_fzip]),
-                    countsfile=intersect.intersect_out,
-                    peaksxls=macs.peakxlsfile,
-                    enhancers=rose.enhancers,
-                    superenhancers=rose.super_enhancers,
-                    default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
-            }
-        } # end if one_fastq
-
-        if ( multi_fastq ) {
-            call util.summarystats as merge_summarystats {
-                # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
-                input:
-                    bambed=tobed.bedfile,
-                    sppfile=runspp.spp_out,
-                    bamflag=mergeindexstats.flagstats,
-                    rmdupflag=mkdup.flagstats,
-                    bkflag=bklist.flagstats,
-                    fastqczip=select_first([mergebamfqc.zipfile, string_fzip]),
-                    countsfile=intersect.intersect_out,
-                    peaksxls=macs.peakxlsfile,
-                    enhancers=rose.enhancers,
-                    superenhancers=rose.super_enhancers,
-                    default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
-            }
-        } # end if multi_fastq
-    } # end if #reads map to genome: stage_two is true
-
-    if ( nomapped ) {
-        # SUMMARY STATISTICS
-        String no_string_fzip = "" #buffer to allow for fastqczip optionality
-        if ( one_fastq ) {
+    #SUMMARY STATISTICS
+    String string_fzip = "" #buffer to allow for fastqczip optionality
+    if ( one_fastq ) {
+        call util.summarystats as uno_summarystats {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
-            call util.summarystats as uno_nomappedsummarystats {
-                input:
-                    fastqmetrics=uno_bfs.metrics_out,
-                    sppfile=uno_runspp.spp_out,
-                    bamflag=uno_indexstats.flagstats,
-                    rmdupflag=uno_mkdup.flagstats,
-                    bkflag=uno_bklist.flagstats,
-                    fastqczip=select_first([uno_fastqc.zipfile, no_string_fzip]),
-                    default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
-            }
-        } # end if one_fastq
-        if ( multi_fastq ) {
+            input:
+                bambed=uno_tobed.bedfile,
+                fastqmetrics=uno_bfs.metrics_out,
+                sppfile=uno_runspp.spp_out,
+                bamflag=uno_indexstats.flagstats,
+                rmdupflag=uno_mkdup.flagstats,
+                bkflag=uno_bklist.flagstats,
+                fastqczip=select_first([uno_fastqc.zipfile, string_fzip]),
+                countsfile=intersect.intersect_out,
+                peaksxls=macs.peakxlsfile,
+                enhancers=rose.enhancers,
+                superenhancers=rose.super_enhancers,
+                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+        }
+    } # end if one_fastq
+
+    if ( multi_fastq ) {
+        call util.summarystats as merge_summarystats {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
-            call util.summarystats as nomappedsummarystats {
-                input:
-                    sppfile=runspp.spp_out,
-                    bamflag=mergeindexstats.flagstats,
-                    rmdupflag=mkdup.flagstats,
-                    bkflag=bklist.flagstats,
-                    fastqczip=select_first([mergebamfqc.zipfile, no_string_fzip]),
-                    default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
-            }
-        } # end if multi_fastq
-    } # end if #NO reads map to genome: nomapped
+            input:
+                bambed=tobed.bedfile,
+                sppfile=runspp.spp_out,
+                bamflag=mergeindexstats.flagstats,
+                rmdupflag=mkdup.flagstats,
+                bkflag=bklist.flagstats,
+                fastqczip=select_first([mergebamfqc.zipfile, string_fzip]),
+                countsfile=intersect.intersect_out,
+                peaksxls=macs.peakxlsfile,
+                enhancers=rose.enhancers,
+                superenhancers=rose.super_enhancers,
+                default_location=sub(basename(downstream_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+        }
+    } # end if multi_fastq
 
     output {
         #FASTQC
@@ -891,11 +848,6 @@ workflow seaseq {
         File? uno_qc_statsfile = uno_summarystats.statsfile
         File? uno_qc_htmlfile = uno_summarystats.htmlfile
         File? uno_qc_textfile = uno_summarystats.textfile
-        File? nomappedqc_statsfile = nomappedsummarystats.statsfile
-        File? nomappedqc_htmlfile = nomappedsummarystats.htmlfile
-        File? nomappedqc_textfile = nomappedsummarystats.textfile
-        File? uno_nomappedqc_statsfile = uno_nomappedsummarystats.statsfile
-        File? uno_nomappedqc_htmlfile = uno_nomappedsummarystats.htmlfile
-        File? uno_nomappedqc_textfile = uno_nomappedsummarystats.textfile
     }
 }
+
