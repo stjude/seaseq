@@ -129,6 +129,7 @@ task summarystats {
             ~{if defined(peaksxls) then "-px " + peaksxls else ""} \
             ~{if defined(bamflag) then "-bamflag " + bamflag else ""} \
             ~{if defined(bkflag) then "-bkflag " + bkflag else ""} \
+            ~{if defined(rmdupflag) then "-rmdupflag " + rmdupflag else ""} \
             ~{if defined(fastqczip) then "-fqc " + fastqczip else ""} \
             ~{if defined(fastqmetrics) then "-fx " + fastqmetrics else ""} \
             ~{if defined(enhancers) then "-re " + enhancers else ""} \
