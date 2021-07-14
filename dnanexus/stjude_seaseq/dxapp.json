@@ -425,22 +425,12 @@
       "optional": true
     },
     {
-      "name": "m_downstream",
+      "name": "s_matrices",
       "class": "file",
       "optional": true
     },
     {
-      "name": "m_upstream",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "m_genebody",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "m_promoters",
+      "name": "c_matrices",
       "class": "file",
       "optional": true
     },
@@ -680,17 +670,17 @@
       "optional": true
     },
     {
-      "name": "qc_statsfile",
+      "name": "indv_qc_statsfile",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "qc_htmlfile",
+      "name": "indv_qc_htmlfile",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "qc_textfile",
+      "name": "indv_qc_textfile",
       "class": "array:file",
       "optional": true
     },
