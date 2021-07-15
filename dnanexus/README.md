@@ -40,7 +40,7 @@
     #or with the inputs specified
     dx run /apps/seaseq \
     -istage-common.blacklist="/test/hg19/hg19-blacklist.v2_chr21.bed" \
-    -istage-common.fastqfile="/test/fastqfiles/H3K27Ac-AB5_R1_001.fastq.gz" \
+    -istage-common.sample_fastq="/test/fastqfiles/H3K27Ac-AB5_R1_001.fastq.gz" \
     -istage-common.gtf="/test/hg19/GRCh37_latest_genomic_chr21.gtf" \
     -istage-common.reference="/test/hg19/CHR21INDEX/hg19_chr21.fa" \
     -istage-common.bowtie_index="/test/hg19/CHR21INDEX/hg19_chr21.1.ebwt" \

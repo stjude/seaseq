@@ -5,6 +5,8 @@ task rose {
     input {
         File bamfile
         File bamindex
+        File? control
+        File? controlindex
         File bedfile_auto
         File bedfile_all
         File gtffile
@@ -13,8 +15,8 @@ task rose {
         String default_location = "PEAKS_files/STITCHED_REGIONS"
         String outputname = basename(bamfile)
 
-        Int tss = 2000
-        Int stitch = 12500
+        Int? tss = 2000
+        Int? stitch = 12500
 
         Int memory_gb = 20
         Int max_retries = 1
@@ -23,6 +25,8 @@ task rose {
     command <<<
         ln -s ~{bamfile} ~{basename(bamfile)}
         ln -s ~{bamindex} ~{basename(bamindex)}
+        ln -s ~{control} input_control.bam
+        ln -s ~{controlindex} input_control.bam.bai
 
         if [[ "~{gtffile}" == *"gz" ]]; then
             gunzip -c ~{gtffile} > ~{sub(basename(gtffile),'.gz','')}
@@ -32,8 +36,9 @@ task rose {
 
 
         BAMFILE=~{basename(bamfile)}
-        TSS=~{tss}
-        STITCH=~{stitch}
+        CONTROL=~{if defined(control) then "input_control.bam" else "N/A"}
+        TSS=~{if defined(tss) then tss else "\"default (0)\""}
+        STITCH=~{if defined(stitch) then stitch else "\"default (5000)\""}
         FILEA=~{bedfile_auto}
         FILEB=~{bedfile_all}
         OUTPUTDIR=~{outputdir}
@@ -45,6 +50,7 @@ task rose {
         echo "Input Bed File A: $FILEA"
         echo "Input Bed File B: $FILEB"
         echo "BAM file: $BAMFILE"
+        echo "Control BAM file: $CONTROL"
         echo "Output directory: $OUTPUTDIR"
         #================================================================================
 
@@ -129,7 +135,14 @@ task rose {
         #
         # ROSE CALLER
         #
-        ROSE_main.py -s $STITCH -t $TSS --custom genome_refseq.ucsc -i unionpeaks.gff -r $BAMFILE -o $OUTPUTDIR
+        ROSE_main.py \
+            ~{if defined(stitch) then "-s" + stitch else ""} \
+            ~{if defined(tss) then "-t" + tss else ""} \
+            --custom genome_refseq.ucsc \
+            -i unionpeaks.gff \
+            -r ~{basename(bamfile)} \
+            ~{if defined(control) then "-c input_control.bam" else ""} \
+            -o $OUTPUTDIR
 
         mkdir -p ~{default_location}
         mv $OUTPUTDIR/* ~{default_location}

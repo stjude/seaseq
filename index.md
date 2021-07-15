@@ -11,21 +11,24 @@ SEAseq analyses include alignment, peak calling, motif analysis, read coverage p
 
 ## Inputs
 
-|   Name                    |   Type                | Description                                                 |  Example            |
-|---------------------------|-----------------------|-------------------------------------------------------------|---------------------|
-|   FASTQ files             |   Array of files      |   One or more FASTQ files. The files should be gzipped.     |   [`*.gz`]          |
-|   SRA run accession (SRR) |   Array of strings    |   One or more SRR.                                          |   [`SRR12345678`]   |
-|   Genome Reference        |   File                |   The genome reference in FASTA format.                     |   [`*.fa`]          |
-|   Genome Bowtie indexes   |   Array of files      |   The genome bowtie v1 indexes. Should be six index files.  |   [`*.ebwt`]        |
-|   Gene Annotation         |   File                |   A gene position database file.                            |   [`*.gtf`]         |
-|   Blacklists              |   File                |   [UHS]/[DER]/[DAC] or custom blacklist regions file.       |   [`*/bed`]         |
-|   [Motif databases]       |   Array of files      |   One or more position weight matrix databases.             |   [`*.meme`]        |
+|   Name                                               |   Type                | Description                                                                    |  Example            |
+|------------------------------------------------------|-----------------------|--------------------------------------------------------------------------------|---------------------|
+|   Sample FASTQ files                                 |   Array of files      |   One or more Sample FASTQ files. The files are recommended to be gzipped.     |   [`*.gz`]          |
+|   Sample SRA run accession identifiers (SRR)         |   Array of strings    |   One or more Sample SRR.                                                      |   [`SRR12345678`]   |
+|   Input/Control FASTQ files                          |   Array of files      |   One or more Input FASTQ files. The files are recommended to be gzipped.      |   [`*.gz`]          |
+|   Input/Control SRA run accession identifiers (SRR)  |   Array of strings    |   One or more Input SRR.                                                       |   [`SRR12345679`]   |
+|   Genome Reference                                   |   File                |   The genome reference in FASTA format.                                        |   [`*.fa`]          |
+|   Genome Bowtie indexes                              |   Array of files      |   The genome bowtie v1 indexes. Should be six index files.                     |   [`*.ebwt`]        |
+|   Gene Annotation                                    |   File                |   A gene position database file.                                               |   [`*.gtf`]         |
+|   Blacklists                                         |   File                |   [UHS]/[DER]/[DAC] or custom blacklist regions file.                          |   [`*.bed`]         |
+|   [Motif databases]                                  |   Array of files      |   One or more position weight matrix databases.                                |   [`*.meme`]        |
 
 ### Input configuration
 
-SEASEQ supports FASTQ files and SRA identifiers (SRRs) as Sample Input. A combination of both is also supported. 
+SEASEQ supports FASTQ files and SRA identifiers (SRRs) as Samples Input. A combination of both is also supported. 
 
-SEASEQ requires the sample input, genome reference, gene annotation and motif database files.
+SEASEQ requires the Samples Input, genome reference, and gene annotation files.
+The Input/Control FASTQ files or SRA ids (SRR) are optional.
 Bowtie genomic indexes and region-based blacklists are optional.
 
 A gene position database file can be obtained from [RefSeq] or [GENCODE].

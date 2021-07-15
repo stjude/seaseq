@@ -5,7 +5,7 @@ set -e -o -x
 main() {
     git clone https://github.com/stjude/seaseq.git seaseq
     cd seaseq
-    git checkout 1.1
+    git checkout 2.0
     cd dnanexus
     reorg_id=$(dx build -f /seaseq-reorg | jq -r '.id')
     echo "Reorg applet ID: ${reorg_id}"
@@ -19,6 +19,7 @@ main() {
     sed -i "s/cloud=\"false\"/cloud=\"true\"/" seaseq.wdl
     sed -i "s/import \"..\/tasks\/util\.wdl/import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\/util\.wdl/" workflows/workflows/visualization.wdl
     sed -i "s/import \"..\/tasks\/bedtools\.wdl/import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\/bedtools\.wdl/" workflows/workflows/motifs.wdl
+    sed -i "s/import \"..\/tasks\//import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\//" workflows/workflows/mapping.wdl
 
     dx mkdir -p "${DX_PROJECT_CONTEXT_ID}":/app-$timestamp/
     wf_id=$(java -jar dxWDL-v1.50.jar compile seaseq.wdl -project "${DX_PROJECT_CONTEXT_ID}" -folder /app-$timestamp -force -extras dnanexus/extras.json)

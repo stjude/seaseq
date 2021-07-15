@@ -4,6 +4,7 @@ task macs {
 
     input {
         File bamfile
+        File? control
 
         Int memory_gb = 10
         Int max_retries = 1
@@ -29,6 +30,7 @@ task macs {
         if [ "~{nomodel}" == 'true' ]; then
             macs14 \
                 -t ~{bamfile} \
+                ~{if defined(control) then "-c" + control else ""} \
                 --space=~{space} \
                 --shiftsize=~{shiftsize} \
                 ~{true="-w" false="" wiggle} \
@@ -41,6 +43,7 @@ task macs {
         else
             macs14 \
                 -t ~{bamfile} \
+                ~{if defined(control) then "-c" + control else ""} \
                 -p ~{pvalue} \
                 --keep-dup=~{keep_dup} \
                 --space=~{space} \

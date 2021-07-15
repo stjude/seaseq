@@ -23,7 +23,7 @@ workflow motifs {
             inputfile=bedfasta.fastafile
     }
 
-    if (defined(motif_databases)){
+    if (defined(motif_databases)) {
         Array[String] string_motif_databases = [1]
         Array[File] motif_databases_ = select_first([motif_databases, string_motif_databases])
             

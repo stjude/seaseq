@@ -1,5 +1,5 @@
 {
-    "seaseq.fastqfile" : 
+    "seaseq.sample_fastq" : 
     [
         "./fastqfiles/H3K27me3-AB4_R1_001.fastq.gz",
         "./fastqfiles/H3K27Ac-AB5_R1_001.fastq.gz"
@@ -20,5 +20,6 @@
         "./hg19/CHR21INDEX/hg19_chr21.4.ebwt",
         "./hg19/CHR21INDEX/hg19_chr21.rev.1.ebwt",
         "./hg19/CHR21INDEX/hg19_chr21.rev.2.ebwt"
-    ]
+    ],
+    "seaseq.filename_prefix" : "test_data"
 }

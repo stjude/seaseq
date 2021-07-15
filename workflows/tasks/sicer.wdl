@@ -4,6 +4,7 @@ task sicer {
 
     input {
         File bedfile
+        File? control_bed
         File chromsizes
         String default_location = "PEAKS_files/BROAD_peaks"
 
@@ -25,6 +26,7 @@ task sicer {
 
         sicer \
             -t ~{bedfile} \
+            ~{if defined(control_bed) then "-c" + control_bed else ""} \
             -sc ~{chromsizes} \
             -rt ~{redundancy} \
             -w ~{window} \
