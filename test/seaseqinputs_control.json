@@ -1,11 +1,13 @@
 {
     "seaseq.sample_fastq" : 
     [
-        "./fastqfiles/H3K27Ac-AB5_R1_001.fastq.gz"
+        "./fastqfiles/H3K27me3-AB4_R1_001.fastq.gz",
+     	"./fastqfiles/H3K27me3-2-AB4_R1_001.fastq.gz"
     ],
     "seaseq.control_fastq" :
     [
-        "./fastqfiles/H3K27me3-AB4_R1_001.fastq.gz"
+     	"./fastqfiles/H3K27Ac-AB5_R1_001.fastq.gz",
+        "./fastqfiles/H3K27Ac-2-AB5_R1_001.fastq.gz"
     ],
     "seaseq.reference" : "./hg19/CHR21INDEX/hg19_chr21.fa",
     "seaseq.blacklist" : "./hg19/hg19-blacklist.v2_chr21.bed",
