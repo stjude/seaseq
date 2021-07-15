@@ -219,7 +219,7 @@ workflow seaseq {
     Boolean one_sample_fastq = if length(s_fastqfiles) == 1 then true else false
     Boolean multi_control_fastq = if length(c_fastqfiles) > 1 then true else false
     Boolean one_control_fastq = if length(c_fastqfiles) == 1 then true else false
-    Boolean with_input = if (defail)
+    Boolean with_input = if ((defined(control_fastq) || defined(control_sraid))) then true else false
 
     if ( multi_sample_fastq ) {
         scatter (eachfastq in s_fastqfiles) {
@@ -590,7 +590,7 @@ workflow seaseq {
     #collate correct files for downstream analysis
     File sample_bam = select_first([mergebam_afterbklist, mapping.bklist_bam, mapping.sorted_bam])
 
-    if ( defined(control_fastq) || defined(control_sraid) ) {
+    if ( with_input ) {
         File control_bam = select_first([c_mergebam_afterbklist, c_mapping.bklist_bam, c_mapping.sorted_bam])
 
         call macs.macs as c_macs {
@@ -661,9 +661,9 @@ workflow seaseq {
                 control=control_bam
 
         }
-    }
+    } # end if input provided
 
-    if ( !(defined(control_fastq) || defined(control_sraid)) ) {
+    if ( !with_input ) {
         call macs.macs {
             input :
                 bamfile=sample_bam,
@@ -717,7 +717,7 @@ workflow seaseq {
             input:
                 bamfile=sample_bam
         }
-    }
+    } # end if not input provided
 
     call util.peaksanno {
         input :
