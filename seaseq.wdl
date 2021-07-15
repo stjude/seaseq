@@ -16,13 +16,13 @@ import "workflows/tasks/sortbed.wdl"
 import "workflows/tasks/sratoolkit.wdl" as sra
 
 workflow seaseq {
-    String pipeline_ver = 'v1.0.0'
+    String pipeline_ver = 'v2.0.0'
 
     meta {
         title: 'SEAseq Analysis'
         summary: 'Single-End Antibody Sequencing (SEAseq) Pipeline'
         description: 'A comprehensive automated computational pipeline for all ChIP-Seq/CUT&RUN data analysis.'
-        version: '1.0.0'
+        version: '2.0.0'
         details: {
             citation: 'pending',
             contactEmail: 'modupeore.adetunji@stjude.org',
@@ -32,8 +32,8 @@ workflow seaseq {
             upstreamUrl: 'https://github.com/stjude/seaseq',
             whatsNew: [
                 {
-                    version: "1.0",
-                    changes: ["Initial release"]
+                    version: "2.0",
+                    changes: ["single-end sequencing with input/control sequencing data", "Initial release"]
                 }
             ]
         }
@@ -220,6 +220,7 @@ workflow seaseq {
     Boolean multi_control_fastq = if length(c_fastqfiles) > 1 then true else false
     Boolean one_control_fastq = if length(c_fastqfiles) == 1 then true else false
     Boolean with_input = if ((defined(control_fastq) || defined(control_sraid))) then true else false
+    Boolean no_input = if (!(defined(control_fastq) || defined(control_sraid))) then true else false
 
     if ( multi_sample_fastq ) {
         scatter (eachfastq in s_fastqfiles) {
@@ -663,7 +664,7 @@ workflow seaseq {
         }
     } # end if input provided
 
-    if ( !with_input ) {
+    if ( no_input ) {
         call macs.macs {
             input :
                 bamfile=sample_bam,
