@@ -219,6 +219,7 @@ workflow seaseq {
     Boolean one_sample_fastq = if length(s_fastqfiles) == 1 then true else false
     Boolean multi_control_fastq = if length(c_fastqfiles) > 1 then true else false
     Boolean one_control_fastq = if length(c_fastqfiles) == 1 then true else false
+    Boolean with_input = if (defail)
 
     if ( multi_sample_fastq ) {
         scatter (eachfastq in s_fastqfiles) {
@@ -412,7 +413,7 @@ workflow seaseq {
             input:
                 htmlfiles=c_summarystats.htmlfile,
                 default_location='INPUT',
-                outputfile = if defined(filename_prefix) then filename_prefix + '_seaseq-summary-stats.html' else 'AllMapped_' + length(c_fastqfiles) + '_seaseq-summary-stats.html'
+                outputfile = 'AllInputMapped_' + length(c_fastqfiles) + '_seaseq-summary-stats.html'
         }
 
         call samtools.mergebam as c_mergebam {

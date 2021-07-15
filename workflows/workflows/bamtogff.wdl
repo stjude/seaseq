@@ -124,7 +124,7 @@ workflow bamtogff {
         File? pdf_h_gene = bamtogff_plot.pdf_h_gene
         File? png_h_gene = bamtogff_plot.png_h_gene
         File? pdf_promoters = bamtogff_plot.pdf_promoters
-        File? pdf_h_promoters = bamtogff_plot.pdf_h_gene
+        File? pdf_h_promoters = bamtogff_plot.pdf_h_promoters
         File? png_h_promoters = bamtogff_plot.png_h_promoters
     }
 }
