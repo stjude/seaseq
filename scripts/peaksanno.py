@@ -475,8 +475,13 @@ def main():
     # Turn 4 column bed to 5 (for SICER peaks: include unique id)
     command = "awk -F'\\t' '{print NF; exit}' " + options.macs_peaks
     numberofcolumns = int(subprocess.check_output(command,shell=True).strip())
+    
+    command = "head -n 1 " + options.macs_peaks + ' | cut -f5 '
+    fifthcol_value = (str(subprocess.check_output(command,shell=True).strip()).split("'"))[1] #FDRisland from SICER produce a fifth empty column
+    
     new_macs_peaks = options.macs_peaks
-    if numberofcolumns == 4:
+
+    if numberofcolumns == 4 or len(fifthcol_value) < 1:
         new_macs_peaks = options.macs_peaks + ".tempPrefix"
         # command = "cat " + options.macs_peaks + ' | awk -F\\\\t ' + "'" + \
         #           '{print $1 "\\t" $2 "\\t" $3 "\\t" $1":"$2"-"$3 "\\t" $4}' + \

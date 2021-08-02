@@ -107,6 +107,8 @@ task summarystats {
         File? fastqmetrics
         File? enhancers
         File? superenhancers
+        File? controlqc
+        File? sampleqc
 
         String default_location = "QC_files/STATS"
         String outputfile = sub(basename(fastqczip),'_fastqc.zip', '_seaseq-summary-stats.csv')
@@ -154,6 +156,7 @@ task normalize {
     input {
         File wigfile
         File xlsfile
+        Boolean control = false
         String default_location = "Coverage_files"
 
         String outputfile = sub(basename(wigfile),'\.wig\.gz', '.RPM.wig')
@@ -173,16 +176,23 @@ task normalize {
         python <<CODE
         import subprocess
         
-        command = "grep 'tags after filtering in treatment' xlsfile.xls"
+        if ("~{control}" == "true") :
+                command1 = "grep 'tags after filtering in control' xlsfile.xls"
+                command2 = "grep 'total tags in control' xlsfile.xls"
+        else :
+            command1 = "grep 'tags after filtering in treatment' xlsfile.xls"
+            command2 = "grep 'total tags in treatment' xlsfile.xls"
+        
         try:
-            mappedreads = int(str(subprocess.check_output(command,shell=True).strip()).split(': ')[1].split("'")[0].strip())
+            mappedreads = int(str(subprocess.check_output(command1,shell=True).strip()).split(': ')[1].split("'")[0].strip())
         except:
             mappedreads = 0
-        if mappedreads <= 0:
-            command = "grep 'total tags in treatment' xlsfile.xls"
-            mappedreads = int(str(subprocess.check_output(command,shell=True).strip()).split(': ')[1].split("'")[0].strip())  
-
+        if mappedreads <= 0:   
+            mappedreads = int(str(subprocess.check_output(command2,shell=True).strip()).split(': ')[1].split("'")[0].strip()) 
+        
         mappedreads = mappedreads/1000000
+
+        print(mappedreads)
         
         inputwig = open("thewig.wig", 'r')
         Lines = inputwig.readlines()
@@ -265,6 +275,7 @@ task peaksanno {
 task mergehtml {
     input {
         Array[File] htmlfiles
+        Array[File] txtfiles
         String default_location = "QC_files"
         String outputfile 
 
@@ -277,6 +288,10 @@ task mergehtml {
 
         mergeoutput=$(cat ~{sep='; tail -n 1 ' htmlfiles})
         echo $mergeoutput > ~{outputfile}
+        head -n 1 ~{txtfiles[0]} > ~{outputfile}.txt
+        mergeoutput=$(tail -n 1 ~{sep=' \\n; tail -n 1 ' txtfiles})
+        echo -e $mergeoutput >> ~{outputfile}.txt
+
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
@@ -286,6 +301,7 @@ task mergehtml {
     }
     output {
         File mergefile = "~{default_location}/~{outputfile}"
+        File mergetxt = "~{default_location}/~{outputfile}.txt"
     }
 }
 
