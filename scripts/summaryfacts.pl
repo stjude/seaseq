@@ -7,7 +7,9 @@ use warnings;
 use File::Basename;
 use Getopt::Long;
 
-my ($help, $manual, $sppout, $bambed, $countsfile, $peaksxls, $bamflag, $rmdupflag, $bkflag, $outfile, $fastqmetrics, $fastqczip, $rose_stitched, $rose_superstitched, $samplename);
+my ($help, $manual, $sppout, $bambed, $countsfile, $peaksxls, $bamflag, $rmdupflag,
+    $bkflag, $outfile, $fastqmetrics, $fastqczip, $rose_stitched, $rose_superstitched,
+    $samplename, $cbamflag, $crmdupflag, $cbkflag, $cfastqczip);
 my $usage = "perl $0 -s <spp file> -c <countsfile> -b <bambed> -px <peaks xls> -fmetric <fastq metrics> -rose <rose directory> -bamflag <bamflagstat> -fqc <fastqczipfile> [-bkflag <bklistflagstat>] [-rmdupflag <rmdupflagstat>] -outfile <outputfile>\n";
 # USAGE DETAILS
 #<spp file> : run_spp.R output file
@@ -22,10 +24,12 @@ my $usage = "perl $0 -s <spp file> -c <countsfile> -b <bambed> -px <peaks xls> -
 #<rmdupflagstat> : mapping bam+rmdup samtools flagstat
 
 GetOptions (
-            "s|spp=s"=>\$sppout,"b|bed=s"=>\$bambed,"c|count=s"=>\$countsfile,
-            "px|peakxls=s"=>\$peaksxls,"bamflag=s"=>\$bamflag,"rmdupflag=s"=>\$rmdupflag,
-            "bkflag=s"=>\$bkflag,"fqc|fastqczip=s"=>\$fastqczip,"fmetric|fx=s"=>\$fastqmetrics,
-            "roseenhancers|re=s"=>\$rose_stitched, "rosesuper|rs=s"=>\$rose_superstitched, "outfile|o=s"=>\$outfile);
+            "s|spp=s"=>\$sppout, "b|bed=s"=>\$bambed, "c|count=s"=>\$countsfile,
+            "px|peakxls=s"=>\$peaksxls, "bamflag=s"=>\$bamflag, "rmdupflag=s"=>\$rmdupflag,
+            "bkflag=s"=>\$bkflag, "fqc|fastqczip=s"=>\$fastqczip, "fmetric|fx=s"=>\$fastqmetrics,
+            "roseenhancers|re=s"=>\$rose_stitched, "rosesuper|rs=s"=>\$rose_superstitched,
+            "cbamflag=s"=>\$cbamflag, "crmdupflag=s"=>\$crmdupflag, "cbkflag=s"=>\$cbkflag,
+            "cfqc|cfastqczip=s"=>\$cfastqczip, "outfile|o=s"=>\$outfile);
 unless ($sppout || $bambed || $countsfile || $peaksxls || $bamflag || $rmdupflag || $bkflag || $fastqczip || $fastqmetrics || $rose_stitched || $rose_superstitched) { die $usage;}
 
 #Filenames
@@ -33,7 +37,7 @@ my ($statsout, $htmlfile, $textfile);
 
 #Initialize variables
 my ($Uniquecnt, $Totalcnt, $Fripcnt, $FRIP, $peaks, $PBC, $NRF, $PhantomQual) = (0,0,0,0,0,0,0,0);
-my (%HASH, %OVAL, %OvQual, $alignedpercent, $totalreads);
+my (%HASH, %OVAL, %CONTROL_OVAL, %OvQual, %Control_OvQual, $alignedpercent, $totalreads, $calignedpercent, $ctotalreads);
 my $prev = "NA";
 my $output_counter = 6;
 
@@ -109,11 +113,68 @@ if ($rmdupflag) {
   print OUT "Total After RM Duplicates,",$rmdupreads;
 }
 
+#Working with control
+#working with FastQC
+if ($cfastqczip) {
+  $ctotalreads = `unzip -p $cfastqczip */fastqc_data.txt | grep "Total Sequences" | awk -F' ' '{print \$NF}'`;
+  my $cbasequality = `unzip -p $fastqczip */fastqc_data.txt | grep "base sequence quality" | awk -F' ' '{print \$NF}'`;
+  my $cseqrep = `unzip -p $cfastqczip */fastqc_data.txt | grep "Overrepresented sequences" | awk -F' ' '{print \$NF}'`;
+  print OUT "Control BAM : Raw Reads,$ctotalreads"; chop $ctotalreads;
+  print OUT "Control BAM : Base Quality,$cbasequality"; chop $cbasequality;
+  print OUT "Control BAM : Sequence Diversity,$cseqrep"; chop $cseqrep;
+  
+  #QCdash
+  $CONTROL_OVAL{0} = 'Raw Reads';
+  $CONTROL_OVAL{1} = 'Base Quality';
+  $CONTROL_OVAL{2} = 'Sequence Diversity';
+  
+  $Control_OvQual{'Raw Reads'}{'value'} = $ctotalreads; $Control_OvQual{'Base Quality'}{'value'} = $cbasequality; $Control_OvQual{'Sequence Diversity'}{'value'} = $cseqrep;
+  $Control_OvQual{'Raw Reads'}{'score'} = -2; $Control_OvQual{'Base Quality'}{'score'} = -2; $Control_OvQual{'Sequence Diversity'}{'score'} = -2;
+  
+  if ($Control_OvQual{'Raw Reads'}{'value'} >= 15000000) { $Control_OvQual{'Raw Reads'}{'score'} = -1; }
+  if ($Control_OvQual{'Raw Reads'}{'value'} >= 20000000) { $Control_OvQual{'Raw Reads'}{'score'} = 0; }
+  if ($Control_OvQual{'Raw Reads'}{'value'} >= 25000000) { $Control_OvQual{'Raw Reads'}{'score'} = 1; }
+  if ($Control_OvQual{'Raw Reads'}{'value'} >= 30000000) { $Control_OvQual{'Raw Reads'}{'score'} = 2; }
+  if ($Control_OvQual{'Base Quality'}{'value'} eq 'warn') { $Control_OvQual{'Base Quality'}{'score'} = 0; }
+  if ($Control_OvQual{'Base Quality'}{'value'} eq 'pass') { $Control_OvQual{'Base Quality'}{'score'} = 2; }
+  if ($Control_OvQual{'Sequence Diversity'}{'value'} eq 'warn') { $Control_OvQual{'Sequence Diversity'}{'score'} = 0; }
+  if ($Control_OvQual{'Sequence Diversity'}{'value'} eq 'pass') { $Control_OvQual{'Sequence Diversity'}{'score'} = 2; }
+} # end if fastqczip
+
+#Working with Flagstat
+if ($cbamflag) {
+  my $cmappedreads = `head -n 5 $cbamflag | tail -n 1 | awk -F" " '{print \$1}'`;
+  print OUT "Control BAM : Total Mapped Reads,$cmappedreads"; chop $cmappedreads;
+  
+  if ($cfastqczip) {
+    $calignedpercent = sprintf ("%.3f", ($cmappedreads/$ctotalreads * 100));
+    print OUT "Control BAM : Aligned percentage,",$calignedpercent, "\n";
+    
+    #QCdash
+    $CONTROL_OVAL{3} = 'Aligned Percent';
+    $Control_OvQual{'Aligned Percent'}{'value'} = $calignedpercent; $Control_OvQual{'Aligned Percent'}{'score'} = -2;
+    if ($Control_OvQual{'Aligned Percent'}{'value'} >= 50) {$Control_OvQual{'Aligned Percent'}{'score'} = -1;}
+    if ($Control_OvQual{'Aligned Percent'}{'value'} >= 60) {$Control_OvQual{'Aligned Percent'}{'score'} = 0;}
+    if ($Control_OvQual{'Aligned Percent'}{'value'} >= 70) {$Control_OvQual{'Aligned Percent'}{'score'} = 1;}
+    if ($Control_OvQual{'Aligned Percent'}{'value'} >= 80) {$Control_OvQual{'Aligned Percent'}{'score'} = 2;}
+  } #end if cfastqczip
+  
+} #end if bamflag
+
+if ($cbkflag) {
+  my $cbklistreads = `head -n 5 $cbkflag | tail -n 1 | awk -F" " '{print \$1}'`;
+  print OUT "Control BAM : Total After RM BlackList regions,",$cbklistreads;
+}
+
+if ($crmdupflag) {
+  my $crmdupreads = `head -n 5 $crmdupflag | tail -n 1 | awk -F" " '{print \$1}'`;
+  print OUT "Control BAM : Total After RM Duplicates,",$crmdupreads;
+}
+#end of working with control
 
 #PROCESS NRF (Non-Redundant Fraction)
 #the ratio between the number of positions in the genome that uniquely mappable reads map to and the total number of uniquely mappable reads
 if ($bambed) {
-  print "Processing NRF score ...";
   open(IN, "<$bambed") || die $!;
   while(<IN>){
     chomp;
@@ -135,7 +196,6 @@ if ($bambed) {
     $PBC = sprintf ("%.4f", ($Oneread/$Uniquecnt));
   } else { $NRF = 0; $PBC = 0; }
   print OUT "Unique Genomic Locations,$Uniquecnt\nNRF score,$NRF\nPCR Bottleneck Coefficient,$PBC\n";
-  print ".. Done\n";
   
   #QCdash
   $OVAL{$output_counter++} = 'NRF';
@@ -153,8 +213,8 @@ if ($bambed) {
   if ($OvQual{'PBC'}{'value'} >= 0.66) { $OvQual{'PBC'}{'score'} = 0; }
   if ($OvQual{'PBC'}{'value'} >= 0.75) { $OvQual{'PBC'}{'score'} = 1; }
   if ($OvQual{'PBC'}{'value'} >= 0.9) { $OvQual{'PBC'}{'score'} = 2; }
-
 }
+
 if ($sppout) {
   #Process NSC (normalized) + RSC (relative strand cross-correlation coefficient)
   open (IN, "<$sppout"); # || die $!; 
@@ -164,7 +224,6 @@ if ($sppout) {
   print OUT "Normalized Strand cross-correlation Coefficient (NSC),$NSC\n";
   print OUT "Relative Strand cross-correlation Coefficient (RSC),$RSC\n";
   print OUT "Phantom Quality,$PhantomQual"; chop $PhantomQual;
-  print ".. Done\n";
   
   #QCdash
   $OVAL{$output_counter++} = 'NSC';
@@ -193,7 +252,6 @@ if ($countsfile) {
   } close (IN);
   $FRIP = sprintf ("%.4f", ($Fripcnt/$Totalcnt));
   print OUT "Total Peaks,$peaks\nFRIP score,$FRIP\n";
-  print ".. Done\n";
 
   #QCdash
   $OVAL{$output_counter++} = 'FRiP';
@@ -221,7 +279,6 @@ if ($peaksxls) {
   #Estimated Tag Length
   my $predictedtaglength = `grep "\# tag size is determined" $peaksxls | head -n 1 | awk '{print \$(NF-1)}'`;
   print OUT "Estimated Tag Length,$predictedtaglength"; chop $predictedtaglength;
-  print ".. Done\n";
 
   #QCdash
   $OVAL{4} = 'Estimated Fragment Width';
@@ -247,7 +304,6 @@ if ($rose_stitched && $rose_superstitched){
   unless ($superenhancers > 0 ) { $superenhancers = 0; } #making sure superenhancers is numeric
   print OUT "Total number of Linear Stitched Peaks (Enhancers),", $enhancers,"\n";
   print OUT "Total number of SE-like Enriched Regions (Superenhancers),", $superenhancers,"\n";
-  print ".. Done\n";
   
   #QCdash
   $OVAL{$output_counter++} = 'Linear Stitched Peaks';
@@ -281,32 +337,85 @@ foreach (keys %OvQual){
 #color names
 my %color = ( "-2" => "#FF0000", "-1" => "#FF8C00", "0" => "#FFFF00", "1" => "#ADFF2F", "2" => "#008000" ); #red #orangered #yellow #greenyellow #green
 
-my $OverallQuality = ($totalscore/$count); my $color = $color{-2};
-if (length($OverallQuality) > 7) { $OverallQuality = sprintf ("%.4f", $OverallQuality) }
-if ((sprintf ("%.1f", ($totalscore/$count))) >= -1) { $color = $color{-1}; }
-if ((sprintf ("%.1f", ($totalscore/$count))) >= 0) { $color = $color{0}; }
-if ((sprintf ("%.1f", ($totalscore/$count))) >= 1) { $color = $color{1}; }
-if ((sprintf ("%.1f", ($totalscore/$count))) >= 2) { $color = $color{2}; }
+my $OverallQuality = "POOR"; #($totalscore/$count);
+my $color = $color{-2}; my $score = -2;
+#if (length($OverallQuality) > 7) { $OverallQuality = sprintf ("%.4f", $OverallQuality) }
+#if ((sprintf ("%.1f", ($totalscore/$count))) >= -1) { $color = $color{-1}; }
+#if ((sprintf ("%.1f", ($totalscore/$count))) >= 0) { $color = $color{0}; }
+#if ((sprintf ("%.1f", ($totalscore/$count))) >= 1) { $color = $color{1}; }
+#if ((sprintf ("%.1f", ($totalscore/$count))) >= 2) { $color = $color{2}; }
+if ((sprintf ("%.1f", ($totalscore/$count))) >= -1) { $color = $color{-1}; $score = -1; $OverallQuality = "BELOW_AVERAGE"; }
+if ((sprintf ("%.1f", ($totalscore/$count))) >= 0) { $color = $color{0}; $score = 0; $OverallQuality = "AVERAGE";}
+if ((sprintf ("%.1f", ($totalscore/$count))) >= 1) { $color = $color{1}; $score = 1; $OverallQuality = "GOOD";}
+if ((sprintf ("%.1f", ($totalscore/$count))) >= 2) { $color = $color{2}; $score = 2; $OverallQuality = "EXCELLENT";}
 
-my $htmlheader = "<table border='1' cellpadding='5'><tr><th>Sample Name</th><th>"."Overall Quality";
-my $textheader = "Sample Name\tOverall Quality";
-my $htmlvalues = "<tr><td><center>".$samplename."</center></td>";
-$htmlvalues .= "<td bgcolor='$color'><center>".$OverallQuality."</center></td>";
-my $textvalues = "$samplename\t$OverallQuality";
+my $htmlheader = "<table border='1' cellpadding='5'><tr><th>";
+my $textheader = "Sample_Name";
+my $samplehtmlvalues = "<tr><td><center>".$samplename."</center></td>";
+my $controlhtmlvalues = "<tr><td><center>".$samplename."</center></td>";
+my $sampletextvalues = $samplename;
+my $controltextvalues = $samplename;
+
+if ($cfastqczip) {
+  $htmlheader .= "FASTQ";
+  $textheader = "FASTQ";
+  $samplehtmlvalues = "<tr><td><center>SAMPLE</center></td>";
+  $controlhtmlvalues = "<tr><td><center>CONTROL</center></td>";
+  $sampletextvalues = "SAMPLE";
+  $controltextvalues = "CONTROL";
+} else {
+  $htmlheader .= "Sample Name";
+}
+
+open (CONFIG, ">configurations.ml");
+print CONFIG "$samplename\tvalue\tscore\n";
+
+#Adding Overall Quality
+#if ($totaloutput) {
+  $htmlheader .= "</th><th>"."Overall Quality";
+  $textheader .= "\tOverall_Quality";
+  if ($cfastqczip) { $samplehtmlvalues .= "<td bgcolor='$color' rowSpan='2'><center>".$OverallQuality."</center></td>"; }
+  else { $samplehtmlvalues .= "<td bgcolor='$color'><center>".$OverallQuality."</center></td>";}
+  $sampletextvalues .= "\t$OverallQuality";
+  $controltextvalues .= "\t$OverallQuality";
+  print CONFIG "Overall_Quality\t$OverallQuality\t$score\n";
+#}
+
+if ($cfastqczip) {
+  foreach (sort {$a <=> $b} keys %CONTROL_OVAL){
+    my $convertheader = $CONTROL_OVAL{$_};
+    $convertheader =~ s/ /_/g; #change space to underscore for txt file
+    $controlhtmlvalues .="<td bgcolor='".$color{$Control_OvQual{$CONTROL_OVAL{$_}}{'score'}}."'><center>".$Control_OvQual{$CONTROL_OVAL{$_}}{'value'}."</center></td>";
+    $controltextvalues .= "\t$Control_OvQual{$CONTROL_OVAL{$_}}{'value'}";
+    print CONFIG "control-$convertheader\t$Control_OvQual{$CONTROL_OVAL{$_}}{'value'}\t$Control_OvQual{$CONTROL_OVAL{$_}}{'score'}\n";
+  }
+  $controlhtmlvalues .= "</tr>";
+}
 
 foreach (sort {$a <=> $b} keys %OVAL){
   $htmlheader .= "</th><th>".$OVAL{$_};
-  $textheader .= "\t$OVAL{$_}";
-  $htmlvalues .="<td bgcolor='".$color{$OvQual{$OVAL{$_}}{'score'}}."'><center>".$OvQual{$OVAL{$_}}{'value'}."</center></td>";
-  $textvalues .= "\t$OvQual{$OVAL{$_}}{'value'}";
-  print "$_\t$OVAL{$_}\t$OvQual{$OVAL{$_}}{'value'}\t$OvQual{$OVAL{$_}}{'score'}\n";
+  my $convertheader = $OVAL{$_};
+  $convertheader =~ s/ /_/g; #change space to underscore for txt file
+  $textheader .= "\t$convertheader";
+  unless (exists $CONTROL_OVAL{$_}) {
+    $samplehtmlvalues .="<td bgcolor='".$color{$OvQual{$OVAL{$_}}{'score'}}."' rowSpan='2'><center>".$OvQual{$OVAL{$_}}{'value'}."</center></td>";
+    $controltextvalues .= "\t$OvQual{$OVAL{$_}}{'value'}";
+  } else {
+    $samplehtmlvalues .="<td bgcolor='".$color{$OvQual{$OVAL{$_}}{'score'}}."'><center>".$OvQual{$OVAL{$_}}{'value'}."</center></td>";
+  }
+  $sampletextvalues .= "\t$OvQual{$OVAL{$_}}{'value'}";
+  print CONFIG "$convertheader\t$OvQual{$OVAL{$_}}{'value'}\t$OvQual{$OVAL{$_}}{'score'}\n";
 }
-$htmlheader .= "</th></tr>"; $htmlvalues .= "</tr>";
+$htmlheader .= "</th></tr>"; $samplehtmlvalues .= "</tr>";
+
+close(CONFIG);
 
 open (OUT2, ">$htmlfile"); #creating htmlfile
-print OUT2 $htmlheader, "\n", $htmlvalues, "\n";
+print OUT2 $htmlheader, "\n", $samplehtmlvalues, "\n";
+if ($cfastqczip) { print OUT2 $controlhtmlvalues, "\n"; }
 close (OUT2);
 
 open (OUT3, ">$textfile"); #creating htmlfile
-print OUT3 $textheader, "\n", $textvalues, "\n";
+print OUT3 $textheader, "\n", $sampletextvalues, "\n";
+if ($cfastqczip) { print OUT3 $controltextvalues, "\n"; }
 close (OUT3);
