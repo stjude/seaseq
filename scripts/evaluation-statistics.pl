@@ -33,7 +33,7 @@ GetOptions (
 unless ($sppout || $bambed || $countsfile || $peaksxls || $bamflag || $rmdupflag || $bkflag || $fastqczip || $fastqmetrics || $rose_stitched || $rose_superstitched) { die $usage;}
 
 #Filenames
-my ($statsout, $htmlfile, $textfile);
+my ($statsout, $htmlfile, $textfile, $configfile);
 
 #Initialize variables
 my ($Uniquecnt, $Totalcnt, $Fripcnt, $FRIP, $peaks, $PBC, $NRF, $PhantomQual) = (0,0,0,0,0,0,0,0);
@@ -51,6 +51,7 @@ unless ($outfile) {
 #html output file name
 $htmlfile = $statsout; $htmlfile =~ s/stats.csv/stats.html/; #creating html file
 $textfile = $statsout; $textfile =~ s/stats.csv/stats.txt/; #creating html file
+$configfile = $statsout; $configfile =~ s/stats.csv/config.ml/; #creating config file
 open (OUT, ">$statsout"); #opening outputfile
 $samplename = (split('-stats', $statsout))[0];
 # - - - - - - - - -
@@ -367,7 +368,7 @@ if ($cfastqczip) {
   $htmlheader .= "Sample Name";
 }
 
-open (CONFIG, ">configurations.ml");
+open (CONFIG, ">$configfile");
 print CONFIG "$samplename\tvalue\tscore\n";
 
 #Adding Overall Quality
@@ -411,8 +412,8 @@ $htmlheader .= "</th></tr>"; $samplehtmlvalues .= "</tr>";
 close(CONFIG);
 
 open (OUT2, ">$htmlfile"); #creating htmlfile
-print OUT2 $htmlheader, "\n", $samplehtmlvalues, "\n";
-if ($cfastqczip) { print OUT2 $controlhtmlvalues, "\n"; }
+print OUT2 $htmlheader, "\n", $samplehtmlvalues;
+if ($cfastqczip) { print OUT2 "\n", $controlhtmlvalues, "</table>\n"; } else { print OUT2 "</table>\n"; }
 close (OUT2);
 
 open (OUT3, ">$textfile"); #creating htmlfile
