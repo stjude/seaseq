@@ -53,7 +53,8 @@ $htmlfile = $statsout; $htmlfile =~ s/stats.csv/stats.html/; #creating html file
 $textfile = $statsout; $textfile =~ s/stats.csv/stats.txt/; #creating html file
 $configfile = $statsout; $configfile =~ s/stats.csv/config.ml/; #creating config file
 open (OUT, ">$statsout"); #opening outputfile
-$samplename = (split('-stats', $statsout))[0];
+#$samplename = ((split('-stats', $statsout))[0]);
+$samplename = (split('.sorted', ((split('-stats', $statsout))[0])))[0];
 # - - - - - - - - -
 # Values
 # - - - - - - - - -
@@ -413,7 +414,7 @@ close(CONFIG);
 
 open (OUT2, ">$htmlfile"); #creating htmlfile
 print OUT2 $htmlheader, "\n", $samplehtmlvalues;
-if ($cfastqczip) { print OUT2 "\n", $controlhtmlvalues, "</table>\n"; } else { print OUT2 "</table>\n"; }
+if ($cfastqczip) { print OUT2 "\n", $controlhtmlvalues, "\n"; } 
 close (OUT2);
 
 open (OUT3, ">$textfile"); #creating htmlfile
