@@ -70,7 +70,7 @@ workflow seaseq {
         Array[File]? control_fastq
 
         # group: analysis_parameter
-        String? filename_prefix
+        String? sample_name
 
     }
 
@@ -128,10 +128,10 @@ workflow seaseq {
             help: 'Upload zipped FASTQ files.',
             patterns: ["*fq", "*.fq.gz", "*.fastq", "*.fastq.gz"]
         }
-        filename_prefix: {
-            description: 'Results output name prefix',
+        sample_name: {
+            description: 'Sample results custom name',
             group: 'analysis_parameter',
-            help: 'Input preferred analysis results file name prefix (recommended if multiple FASTQs are provided).',
+            help: 'Input preferred analysis results file name (recommended if multiple FASTQs are provided).',
             example: 'AllMerge_mapped'
         }
     }
@@ -209,18 +209,18 @@ workflow seaseq {
     Array[File] s_fastqfiles = flatten(select_all([sample_fastq, sample_fastqfile_]))
     Array[File] c_fastqfiles = flatten(select_all([control_fastq, control_fastqfile_]))
 
-### ---------------------------------------- ###
-### ------------ S E C T I O N 2 ----------- ###
-### ---- A: analysis of FASTQs provided ---- ###
-### ---------------------------------------- ###
+### ------------------------------------------------- ###
+### ---------------- S E C T I O N 2 ---------------- ###
+### ---- A: analysis if multiple FASTQs provided ---- ###
+### ------------------------------------------------- ###
 
     # if multiple fastqfiles are provided
     Boolean multi_sample_fastq = if length(s_fastqfiles) > 1 then true else false
     Boolean one_sample_fastq = if length(s_fastqfiles) == 1 then true else false
     Boolean multi_control_fastq = if length(c_fastqfiles) > 1 then true else false
     Boolean one_control_fastq = if length(c_fastqfiles) == 1 then true else false
-    Boolean with_input = if ((defined(control_fastq) || defined(control_sraid))) then true else false
-    Boolean no_input = if (!(defined(control_fastq) || defined(control_sraid))) then true else false
+    Boolean with_control = if ((defined(control_fastq) || defined(control_sraid))) then true else false
+    Boolean no_control = if (!(defined(control_fastq) || defined(control_sraid))) then true else false
 
     if ( multi_sample_fastq ) {
         scatter (eachfastq in s_fastqfiles) {
@@ -235,6 +235,7 @@ workflow seaseq {
             #   Remove read duplicates
             #   Summary statistics on FASTQs
             #   Combine html files into one for easy viewing
+            
             call fastqc.fastqc as fastqc {
                 input :
                     inputfile=eachfastq,
@@ -248,7 +249,7 @@ workflow seaseq {
             }
 
             call mapping.mapping as each_mapping {
-                input : 
+                input :
                     fastqfile=eachfastq,
                     index_files=bowtie_index_,
                     metricsfile=bfs.metrics_out,
@@ -267,13 +268,19 @@ workflow seaseq {
                     bamfile=select_first([each_mapping.bklist_bam, each_mapping.sorted_bam])
             }
 
-            call util.summarystats as s_summarystats {
+            call bedtools.bamtobed as indv_bamtobed {
+                input:
+                    bamfile=select_first([each_mapping.bklist_bam, each_mapping.sorted_bam])
+            }
+
+            call util.evalstats as s_summarystats {
                 input:
                     sppfile=indv_runspp.spp_out,
-                    bamflag=each_mapping.bam_stats,
-                    rmdupflag=each_mapping.mkdup_stats,
-                    bkflag=each_mapping.bklist_stats,
-                    fastqczip=fastqc.zipfile,
+                    bambed=indv_bamtobed.bedfile,
+                    sample_bamflag=each_mapping.bam_stats,
+                    sample_rmdupflag=each_mapping.mkdup_stats,
+                    sample_bkflag=each_mapping.bklist_stats,
+                    sample_fastqczip=fastqc.zipfile,
                     fastqmetrics=bfs.metrics_out,
                     default_location='SAMPLE/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/SummaryStats'
             }
@@ -289,15 +296,16 @@ workflow seaseq {
         call util.mergehtml {
             input:
                 htmlfiles=s_summarystats.htmlfile,
+                txtfiles=s_summarystats.textfile,
                 default_location='SAMPLE',
-                outputfile = if defined(filename_prefix) then filename_prefix + '_seaseq-summary-stats.html' else 'AllMapped_' + length(s_fastqfiles) + '_seaseq-summary-stats.html'
+                outputfile = 'AllMapped_' + length(s_fastqfiles) + '_seaseq-summary-stats.html'
         }
 
         call samtools.mergebam {
             input:
                 bamfiles=each_mapping.sorted_bam,
-                default_location = if defined(filename_prefix) then filename_prefix + '/BAM_files' else 'AllMerge_' + length(each_mapping.sorted_bam) + '_mapped' + '/BAM_files',
-                outputfile = if defined(filename_prefix) then filename_prefix + '.sorted.bam' else 'AllMerge_' + length(s_fastqfiles) + '_mapped.sorted.bam'
+                default_location = if defined(sample_name) then sample_name + '/BAM_files' else 'AllMerge_' + length(each_mapping.sorted_bam) + '_mapped' + '/BAM_files',
+                outputfile = if defined(sample_name) then sample_name + '.sorted.bam' else 'AllMerge_' + length(s_fastqfiles) + '_mapped.sorted.bam'
         }
 
         call fastqc.fastqc as mergebamfqc {
@@ -362,28 +370,28 @@ workflow seaseq {
             call fastqc.fastqc as c_fastqc {
                 input :
                     inputfile=eachfastq,
-                    default_location='INPUT/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/FastQC'
+                    default_location='CONTROL/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/FastQC'
             }
 
             call util.basicfastqstats as c_bfs {
                 input :
                     fastqfile=eachfastq,
-                    default_location='INPUT/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/SummaryStats'
+                    default_location='CONTROL/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/SummaryStats'
             }
 
             call mapping.mapping as c_each_mapping {
-                input : 
+                input :
                     fastqfile=eachfastq,
                     index_files=bowtie_index_,
                     metricsfile=c_bfs.metrics_out,
                     blacklist=blacklist,
-                    default_location='INPUT/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/BAM_files'
+                    default_location='CONTROL/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/BAM_files'
             }
 
             call fastqc.fastqc as c_bamfqc {
                 input :
                     inputfile=c_each_mapping.sorted_bam,
-                    default_location='INPUT/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/FastQC'
+                    default_location='CONTROL/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/FastQC'
             }
 
             call runspp.runspp as c_indv_runspp {
@@ -391,15 +399,21 @@ workflow seaseq {
                     bamfile=select_first([c_each_mapping.bklist_bam, c_each_mapping.sorted_bam])
             }
 
-            call util.summarystats as c_summarystats {
+            call bedtools.bamtobed as c_indv_bamtobed {
+                input:
+                    bamfile=select_first([c_each_mapping.bklist_bam, c_each_mapping.sorted_bam])
+            }
+
+            call util.evalstats as c_summarystats {
                 input:
                     sppfile=c_indv_runspp.spp_out,
-                    bamflag=c_each_mapping.bam_stats,
-                    rmdupflag=c_each_mapping.mkdup_stats,
-                    bkflag=c_each_mapping.bklist_stats,
-                    fastqczip=c_fastqc.zipfile,
+                    bambed=c_indv_bamtobed.bedfile,
+                    sample_bamflag=c_each_mapping.bam_stats,
+                    sample_rmdupflag=c_each_mapping.mkdup_stats,
+                    sample_bkflag=c_each_mapping.bklist_stats,
+                    sample_fastqczip=c_fastqc.zipfile,
                     fastqmetrics=c_bfs.metrics_out,
-                    default_location='INPUT/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/SummaryStats'
+                    default_location='CONTROL/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/SummaryStats'
             }
         } # end scatter (for each control fastq)
 
@@ -413,27 +427,28 @@ workflow seaseq {
         call util.mergehtml as c_mergehtml {
             input:
                 htmlfiles=c_summarystats.htmlfile,
-                default_location='INPUT',
-                outputfile = 'AllInputMapped_' + length(c_fastqfiles) + '_seaseq-summary-stats.html'
+                txtfiles=c_summarystats.textfile,
+                default_location='CONTROL',
+                outputfile = 'AllCtrlMapped_' + length(c_fastqfiles) + '_seaseq-summary-stats.html'
         }
 
         call samtools.mergebam as c_mergebam {
             input:
                 bamfiles=c_each_mapping.sorted_bam,
-                default_location = 'INPUT/' + 'AllMerge_' + length(c_each_mapping.sorted_bam) + '_mapped' + '/BAM_files',
+                default_location = 'CONTROL/' + 'AllMerge_' + length(c_each_mapping.sorted_bam) + '_mapped' + '/BAM_files',
                 outputfile = 'AllMerge_' + length(c_fastqfiles) + '_mapped.control.sorted.bam'
         }
 
         call fastqc.fastqc as c_mergebamfqc {
             input:
 	        inputfile=c_mergebam.mergebam,
-                default_location='INPUT/' + sub(basename(c_mergebam.mergebam),'\.sorted\.b.*$','') + '/QC/FastQC'
+                default_location='CONTROL/' + sub(basename(c_mergebam.mergebam),'\.sorted\.b.*$','') + '/QC/FastQC'
         }
 
         call samtools.indexstats as c_mergeindexstats {
             input:
                 bamfile=c_mergebam.mergebam,
-                default_location='INPUT/' + sub(basename(c_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files'
+                default_location='CONTROL/' + sub(basename(c_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files'
         }
 
         if ( defined(blacklist) ) {
@@ -444,13 +459,13 @@ workflow seaseq {
                 input :
                     fileA=c_mergebam.mergebam,
                     fileB=c_blacklist_,
-                    default_location='INPUT/' + sub(basename(c_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files',
+                    default_location='CONTROL/' + sub(basename(c_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files',
                     nooverlap=true
             }
             call samtools.indexstats as c_merge_bklist {
                 input :
                     bamfile=c_merge_rmblklist.intersect_out,
-                    default_location='INPUT/' + sub(basename(c_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files'
+                    default_location='CONTROL/' + sub(basename(c_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files'
             }
         } # end if blacklist provided
 
@@ -459,21 +474,20 @@ workflow seaseq {
         call samtools.markdup as c_merge_markdup {
             input :
                 bamfile=c_mergebam_afterbklist,
-                default_location='INPUT/' + sub(basename(c_mergebam_afterbklist),'\.sorted\.b.*$','') + '/BAM_files'
+                default_location='CONTROL/' + sub(basename(c_mergebam_afterbklist),'\.sorted\.b.*$','') + '/BAM_files'
         }
 
         call samtools.indexstats as c_merge_mkdup {
             input :
                 bamfile=c_merge_markdup.mkdupbam,
-                default_location='INPUT/' + sub(basename(c_mergebam_afterbklist),'\.sorted\.b.*$','') + '/BAM_files'
+                default_location='CONTROL/' + sub(basename(c_mergebam_afterbklist),'\.sorted\.b.*$','') + '/BAM_files'
         }
     } # end if length(fastqfiles) > 1: multi_control_fastq
-    
 
 
 ### ---------------------------------------- ###
 ### ------------ S E C T I O N 2 ----------- ###
-### -- B: analysis of one FASTQ provided --- ###
+### -- B: analysis if one FASTQ provided --- ###
 ### ---------------------------------------- ###
 
     # if only one fastqfile is provided
@@ -489,12 +503,12 @@ workflow seaseq {
         #   Remove read duplicates
         #   Summary statistics on FASTQs
         #   Combine html files into one for easy viewing
-        if ( defined(filename_prefix) ) {
-            String string_prefix = "" #buffer to allow for filename_prefix optionality
-            String filename_prefix_ = select_first([filename_prefix, string_prefix])
+        if ( defined(sample_name) ) {
+            String string_prefix = "" #buffer to allow for sample_name optionality
+            String sample_name_ = select_first([sample_name, string_prefix])
             call util.linkname {
                 input:
-                    prefix=filename_prefix_,
+                    prefix=sample_name_,
                     in_fastq=s_fastqfiles[0]
             }
         }
@@ -514,7 +528,7 @@ workflow seaseq {
         }
 
         call mapping.mapping {
-            input : 
+            input :
                 fastqfile=uno_s_fastqfile,
                 index_files=bowtie_index_,
                 metricsfile=uno_s_bfs.metrics_out,
@@ -526,6 +540,28 @@ workflow seaseq {
             input :
                 inputfile=mapping.sorted_bam,
                 default_location=sub(basename(uno_s_fastqfile),'\.f.*q\.gz','') + '/QC/FastQC'
+        }
+
+        call runspp.runspp as uno_s_runspp {
+            input:
+                bamfile=select_first([mapping.bklist_bam, mapping.sorted_bam])
+        }
+
+        call bedtools.bamtobed as uno_s_bamtobed {
+            input:
+                bamfile=select_first([mapping.bklist_bam, mapping.sorted_bam])
+        }
+
+        call util.evalstats as uno_s_summarystats {
+            input:
+                sppfile=uno_s_runspp.spp_out,
+                bambed=uno_s_bamtobed.bedfile,
+                sample_bamflag=mapping.bam_stats,
+                sample_rmdupflag=mapping.mkdup_stats,
+                sample_bkflag=mapping.bklist_stats,
+                sample_fastqczip=uno_s_fastqc.zipfile,
+                fastqmetrics=uno_s_bfs.metrics_out,
+                default_location='SAMPLE/' + sub(basename(uno_s_fastqfile),'\.f.*q\.gz','') + '/QC/SummaryStats'
         }
     } # end if length(fastqfiles) == 1: one_sample_fastq
 
@@ -549,28 +585,50 @@ workflow seaseq {
         call fastqc.fastqc as uno_c_fastqc {
             input :
                 inputfile=uno_c_fastqfile,
-                default_location='INPUT/' + sub(basename(uno_c_fastqfile),'\.f.*q\.gz','') + '/QC/FastQC'
+                default_location='CONTROL/' + sub(basename(uno_c_fastqfile),'\.f.*q\.gz','') + '/QC/FastQC'
         }
 
         call util.basicfastqstats as uno_c_bfs {
             input :
                 fastqfile=uno_c_fastqfile,
-                default_location='INPUT/' + sub(basename(uno_c_fastqfile),'\.f.*q\.gz','') + '/QC/SummaryStats'
+                default_location='CONTROL/' + sub(basename(uno_c_fastqfile),'\.f.*q\.gz','') + '/QC/SummaryStats'
         }
 
         call mapping.mapping as c_mapping {
-            input : 
+            input :
                 fastqfile=uno_c_fastqfile,
                 index_files=bowtie_index_,
                 metricsfile=uno_c_bfs.metrics_out,
                 blacklist=blacklist,
-                default_location='INPUT/' + sub(basename(uno_c_fastqfile),'\.f.*q\.gz','') + '/BAM_files'
+                default_location='CONTROL/' + sub(basename(uno_c_fastqfile),'\.f.*q\.gz','') + '/BAM_files'
         }
 
         call fastqc.fastqc as uno_c_bamfqc {
             input :
                 inputfile=c_mapping.sorted_bam,
-                default_location='INPUT/' + sub(basename(uno_c_fastqfile),'\.f.*q\.gz','') + '/QC/FastQC'
+                default_location='CONTROL/' + sub(basename(uno_c_fastqfile),'\.f.*q\.gz','') + '/QC/FastQC'
+        }
+
+        call runspp.runspp as uno_c_runspp {
+            input:
+                bamfile=select_first([c_mapping.bklist_bam, c_mapping.sorted_bam])
+        }
+
+        call bedtools.bamtobed as uno_c_bamtobed {
+            input:
+                bamfile=select_first([c_mapping.bklist_bam, c_mapping.sorted_bam])
+        }
+
+        call util.evalstats as uno_c_summarystats {
+            input:
+                sppfile=uno_c_runspp.spp_out,
+                bambed=uno_c_bamtobed.bedfile,
+                sample_bamflag=c_mapping.bam_stats,
+                sample_rmdupflag=c_mapping.mkdup_stats,
+                sample_bkflag=c_mapping.bklist_stats,
+                sample_fastqczip=uno_c_fastqc.zipfile,
+                fastqmetrics=uno_c_bfs.metrics_out,
+                default_location='CONTROL/' + sub(basename(uno_c_fastqfile),'\.f.*q\.gz','') + '/QC/SummaryStats'
         }
     } # end if length(fastqfiles) == 1: one_control_fastq
 
@@ -591,7 +649,7 @@ workflow seaseq {
     #collate correct files for downstream analysis
     File sample_bam = select_first([mergebam_afterbklist, mapping.bklist_bam, mapping.sorted_bam])
 
-    if ( with_input ) {
+    if ( with_control ) {
         File control_bam = select_first([c_mergebam_afterbklist, c_mapping.bklist_bam, c_mapping.sorted_bam])
 
         call macs.macs as c_macs {
@@ -631,15 +689,15 @@ workflow seaseq {
                 default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/BAM_Density'
         }
 
-        call bedtools.bamtobed as c_bamtobed {
+        call bedtools.bamtobed as c_forsicerbed {
             input :
                 bamfile=select_first([c_merge_markdup.mkdupbam, c_mapping.mkdup_bam])
         }
 
         call sicer.sicer as c_sicer {
             input :
-                bedfile=bamtobed.bedfile,
-                control_bed=c_bamtobed.bedfile,
+                bedfile=forsicerbed.bedfile,
+                control_bed=c_forsicerbed.bedfile,
                 chromsizes=samtools_faidx.chromsizes,
                 default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS/BROAD_peaks'
         }
@@ -660,11 +718,42 @@ workflow seaseq {
             input:
                 bamfile=sample_bam,
                 control=control_bam
-
         }
-    } # end if input provided
 
-    if ( no_input ) {
+        String string_ctrlwig = "" #buffer to allow for control wigfile optionality
+        File macs_ctrlwig = select_first([c_macs.ctrlwigfile, string_ctrlwig])
+        call viz.visualization as c_visualization {
+            input:
+                wigfile=macs_ctrlwig,
+                chromsizes=samtools_faidx.chromsizes,
+                control=true,
+                xlsfile=c_macs.peakxlsfile,
+                default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(c_macs.peakbedfile),'\_peaks.bed','') + '/control'
+        }
+
+        File all_ctrlwig = select_first([c_all.ctrlwigfile, string_ctrlwig])
+        call viz.visualization as c_vizall {
+            input:
+                wigfile=all_ctrlwig,
+                chromsizes=samtools_faidx.chromsizes,
+                control=true,
+                xlsfile=c_all.peakxlsfile,
+                default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(c_all.peakbedfile),'\_peaks.bed','') + '/control'
+        }
+
+        File nomodel_ctrlwig = select_first([c_nomodel.ctrlwigfile, string_ctrlwig])
+        call viz.visualization as c_viznomodel {
+            input:
+                wigfile=nomodel_ctrlwig,
+                chromsizes=samtools_faidx.chromsizes,
+                control=true,
+                xlsfile=c_nomodel.peakxlsfile,
+                default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(c_nomodel.peakbedfile),'\_peaks.bed','') + '/control'
+        }
+
+    } # end if input/control/background provided
+
+    if ( no_control ) {
         call macs.macs {
             input :
                 bamfile=sample_bam,
@@ -699,7 +788,7 @@ workflow seaseq {
 
         call sicer.sicer {
             input :
-                bedfile=bamtobed.bedfile,
+                bedfile=forsicerbed.bedfile,
                 chromsizes=samtools_faidx.chromsizes,
                 default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS/BROAD_peaks'
         }
@@ -718,7 +807,8 @@ workflow seaseq {
             input:
                 bamfile=sample_bam
         }
-    } # end if not input provided
+  
+    } # end if no input/control/background provided
 
     call util.peaksanno {
         input :
@@ -747,7 +837,7 @@ workflow seaseq {
             default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(select_first([nomodel.peakbedfile, c_nomodel.peakbedfile])),'\_peaks.bed','')
     }
 
-    call bedtools.bamtobed {
+    call bedtools.bamtobed as forsicerbed {
         input :
             bamfile=select_first([merge_markdup.mkdupbam, mapping.mkdup_bam])
     }
@@ -755,7 +845,7 @@ workflow seaseq {
     call util.peaksanno as sicer_peaksanno {
         input :
             gtffile=gtf,
-            bedfile=select_first([sicer.scoreisland, c_sicer.scoreisland]),
+            bedfile=select_first([sicer.scoreisland, c_sicer.fdrisland]),
             chromsizes=samtools_faidx.chromsizes,
             default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/BROAD_peaks'
     }
@@ -790,7 +880,7 @@ workflow seaseq {
             wigfile=select_first([macs.wigfile, c_macs.wigfile]),
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=select_first([macs.peakxlsfile, c_macs.peakxlsfile]),
-            default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks'
+            default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(select_first([macs.peakbedfile, c_macs.peakbedfile])),'\_peaks.bed','')
     }
 
     call viz.visualization as vizall {
@@ -798,7 +888,7 @@ workflow seaseq {
             wigfile=select_first([all.wigfile, c_all.wigfile]),
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=select_first([all.peakxlsfile, c_all.peakxlsfile]),
-            default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks'
+            default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(select_first([all.peakbedfile, c_all.peakbedfile])),'\_peaks.bed','')
     }
 
     call viz.visualization as viznomodel {
@@ -806,7 +896,7 @@ workflow seaseq {
             wigfile=select_first([nomodel.wigfile, c_nomodel.wigfile]),
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=select_first([nomodel.peakxlsfile, c_nomodel.peakxlsfile]),
-            default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks'
+            default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(select_first([nomodel.peakbedfile, c_nomodel.peakbedfile])),'\_peaks.bed','')
     }
 
     call viz.visualization as vizsicer {
@@ -816,14 +906,14 @@ workflow seaseq {
             default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/BROAD_peaks'
     }
 
-    call bedtools.bamtobed as tobed {
+    call bedtools.bamtobed as finalbed {
         input:
             bamfile=sample_bam
     }
 
     call sortbed.sortbed {
         input:
-            bedfile=tobed.bedfile
+            bedfile=finalbed.bedfile
     }
 
     call bedtools.intersect {
@@ -839,44 +929,119 @@ workflow seaseq {
 ### ---------- Summary Statistics ---------- ###
 ### ---------------------------------------- ###
 
-    #SUMMARY STATISTICS
-    String string_fzip = "" #buffer to allow for fastqczip optionality
-    if ( one_sample_fastq ) {
-        call util.summarystats as uno_summarystats {
-            # SUMMARY STATISTICS of sample file (only 1 sample file provided)
-            input:
-                bambed=tobed.bedfile,
-                fastqmetrics=uno_s_bfs.metrics_out,
-                sppfile=runspp.spp_out,
-                bamflag=mapping.bam_stats,
-                rmdupflag=mapping.mkdup_stats,
-                bkflag=mapping.bklist_stats,
-                fastqczip=select_first([uno_s_fastqc.zipfile, string_fzip]),
-                countsfile=intersect.intersect_out,
-                peaksxls=select_first([macs.peakxlsfile, c_macs.peakxlsfile]),
-                enhancers=select_first([rose.enhancers, c_rose.enhancers]),
-                superenhancers=select_first([rose.super_enhancers, c_rose.super_enhancers]),
-                default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
-        }
-    } # end if one_fastq
+    String string_qual = "" #buffer to allow for optionality in if statement
 
-    if ( multi_sample_fastq ) {
-        call util.summarystats as merge_summarystats {
-            # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
+    if ( with_control ) {
+
+        #SUMMARY STATISTICS
+        if ( one_sample_fastq ) {
+            call util.evalstats as c_uno_summarystats {
+                # SUMMARY STATISTICS of sample file (only 1 sample file provided)
+                input:
+                    bambed=finalbed.bedfile,
+                    sppfile=c_runspp.spp_out,
+                    sample_fastqczip=select_first([uno_s_bamfqc.zipfile, string_qual]),
+                    control_fastqczip=select_first([uno_c_bamfqc.zipfile, c_mergebamfqc.zipfile, string_qual]),
+                    sample_bamflag=mapping.bam_stats,
+                    sample_rmdupflag=mapping.mkdup_stats,
+                    sample_bkflag=mapping.bklist_stats,
+                    control_bamflag=select_first([c_mapping.bam_stats,c_mergeindexstats.flagstats, string_qual]),
+                    control_rmdupflag=select_first([c_mapping.mkdup_stats, c_merge_mkdup.flagstats, string_qual]),
+                    control_bkflag=select_first([c_mapping.bklist_stats, c_merge_bklist.flagstats, string_qual]),
+                    countsfile=intersect.intersect_out,
+                    peaksxls=c_macs.peakxlsfile,
+                    enhancers=c_rose.enhancers,
+                    superenhancers=c_rose.super_enhancers,
+                    default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+            }
+        } # end if one_fastq
+
+        if ( multi_sample_fastq ) {
+            call util.evalstats as c_merge_summarystats {
+                # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
+                input:
+                    bambed=finalbed.bedfile,
+                    sppfile=c_runspp.spp_out,
+                    sample_fastqczip=select_first([mergebamfqc.zipfile, string_qual]),
+                    control_fastqczip=select_first([c_mergebamfqc.zipfile, uno_c_bamfqc.zipfile, string_qual]),
+                    sample_bamflag=mergeindexstats.flagstats,
+                    sample_rmdupflag=merge_mkdup.flagstats,
+                    sample_bkflag=merge_bklist.flagstats,
+                    control_bamflag=select_first([c_mergeindexstats.flagstats, c_mapping.bam_stats, string_qual]),
+                    control_rmdupflag=select_first([c_merge_mkdup.flagstats, c_mapping.mkdup_stats, string_qual]),
+                    control_bkflag=select_first([c_merge_bklist.flagstats, c_mapping.bklist_stats, string_qual]),
+                    countsfile=intersect.intersect_out,
+                    peaksxls=c_macs.peakxlsfile,
+                    enhancers=c_rose.enhancers,
+                    superenhancers=c_rose.super_enhancers,
+                    default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+            }
+        } # end if multi_fastq
+
+        call util.summaryreport as c_overallsummary {
+            # Presenting all quality stats for the analysis
             input:
-                bambed=tobed.bedfile,
-                sppfile=runspp.spp_out,
-                bamflag=mergeindexstats.flagstats,
-                rmdupflag=merge_mkdup.flagstats,
-                bkflag=merge_bklist.flagstats,
-                fastqczip=select_first([mergebamfqc.zipfile, string_fzip]),
-                countsfile=intersect.intersect_out,
-                peaksxls=select_first([macs.peakxlsfile, c_macs.peakxlsfile]),
-                enhancers=select_first([rose.enhancers, c_rose.enhancers]),
-                superenhancers=select_first([rose.super_enhancers, c_rose.super_enhancers]),
-                default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+                controlqc_html=select_first([uno_c_summarystats.htmlfile, c_mergehtml.mergefile, string_qual]),
+                sampleqc_html=select_first([uno_s_summarystats.htmlfile, mergehtml.mergefile]),
+                overallqc_html=select_first([c_uno_summarystats.htmlfile, c_merge_summarystats.htmlfile]),
+                controlqc_txt=select_first([uno_c_summarystats.textfile, c_mergehtml.mergetxt, string_qual]),
+                sampleqc_txt=select_first([uno_s_summarystats.textfile, mergehtml.mergetxt]),
+                overallqc_txt=select_first([c_uno_summarystats.textfile, c_merge_summarystats.textfile]),
+                default_location='./'
         }
-    } # end if multi_fastq
+
+    }
+
+    if (no_control) {
+
+        #SUMMARY STATISTICS
+        if ( one_sample_fastq ) {
+            call util.evalstats as uno_summarystats {
+                # SUMMARY STATISTICS of sample file (only 1 sample file provided)
+                input:
+                    bambed=finalbed.bedfile,
+                    sppfile=runspp.spp_out,
+                    sample_fastqczip=select_first([uno_s_bamfqc.zipfile, string_qual]),
+                    sample_bamflag=mapping.bam_stats,
+                    sample_rmdupflag=mapping.mkdup_stats,
+                    sample_bkflag=mapping.bklist_stats,
+                    countsfile=intersect.intersect_out,
+                    peaksxls=macs.peakxlsfile,
+                    enhancers=rose.enhancers,
+                    superenhancers=rose.super_enhancers,
+                    default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+            }
+        } # end if one_fastq
+
+        if ( multi_sample_fastq ) {
+            call util.evalstats as merge_summarystats {
+                # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
+                input:
+                    bambed=finalbed.bedfile,
+                    sppfile=runspp.spp_out,
+                    sample_fastqczip=select_first([mergebamfqc.zipfile, string_qual]),
+                    sample_bamflag=mergeindexstats.flagstats,
+                    sample_rmdupflag=merge_mkdup.flagstats,
+                    sample_bkflag=merge_bklist.flagstats,
+                    countsfile=intersect.intersect_out,
+                    peaksxls=macs.peakxlsfile,
+                    enhancers=rose.enhancers,
+                    superenhancers=rose.super_enhancers,
+                    default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+            }
+        } # end if multi_fastq
+
+        call util.summaryreport as overallsummary {
+            # Presenting all quality stats for the analysis
+            input:
+                sampleqc_html=select_first([uno_s_summarystats.htmlfile, mergehtml.mergefile]),
+                overallqc_html=select_first([uno_summarystats.htmlfile, merge_summarystats.htmlfile]),
+                sampleqc_txt=select_first([uno_s_summarystats.textfile, mergehtml.mergetxt]),
+                overallqc_txt=select_first([uno_summarystats.textfile, merge_summarystats.textfile]),
+                default_location='./'
+        }
+      
+    }
 
     output {
         #FASTQC
@@ -908,7 +1073,7 @@ workflow seaseq {
 
         Array[File?]? c_metrics_out = c_bfs.metrics_out
         File? uno_c_metrics_out = uno_c_bfs.metrics_out
-        
+
         #BAMFILES
         Array[File?]? sortedbam = each_mapping.sorted_bam
         Array[File?]? indexbam = each_mapping.bam_index
@@ -970,14 +1135,17 @@ workflow seaseq {
         File? c_peakxlsfile = c_macs.peakxlsfile
         File? c_summitsfile = c_macs.summitsfile
         File? c_wigfile = c_macs.wigfile
+        File? c_ctrlwigfile = c_macs.ctrlwigfile
         File? c_all_peakbedfile = c_all.peakbedfile
         File? c_all_peakxlsfile = c_all.peakxlsfile
         File? c_all_summitsfile = c_all.summitsfile
         File? c_all_wigfile = c_all.wigfile
+        File? c_all_ctrlwigfile = c_all.ctrlwigfile
         File? c_nm_peakbedfile = c_nomodel.peakbedfile
         File? c_nm_peakxlsfile = c_nomodel.peakxlsfile
         File? c_nm_summitsfile = c_nomodel.summitsfile
         File? c_nm_wigfile = c_nomodel.wigfile
+        File? c_nm_ctrlwigfile = c_nomodel.ctrlwigfile
 
         #SICER
         File? scoreisland = sicer.scoreisland
@@ -985,6 +1153,8 @@ workflow seaseq {
 
         File? c_scoreisland = c_sicer.scoreisland
         File? c_sicer_wigfile = c_sicer.wigfile
+        File? c_sicer_summary = c_sicer.summary
+        File? c_sicer_fdrisland = c_sicer.fdrisland
 
         #ROSE
         File? pngfile = rose.pngfile
@@ -1094,6 +1264,17 @@ workflow seaseq {
         File? a_bigwig = vizall.bigwig
         File? a_norm_wig = vizall.norm_wig
         File? a_tdffile = vizall.tdffile
+
+        File? c_bigwig = c_visualization.bigwig
+        File? c_norm_wig = c_visualization.norm_wig
+        File? c_tdffile = c_visualization.tdffile
+        File? c_n_bigwig = c_viznomodel.bigwig
+        File? c_n_norm_wig = c_viznomodel.norm_wig
+        File? c_n_tdffile = c_viznomodel.tdffile
+        File? c_a_bigwig = c_vizall.bigwig
+        File? c_a_norm_wig = c_vizall.norm_wig
+        File? c_a_tdffile = c_vizall.tdffile
+
         File? s_bigwig = vizsicer.bigwig
         File? s_norm_wig = vizsicer.norm_wig
         File? s_tdffile = vizsicer.tdffile
@@ -1109,12 +1290,32 @@ workflow seaseq {
         Array[File?]? c_qc_textfile = c_summarystats.textfile
         File? c_qc_mergehtml = c_mergehtml.mergefile
 
+        File? s_uno_statsfile = uno_s_summarystats.statsfile
+        File? s_uno_htmlfile = uno_s_summarystats.htmlfile
+        File? s_uno_textfile = uno_s_summarystats.textfile
+
+        File? c_uno_statsfile = uno_c_summarystats.statsfile
+        File? c_uno_htmlfile = uno_c_summarystats.htmlfile
+        File? c_uno_textfile = uno_c_summarystats.textfile
+
         File? uno_qc_statsfile = uno_summarystats.statsfile
         File? uno_qc_htmlfile = uno_summarystats.htmlfile
         File? uno_qc_textfile = uno_summarystats.textfile
         File? mergeqc_statsfile = merge_summarystats.statsfile
         File? mergeqc_htmlfile = merge_summarystats.htmlfile
         File? mergeqc_textfile = merge_summarystats.textfile
+        File? all_summaryhtml = overallsummary.summaryhtml
+        File? all_summarytxt = overallsummary.summarytxt
+
+        File? c_uno_qc_statsfile = c_uno_summarystats.statsfile
+        File? c_uno_qc_htmlfile = c_uno_summarystats.htmlfile
+        File? c_uno_qc_textfile = c_uno_summarystats.textfile
+        File? c_mergeqc_statsfile = c_merge_summarystats.statsfile
+        File? c_mergeqc_htmlfile = c_merge_summarystats.htmlfile
+        File? c_mergeqc_textfile = c_merge_summarystats.textfile
+        File? c_all_summaryhtml = c_overallsummary.summaryhtml
+        File? c_all_summarytxt = c_overallsummary.summarytxt
     }
 }
+
 

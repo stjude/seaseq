@@ -9,9 +9,11 @@ task basicfastqstats {
         Int max_retries = 1
         Int ncpu = 1
     }
+
     Int memory_gb = ceil((size(fastqfile, "GiB") * 2) + 10)
 
     command <<<
+
         mkdir -p ~{default_location} && cd ~{default_location}
 
         zcat ~{fastqfile} | awk 'NR%4==2' | awk '{print length}' | sort -n > values.dat
@@ -37,17 +39,19 @@ task basicfastqstats {
         echo $minimum$'\t'$Q1$'\t'$median$'\t'$average$'\t'$Q3$'\t'$maximum$'\t'$stddev$'\t'$IQR >> ~{outputfile}
         
         rm -rf values.dat
+
     >>> 
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v1.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
         File metrics_out = "~{default_location}/~{outputfile}"
     }
 }
+
 
 task flankbed {
     input {
@@ -86,7 +90,7 @@ task flankbed {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v1.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -94,63 +98,131 @@ task flankbed {
     }
 }
 
-task summarystats {
+
+task summaryreport {
+    input {
+        File? controlqc_txt
+        File? controlqc_html
+        File sampleqc_txt
+        File sampleqc_html
+        File overallqc_txt
+        File overallqc_html
+        String default_location = './'
+
+        String outputfile = sub(basename(overallqc_html), 'stats.html', 'seaseq_report.html')
+        String outputtxt = sub(basename(overallqc_html), 'stats.html', 'seaseq_report.txt')
+        
+        Int memory_gb = 5
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+
+        # Printing Sample Quality Reports
+        echo -e '<title>SEAseq Report</title>\n<h1>SEAseq Quality Statistics and Evaluation Report</h1>\n<h2>Sample FASTQs Quality Results</h2><p>' > ~{outputfile}
+        echo -e 'SEAseq Report\nSEAseq Quality Statistics and Evaluation Report\n\nSample FASTQs Quality Results' > ~{outputtxt}
+        cat ~{sampleqc_html} >> ~{outputfile}
+        cat ~{sampleqc_txt} >> ~{outputtxt}
+        echo -e '</p><br>' >> ~{outputfile}
+        echo -e '\n' >> ~{outputtxt}
+
+        if [ -f "~{controlqc_html}" ]; then
+            # Printing Control Quality Reports
+            echo -e '<h2>Control FASTQs Quality Results</h2><p>' >> ~{outputfile}
+            echo -e 'Control FASTQs Quality Results' >> ~{outputtxt}
+            cat ~{controlqc_html} >> ~{outputfile}
+            cat ~{controlqc_txt} >> ~{outputtxt}
+            echo -e '</p><br>' >> ~{outputfile}
+            echo -e '\n' >> ~{outputtxt}
+        fi
+        
+        # Printing Overall Quality Reports
+        echo -e '<h2>Comprehensive Quality Evaluation and Statistics Results</h2><p>' >> ~{outputfile}
+        echo -e 'Comprehensive Quality Evaluation and Statistics Results' >> ~{outputtxt}
+        cat ~{overallqc_html} >> ~{outputfile}
+        cat ~{overallqc_txt} >> ~{outputtxt}
+        echo -e '</p><br>' >> ~{outputfile}
+        echo -e '\n' >> ~{outputtxt}
+
+    >>>
+    runtime {
+        memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'abralab/seaseq:v2.0.0'
+        cpu: ncpu
+    }
+    output {
+        File summaryhtml = "~{default_location}/~{outputfile}"
+        File summarytxt = "~{default_location}/~{outputtxt}"
+    }
+}
+
+
+task evalstats {
     input {
         File? bambed
         File? sppfile
         File? countsfile
         File? peaksxls
-        File? bamflag
-        File? rmdupflag
-        File? bkflag
-        File fastqczip
+        File sample_fastqczip
+        File? control_fastqczip
+        File? sample_bamflag
+        File? sample_rmdupflag
+        File? sample_bkflag
+        File? control_bamflag
+        File? control_rmdupflag
+        File? control_bkflag
         File? fastqmetrics
         File? enhancers
         File? superenhancers
-        File? controlqc
-        File? sampleqc
 
         String default_location = "QC_files/STATS"
-        String outputfile = sub(basename(fastqczip),'_fastqc.zip', '_seaseq-summary-stats.csv')
-        String outputhtml = sub(basename(fastqczip),'_fastqc.zip', '_seaseq-summary-stats.html')
-        String outputtext = sub(basename(fastqczip),'_fastqc.zip', '_seaseq-summary-stats.txt')
+        String outputfile = sub(basename(sample_fastqczip),'_fastqc.zip', '-stats.csv')
+        String outputhtml = sub(basename(sample_fastqczip),'_fastqc.zip', '-stats.html')
+        String outputtext = sub(basename(sample_fastqczip),'_fastqc.zip', '-stats.txt')
+        String configml = sub(basename(sample_fastqczip),'_fastqc.zip', '-config.ml')
 
         Int memory_gb = 10
         Int max_retries = 1
         Int ncpu = 1
     }
     command <<<
-        mkdir -p ~{default_location}
 
+        mkdir -p ~{default_location}
         cd ~{default_location}
 
-        summaryfacts.pl \
+        evaluation-statistics.pl \
+            -fqc ~{sample_fastqczip} \
             ~{if defined(bambed) then "-b " + bambed else ""} \
             ~{if defined(sppfile) then "-s " + sppfile else ""} \
             ~{if defined(countsfile) then "-c " + countsfile else ""} \
             ~{if defined(peaksxls) then "-px " + peaksxls else ""} \
-            ~{if defined(bamflag) then "-bamflag " + bamflag else ""} \
-            ~{if defined(bkflag) then "-bkflag " + bkflag else ""} \
-            ~{if defined(rmdupflag) then "-rmdupflag " + rmdupflag else ""} \
-            ~{if defined(fastqczip) then "-fqc " + fastqczip else ""} \
+            ~{if defined(sample_bamflag) then "-bamflag " + sample_bamflag else ""} \
+            ~{if defined(sample_bkflag) then "-bkflag " + sample_bkflag else ""} \
+            ~{if defined(sample_rmdupflag) then "-rmdupflag " + sample_rmdupflag else ""} \
+            ~{if defined(control_bamflag) then "-cbamflag " + control_bamflag else ""} \
+            ~{if defined(control_bkflag) then "-cbkflag " + control_bkflag else ""} \
+            ~{if defined(control_rmdupflag) then "-crmdupflag " + control_rmdupflag else ""} \
+            ~{if defined(control_fastqczip) then "-cfqc " + control_fastqczip else ""} \
             ~{if defined(fastqmetrics) then "-fx " + fastqmetrics else ""} \
             ~{if defined(enhancers) then "-re " + enhancers else ""} \
             ~{if defined(superenhancers) then "-rs " + superenhancers else ""} \
             -outfile ~{outputfile}
+
     >>> 
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v1.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
         File statsfile = "~{default_location}/~{outputfile}"
         File htmlfile = "~{default_location}/~{outputhtml}"
         File textfile = "~{default_location}/~{outputtext}"
+        File configfile = "~{default_location}/~{configml}"
     }
 }
-
 
 task normalize {
     input {
@@ -214,7 +286,7 @@ task normalize {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v1.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -224,10 +296,9 @@ task normalize {
 
 
 task peaksanno {
-
     input {
         File bedfile
-	File? summitfile
+	    File? summitfile
         String default_location = "PEAKSAnnotation"
 
         File gtffile
@@ -238,6 +309,7 @@ task peaksanno {
         Int ncpu = 1
     }
     command <<<
+
         mkdir -p ~{default_location}
 
         cd ~{default_location}
@@ -253,11 +325,12 @@ task peaksanno {
         ~{if defined(summitfile) then "-s " + summitfile else ""} \
         -g ~{sub(basename(gtffile),'.gz','')} \
         -c ~{chromsizes}
+
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v1.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -288,15 +361,17 @@ task mergehtml {
 
         mergeoutput=$(cat ~{sep='; tail -n 1 ' htmlfiles})
         echo $mergeoutput > ~{outputfile}
+
         head -n 1 ~{txtfiles[0]} > ~{outputfile}.txt
-        mergeoutput=$(tail -n 1 ~{sep=' \\n; tail -n 1 ' txtfiles})
-        echo -e $mergeoutput >> ~{outputfile}.txt
+        mergeoutput=$(tail -n 1 ~{sep='; echo "xxx"; tail -n 1 ' txtfiles})
+        echo $mergeoutput | awk -F" xxx " '{for (i=1;i<=NF;i++) print $i}' >> ~{outputfile}.txt
+        perl -pi -e 's/ /\t/g' ~{outputfile}.txt
 
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v1.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -321,7 +396,7 @@ task linkname {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v1.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {

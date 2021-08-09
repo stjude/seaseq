@@ -400,7 +400,9 @@ foreach (sort {$a <=> $b} keys %OVAL){
   $convertheader =~ s/ /_/g; #change space to underscore for txt file
   $textheader .= "\t$convertheader";
   unless (exists $CONTROL_OVAL{$_}) {
-    $samplehtmlvalues .="<td bgcolor='".$color{$OvQual{$OVAL{$_}}{'score'}}."' rowSpan='2'><center>".$OvQual{$OVAL{$_}}{'value'}."</center></td>";
+    $samplehtmlvalues .= "<td bgcolor='".$color{$OvQual{$OVAL{$_}}{'score'}}."'";
+    if ($cfastqczip) { $samplehtmlvalues .= " rowSpan='2'"; }
+    $samplehtmlvalues .= "><center>".$OvQual{$OVAL{$_}}{'value'}."</center></td>";
     $controltextvalues .= "\t$OvQual{$OVAL{$_}}{'value'}";
   } else {
     $samplehtmlvalues .="<td bgcolor='".$color{$OvQual{$OVAL{$_}}{'score'}}."'><center>".$OvQual{$OVAL{$_}}{'value'}."</center></td>";
