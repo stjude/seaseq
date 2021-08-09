@@ -227,10 +227,9 @@ task bamtogff_plot {
         echo '=========================================' >> $RSCRIPT
         echo '' >> $RSCRIPT
         echo 'folder = "'sample_matrixfiles.zip'"' >> $RSCRIPT
-        ~{if defined(control_bamfile) then "echo \'opt$c = \"\'input_matrixfiles.zip\'\"\' \>\> $RSCRIPT" else ""}
+        ~{if defined(control_bamfile) then "echo \'opt <- list(z=TRUE, c=\"input_matrixfiles.zip\")\' \>\> $RSCRIPT" else "echo \'opt <- list(z=TRUE)\' \>\> $RSCRIPT"}
         echo 'samplename = "'~{samplename}'"' >> $RSCRIPT
         echo 'unzipped_folder = "UNZIPPED"' >> $RSCRIPT
-        echo 'opt$z = TRUE' >> $RSCRIPT
         echo 'distance = round(~{distance}/1000,1)' >> $RSCRIPT
         echo '' >> $RSCRIPT
         echo '=========================================' >> $RSCRIPT

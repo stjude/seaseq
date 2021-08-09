@@ -122,6 +122,7 @@ task summaryreport {
         echo -e '<title>SEAseq Report</title>\n<h1>SEAseq Quality Statistics and Evaluation Report</h1>\n<h2>Sample FASTQs Quality Results</h2><p>' > ~{outputfile}
         echo -e 'SEAseq Report\nSEAseq Quality Statistics and Evaluation Report\n\nSample FASTQs Quality Results' > ~{outputtxt}
         cat ~{sampleqc_html} >> ~{outputfile}
+        echo '</table>' >> ~{outputfile}
         cat ~{sampleqc_txt} >> ~{outputtxt}
         echo -e '</p><br>' >> ~{outputfile}
         echo -e '\n' >> ~{outputtxt}
@@ -131,6 +132,7 @@ task summaryreport {
             echo -e '<h2>Control FASTQs Quality Results</h2><p>' >> ~{outputfile}
             echo -e 'Control FASTQs Quality Results' >> ~{outputtxt}
             cat ~{controlqc_html} >> ~{outputfile}
+            echo '</table>' >> ~{outputfile}
             cat ~{controlqc_txt} >> ~{outputtxt}
             echo -e '</p><br>' >> ~{outputfile}
             echo -e '\n' >> ~{outputtxt}
@@ -140,6 +142,7 @@ task summaryreport {
         echo -e '<h2>Comprehensive Quality Evaluation and Statistics Results</h2><p>' >> ~{outputfile}
         echo -e 'Comprehensive Quality Evaluation and Statistics Results' >> ~{outputtxt}
         cat ~{overallqc_html} >> ~{outputfile}
+        echo '</table>' >> ~{outputfile}
         cat ~{overallqc_txt} >> ~{outputtxt}
         echo -e '</p><br>' >> ~{outputfile}
         echo -e '\n' >> ~{outputtxt}
