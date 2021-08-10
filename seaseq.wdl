@@ -445,6 +445,11 @@ workflow seaseq {
             default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/BAM_Density'
     }
 
+    call bedtools.bamtobed as forsicerbed {
+        input :
+            bamfile=select_first([merge_markdup.mkdupbam, mapping.mkdup_bam])
+    }
+    
     call sicer.sicer {
         input :
             bedfile=forsicerbed.bedfile,
@@ -492,11 +497,6 @@ workflow seaseq {
             chromsizes=samtools_faidx.chromsizes,
             summitfile=nomodel.summitsfile,
             default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','')
-    }
-
-    call bedtools.bamtobed as forsicerbed {
-        input :
-            bamfile=select_first([merge_markdup.mkdupbam, mapping.mkdup_bam])
     }
 
     call util.peaksanno as sicer_peaksanno {
