@@ -119,32 +119,34 @@ task summaryreport {
     command <<<
 
         # Printing Sample Quality Reports
-        echo -e '<title>SEAseq Report</title>\n<h1>SEAseq Quality Statistics and Evaluation Report</h1>\n<h2>Sample FASTQs Quality Results</h2><p>' > ~{outputfile}
-        echo -e 'SEAseq Report\nSEAseq Quality Statistics and Evaluation Report\n\nSample FASTQs Quality Results' > ~{outputtxt}
+        echo -e '<html>\n<title>SEAseq Report</title>' > ~{outputfile}
+        echo -e '<h1 style="color:#163861;font-family:verdana;">SEAseq Quality Statistics and Evaluation Report</h1>' >> ~{outputfile}
+        echo -e '<h2 style="font-family:verdana;">Sample FASTQs Quality Results</h2><p>' >> ~{outputfile}
         cat ~{sampleqc_html} >> ~{outputfile}
         echo '</table>' >> ~{outputfile}
-        cat ~{sampleqc_txt} >> ~{outputtxt}
         echo -e '</p><br>' >> ~{outputfile}
+        echo -e 'SEAseq Report\nSEAseq Quality Statistics and Evaluation Report\n\nSample FASTQs Quality Results' > ~{outputtxt}
+        cat ~{sampleqc_txt} >> ~{outputtxt}
         echo -e '\n' >> ~{outputtxt}
 
         if [ -f "~{controlqc_html}" ]; then
             # Printing Control Quality Reports
-            echo -e '<h2>Control FASTQs Quality Results</h2><p>' >> ~{outputfile}
-            echo -e 'Control FASTQs Quality Results' >> ~{outputtxt}
+            echo -e '<h2 style="font-family:verdana;">Control FASTQs Quality Results</h2><p>' >> ~{outputfile}
             cat ~{controlqc_html} >> ~{outputfile}
             echo '</table>' >> ~{outputfile}
-            cat ~{controlqc_txt} >> ~{outputtxt}
             echo -e '</p><br>' >> ~{outputfile}
+            echo 'Control FASTQs Quality Results' >> ~{outputtxt}
+            cat ~{controlqc_txt} >> ~{outputtxt}
             echo -e '\n' >> ~{outputtxt}
         fi
         
         # Printing Overall Quality Reports
-        echo -e '<h2>Comprehensive Quality Evaluation and Statistics Results</h2><p>' >> ~{outputfile}
-        echo -e 'Comprehensive Quality Evaluation and Statistics Results' >> ~{outputtxt}
+        echo -e '<h2 style="font-family:verdana;">Comprehensive Quality Evaluation and Statistics Results</h2><p>' >> ~{outputfile}
         cat ~{overallqc_html} >> ~{outputfile}
         echo '</table>' >> ~{outputfile}
+        echo -e '</p></html>' >> ~{outputfile}
+        echo -e 'Comprehensive Quality Evaluation and Statistics Results' >> ~{outputtxt}
         cat ~{overallqc_txt} >> ~{outputtxt}
-        echo -e '</p><br>' >> ~{outputfile}
         echo -e '\n' >> ~{outputtxt}
 
     >>>
