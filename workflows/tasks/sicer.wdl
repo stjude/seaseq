@@ -45,7 +45,9 @@ task sicer {
         cpu: ncpu
     }
     output {
-        File scoreisland = "~{default_location}/~{outputname}-W200-G200.scoreisland"
-        File wigfile = "~{default_location}/~{outputname}-W200-normalized.wig.gz"
+        File scoreisland = "~{default_location}/~{outputname}-W~{window}-G~{gap_size}.scoreisland"
+        File wigfile = "~{default_location}/~{outputname}-W~{window}-normalized.wig.gz"
+        File? summary = "~{default_location}/~{outputname}-W~{window}-G~{gap_size}-islands-summary"
+        File? fdrisland = "~{default_location}/~{outputname}-W~{window}-G~{gap_size}-FDR0.01-island.bed"
     }
 }

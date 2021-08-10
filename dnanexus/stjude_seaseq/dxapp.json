@@ -154,56 +154,56 @@
       "class": "file",
       "optional": true
     },
-      {
-        "name": "c_htmlfile",
-        "class": "array:file",
-        "optional": true
-      },
-      {
-        "name": "c_zipfile",
-        "class": "array:file",
-        "optional": true
-      },
-      {
-        "name": "c_bam_htmlfile",
-        "class": "array:file",
-        "optional": true
-      },
-      {
-        "name": "c_bam_zipfile",
-        "class": "array:file",
-        "optional": true
-      },
-      {
-        "name": "c_mergebam_htmlfile",
-        "class": "file",
-        "optional": true
-      },
-      {
-        "name": "c_mergebam_zipfile",
-        "class": "file",
-        "optional": true
-      },
-      {
-        "name": "uno_c_htmlfile",
-        "class": "file",
-        "optional": true
-      },
-      {
-        "name": "uno_c_zipfile",
-        "class": "file",
-        "optional": true
-      },
-      {
-        "name": "uno_c_bam_htmlfile",
-        "class": "file",
-        "optional": true
-      },
-      {
-        "name": "uno_c_bam_zipfile",
-        "class": "file",
-        "optional": true
-      },
+    {
+      "name": "c_htmlfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "c_zipfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "c_bam_htmlfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "c_bam_zipfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "c_mergebam_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_mergebam_zipfile"
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_c_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_c_zipfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_c_bam_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_c_bam_zipfile",
+      "class": "file",
+      "optional": true
+    },
     {
       "name": "metrics_out",
       "class": "array:file",
@@ -485,6 +485,11 @@
       "optional": true
     },
     {
+      "name": "c_ctrlwigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "c_all_peakbedfile",
       "class": "file",
       "optional": true
@@ -501,6 +506,11 @@
     },
     {
       "name": "c_all_wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_all_ctrlwigfile",
       "class": "file",
       "optional": true
     },
@@ -525,6 +535,11 @@
       "optional": true
     },
     {
+      "name": "c_nm_ctrlwigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "scoreisland",
       "class": "file",
       "optional": true
@@ -541,6 +556,16 @@
     },
     {
       "name": "c_sicer_wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_sicer_summary",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_sicer_fdrisland",
       "class": "file",
       "optional": true
     },
@@ -1005,6 +1030,51 @@
       "optional": true
     },
     {
+      "name": "c_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_norm_wig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_n_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_n_norm_wig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_n_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_a_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_a_norm_wig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_a_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "s_bigwig",
       "class": "file",
       "optional": true
@@ -1016,26 +1086,6 @@
     },
     {
       "name": "s_tdffile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "qc_statsfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "qc_htmlfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "qc_textfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "qc_mergehtml",
       "class": "file",
       "optional": true
     },
@@ -1080,6 +1130,36 @@
       "optional": true
     },
     {
+      "name": "s_uno_statsfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "s_uno_htmlfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "s_uno_textfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "c_uno_statsfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "c_uno_htmlfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "c_uno_textfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
       "name": "uno_qc_statsfile",
       "class": "file",
       "optional": true
@@ -1106,6 +1186,56 @@
     },
     {
       "name": "mergeqc_textfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "all_summaryhtml",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": all_summarytxt",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_uno_qc_statsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_uno_qc_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_uno_qc_textfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_mergeqc_statsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_mergeqc_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_mergeqc_textfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_all_summaryhtml",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": c_all_summarytxt",
       "class": "file",
       "optional": true
     }

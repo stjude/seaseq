@@ -227,15 +227,16 @@ task bamtogff_plot {
         echo '=========================================' >> $RSCRIPT
         echo '' >> $RSCRIPT
         echo 'folder = "'sample_matrixfiles.zip'"' >> $RSCRIPT
-        ~{if defined(control_bamfile) then "echo \'opt$c = \"\'input_matrixfiles.zip\'\"\' \>\> $RSCRIPT" else ""}
+        ~{if defined(control_bamfile) then "echo \'opt <- list(z=TRUE, c=\"input_matrixfiles.zip\")\' \>\> $RSCRIPT" else "echo \'opt <- list(z=TRUE)\' \>\> $RSCRIPT"}
         echo 'samplename = "'~{samplename}'"' >> $RSCRIPT
         echo 'unzipped_folder = "UNZIPPED"' >> $RSCRIPT
-        echo 'opt$z = TRUE' >> $RSCRIPT
         echo 'distance = round(~{distance}/1000,1)' >> $RSCRIPT
         echo '' >> $RSCRIPT
         echo '=========================================' >> $RSCRIPT
         echo '' >> $RSCRIPT
         tail -n 107 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R >> $RSCRIPT 
+
+        sed -i "s/\,\ type=\"cairo\"//" $RSCRIPT
 
         #moving sample matrix files to sample_matrixfiles folder
         mkdir -p ~{default_location} sample_matrixfiles

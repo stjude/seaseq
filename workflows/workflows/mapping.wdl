@@ -1,4 +1,5 @@
 version 1.0
+
 import "../tasks/bedtools.wdl"
 import "../tasks/bowtie.wdl"
 import "../tasks/samtools.wdl"

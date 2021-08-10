@@ -7,6 +7,7 @@ workflow visualization {
         File? xlsfile
         File wigfile
         File chromsizes
+        Boolean control = false
         String default_location = "Coverage_files"
     }
     
@@ -16,6 +17,7 @@ workflow visualization {
         call util.normalize {
             input:
                 wigfile=wigfile,
+                control=control,
                 xlsfile=xlsfile_,
                 default_location=default_location
         }
