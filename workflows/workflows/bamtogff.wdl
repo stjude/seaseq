@@ -236,6 +236,8 @@ task bamtogff_plot {
         echo '' >> $RSCRIPT
         tail -n 107 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R >> $RSCRIPT 
 
+        sed -i "s/\,\ type=\"cairo\"//" $RSCRIPT
+
         #moving sample matrix files to sample_matrixfiles folder
         mkdir -p ~{default_location} sample_matrixfiles
         cp ~{s_promoters} ~{s_genebody} ~{s_upstream} ~{s_downstream} sample_matrixfiles/
