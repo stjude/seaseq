@@ -992,7 +992,6 @@ workflow seaseq {
                 controlqc_txt=select_first([uno_c_summarystats.textfile, c_mergehtml.mergetxt, string_qual]),
                 sampleqc_txt=select_first([uno_s_summarystats.textfile, mergehtml.mergetxt]),
                 overallqc_txt=select_first([c_uno_summarystats.textfile, c_merge_summarystats.textfile]),
-                default_location='./'
         }
 
     }
@@ -1043,7 +1042,6 @@ workflow seaseq {
                 overallqc_html=select_first([uno_summarystats.htmlfile, merge_summarystats.htmlfile]),
                 sampleqc_txt=select_first([uno_s_summarystats.textfile, mergehtml.mergetxt]),
                 overallqc_txt=select_first([uno_summarystats.textfile, merge_summarystats.textfile]),
-                default_location='./'
         }
       
     }
