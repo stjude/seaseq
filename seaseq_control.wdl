@@ -564,10 +564,8 @@ workflow seaseq {
                 outputtext = sub(basename(s_fastqfiles[0]),'\.f.*q\.gz', '-stats.txt'),
                 configml = sub(basename(s_fastqfiles[0]),'\.f.*q\.gz', '-config.ml'),
                 default_location='SAMPLE/' + sub(basename(s_fastqfiles[0]),'\.f.*q\.gz','') + '/QC/SummaryStats'
-         }
         }
     } # end if length(fastqfiles) == 1: one_sample_fastq
-
 
     # CONTROL FASTQ file
     if ( one_control_fastq ) {
