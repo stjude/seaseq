@@ -107,7 +107,6 @@ task summaryreport {
         File sampleqc_html
         File overallqc_txt
         File overallqc_html
-        String default_location = './'
 
         String outputfile = sub(basename(overallqc_html), 'stats.html', 'seaseq_report.html')
         String outputtxt = sub(basename(overallqc_html), 'stats.html', 'seaseq_report.txt')
@@ -157,8 +156,8 @@ task summaryreport {
         cpu: ncpu
     }
     output {
-        File summaryhtml = "~{default_location}/~{outputfile}"
-        File summarytxt = "~{default_location}/~{outputtxt}"
+        File summaryhtml = "~{outputfile}"
+        File summarytxt = "~{outputtxt}"
     }
 }
 
