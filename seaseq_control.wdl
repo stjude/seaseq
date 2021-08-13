@@ -649,7 +649,6 @@ workflow seaseq {
 
     #collate correct files for downstream analysis
     File sample_bam = select_first([mergebam_afterbklist, mapping.bklist_bam, mapping.sorted_bam])
-
     File control_bam = select_first([c_mergebam_afterbklist, c_mapping.bklist_bam, c_mapping.sorted_bam])
 
     call macs.macs {
@@ -693,7 +692,7 @@ workflow seaseq {
         input :
             bamfile=select_first([merge_markdup.mkdupbam, mapping.mkdup_bam])
     }
-        
+
     call bedtools.bamtobed as c_forsicerbed {
         input :
             bamfile=select_first([c_merge_markdup.mkdupbam, c_mapping.mkdup_bam])
@@ -886,7 +885,8 @@ workflow seaseq {
                 control_bkflag=select_first([c_mapping.bklist_stats, c_merge_bklist.flagstats, string_qual]),
                 countsfile=intersect.intersect_out,
                 peaksxls=macs.peakxlsfile,
-                enhancers=rose.enhancers,                    superenhancers=rose.super_enhancers,
+                enhancers=rose.enhancers,
+                superenhancers=rose.super_enhancers,
                 default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
         }
     } # end if one_fastq
@@ -1058,9 +1058,11 @@ workflow seaseq {
         File? pdf_gene = bamtogff.pdf_gene
         File? pdf_h_gene = bamtogff.pdf_h_gene
         File? png_h_gene = bamtogff.png_h_gene
+        File? jpg_h_gene = bamtogff.jpg_h_gene
         File? pdf_promoters = bamtogff.pdf_promoters
         File? pdf_h_promoters = bamtogff.pdf_h_promoters
         File? png_h_promoters = bamtogff.png_h_promoters
+        File? jpg_h_promoters = bamtogff.jpg_h_promoters
 
         #PEAKS-ANNOTATION
         File? peak_promoters = peaksanno.peak_promoters

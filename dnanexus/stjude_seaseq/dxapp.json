@@ -97,7 +97,7 @@
       ]
     },
     {
-      "name": "filename_prefix",
+      "name": "sample_name",
       "class": "string",
       "optional": true,
       "help": "Input results name prefix (recommended if multiple FASTQs are provided)."
@@ -180,7 +180,7 @@
       "optional": true
     },
     {
-      "name": "c_mergebam_zipfile"
+      "name": "c_mergebam_zipfile",
       "class": "file",
       "optional": true
     },
@@ -785,6 +785,11 @@
       "optional": true
     },
     {
+      "name": "jpg_h_gene",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "pdf_promoters",
       "class": "file",
       "optional": true
@@ -796,6 +801,11 @@
     },
     {
       "name": "png_h_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "jpg_h_promoters",
       "class": "file",
       "optional": true
     },
@@ -1131,32 +1141,32 @@
     },
     {
       "name": "s_uno_statsfile",
-      "class": "array:file",
+      "class": "file",
       "optional": true
     },
     {
       "name": "s_uno_htmlfile",
-      "class": "array:file",
+      "class": "file",
       "optional": true
     },
     {
       "name": "s_uno_textfile",
-      "class": "array:file",
+      "class": "file",
       "optional": true
     },
     {
       "name": "c_uno_statsfile",
-      "class": "array:file",
+      "class": "file",
       "optional": true
     },
     {
       "name": "c_uno_htmlfile",
-      "class": "array:file",
+      "class": "file",
       "optional": true
     },
     {
       "name": "c_uno_textfile",
-      "class": "array:file",
+      "class": "file",
       "optional": true
     },
     {
@@ -1195,7 +1205,7 @@
       "optional": true
     },
     {
-      "name": all_summarytxt",
+      "name": "all_summarytxt",
       "class": "file",
       "optional": true
     },
@@ -1235,7 +1245,7 @@
       "optional": true
     },
     {
-      "name": c_all_summarytxt",
+      "name": "c_all_summarytxt",
       "class": "file",
       "optional": true
     }
