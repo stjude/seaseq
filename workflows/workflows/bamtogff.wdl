@@ -224,7 +224,7 @@ task bamtogff_plot {
 
         #create a custom R script to recreate plots
         RSCRIPT="densityplots.R"
-        head -n 415 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R > $RSCRIPT
+        head -n 419 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R > $RSCRIPT
         echo 'if ("pdftools" %in% rownames(installed.packages()) == FALSE){ install.packages("pdftools") }' >> $RSCRIPT
         echo '' >> $RSCRIPT
         echo '#=========================================' >> $RSCRIPT
@@ -237,9 +237,7 @@ task bamtogff_plot {
         echo '' >> $RSCRIPT
         echo '#=========================================' >> $RSCRIPT
         echo '' >> $RSCRIPT
-        tail -n 109 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R >> $RSCRIPT 
-
-        sed -i "s/\,\ type=\"cairo\"//" $RSCRIPT
+        tail -n 112 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R | head -n -3 >> $RSCRIPT 
 
         #moving sample matrix files to sample_matrixfiles folder
         mkdir -p ~{default_location} sample_matrixfiles
@@ -263,9 +261,9 @@ task bamtogff_plot {
             echo "Making PLOTS for ~{basename(bamfile)} read densities"
             BAM2GFF_plots.R -n ~{samplename} -d ~{distance} -f sample_matrixfiles
 
-            #convert pdf to png
-            pdftoppm ~{samplename}-heatmap.entiregene.pdf ~{samplename}-heatmap.entiregene -png -singlefile -r 300
-            pdftoppm ~{samplename}-heatmap.promoters.pdf ~{samplename}-heatmap.promoters -png -singlefile -r 300
+            ##convert pdf to png #not needed since using pdftools
+            #pdftoppm ~{samplename}-heatmap.entiregene.pdf ~{samplename}-heatmap.entiregene -png -singlefile -r 300
+            #pdftoppm ~{samplename}-heatmap.promoters.pdf ~{samplename}-heatmap.promoters -png -singlefile -r 300
 
             mv $RSCRIPT sample_matrixfiles.zip *png *pdf *jpg ~{default_location}
 
