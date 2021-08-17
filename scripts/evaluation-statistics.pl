@@ -9,7 +9,8 @@ use Getopt::Long;
 
 my ($help, $manual, $sppout, $bambed, $countsfile, $peaksxls, $bamflag, $rmdupflag,
     $bkflag, $outfile, $fastqmetrics, $fastqczip, $rose_stitched, $rose_superstitched,
-    $samplename, $cbamflag, $crmdupflag, $cbkflag, $cfastqczip);
+    $samplename, $cbamflag, $crmdupflag, $cbkflag, $cfastqczip, $ccountsfile, $cbambed,
+    $cpeaksxls);
 my $usage = "perl $0 -s <spp file> -c <countsfile> -b <bambed> -px <peaks xls> -fmetric <fastq metrics> -rose <rose directory> -bamflag <bamflagstat> -fqc <fastqczipfile> [-bkflag <bklistflagstat>] [-rmdupflag <rmdupflagstat>] -outfile <outputfile>\n";
 # USAGE DETAILS
 #<spp file> : run_spp.R output file
@@ -29,7 +30,8 @@ GetOptions (
             "bkflag=s"=>\$bkflag, "fqc|fastqczip=s"=>\$fastqczip, "fmetric|fx=s"=>\$fastqmetrics,
             "roseenhancers|re=s"=>\$rose_stitched, "rosesuper|rs=s"=>\$rose_superstitched,
             "cbamflag=s"=>\$cbamflag, "crmdupflag=s"=>\$crmdupflag, "cbkflag=s"=>\$cbkflag,
-            "cfqc|cfastqczip=s"=>\$cfastqczip, "outfile|o=s"=>\$outfile);
+            "cfqc|cfastqczip=s"=>\$cfastqczip, "ccount=s"=>\$ccountsfile, "cpx|cpeaksxls=s"=>\$cpeaksxls,
+            "cb|cbed=s"=>\$cbambed, "outfile|o=s"=>\$outfile);
 unless ($sppout || $bambed || $countsfile || $peaksxls || $bamflag || $rmdupflag || $bkflag || $fastqczip || $fastqmetrics || $rose_stitched || $rose_superstitched) { die $usage;}
 
 #Filenames
@@ -37,9 +39,10 @@ my ($statsout, $htmlfile, $textfile, $configfile);
 
 #Initialize variables
 my ($Uniquecnt, $Totalcnt, $Fripcnt, $FRIP, $peaks, $PBC, $NRF, $PhantomQual) = (0,0,0,0,0,0,0,0);
-my (%HASH, %OVAL, %CONTROL_OVAL, %OvQual, %Control_OvQual, $alignedpercent, $totalreads, $calignedpercent, $ctotalreads);
+my ($cUniquecnt, $cTotalcnt, $cFripcnt, $cFRIP, $cpeaks) = (0,0,0,0,0);
+my (%HASH, %cHASH, %OVAL, %CONTROL_OVAL, %OvQual, %Control_OvQual, $alignedpercent, $totalreads, $calignedpercent, $ctotalreads);
 my $prev = "NA";
-my $output_counter = 6;
+my $output_counter = 7;
 
 #output file name
 unless ($outfile) { 
@@ -49,7 +52,7 @@ unless ($outfile) {
   else { $statsout = $outfile; }
 }
 #html output file name
-$htmlfile = $statsout; $htmlfile =~ s/stats.csv/stats.html/; #creating html file
+$htmlfile = $statsout; $htmlfile =~ s/stats.csv/stats.htmlx/; #creating html file
 $textfile = $statsout; $textfile =~ s/stats.csv/stats.txt/; #creating html file
 $configfile = $statsout; $configfile =~ s/stats.csv/config.ml/; #creating config file
 open (OUT, ">$statsout"); #opening outputfile
@@ -69,8 +72,8 @@ if ($fastqczip) {
   
   #QCdash
   $OVAL{0} = 'Raw Reads';
-  $OVAL{1} = 'Base Quality';
-  $OVAL{2} = 'Sequence Diversity';
+  $OVAL{2} = 'Base Quality';
+  $OVAL{3} = 'Sequence Diversity';
   
   $OvQual{'Raw Reads'}{'value'} = $totalreads; $OvQual{'Base Quality'}{'value'} = $basequality; $OvQual{'Sequence Diversity'}{'value'} = $seqrep;
   $OvQual{'Raw Reads'}{'score'} = -2; $OvQual{'Base Quality'}{'score'} = -2; $OvQual{'Sequence Diversity'}{'score'} = -2;
@@ -85,6 +88,16 @@ if ($fastqczip) {
   if ($OvQual{'Sequence Diversity'}{'value'} eq 'pass') { $OvQual{'Sequence Diversity'}{'score'} = 2; }
 } # end if fastqczip
 
+#ReadLength
+unless ($peaksxls) {
+  if ($fastqmetrics) {
+    $OVAL{1} = 'Read Length';
+    my $avgreadlength = `tail -n 1 $fastqmetrics | awk '{print \$4}'`; chop $avgreadlength;
+    $OvQual{'Read Length'}{'value'} = $peaks; $OvQual{'Read Length'}{'score'} = 2;
+    print OUT "Read Length,$avgreadlength\n";
+  } # end if fastqmetrics
+}
+
 #working with Flagstat
 if ($bamflag) {
   my $mappedreads = `head -n 5 $bamflag | tail -n 1 | awk -F" " '{print \$1}'`;
@@ -95,7 +108,7 @@ if ($bamflag) {
     print OUT "Aligned percentage,",$alignedpercent, "\n";
     
     #QCdash
-    $OVAL{3} = 'Aligned Percent';
+    $OVAL{4} = 'Aligned Percent';
     $OvQual{'Aligned Percent'}{'value'} = $alignedpercent; $OvQual{'Aligned Percent'}{'score'} = -2;
     if ($OvQual{'Aligned Percent'}{'value'} >= 50) {$OvQual{'Aligned Percent'}{'score'} = -1;}
     if ($OvQual{'Aligned Percent'}{'value'} >= 60) {$OvQual{'Aligned Percent'}{'score'} = 0;}
@@ -127,8 +140,8 @@ if ($cfastqczip) {
   
   #QCdash
   $CONTROL_OVAL{0} = 'Raw Reads';
-  $CONTROL_OVAL{1} = 'Base Quality';
-  $CONTROL_OVAL{2} = 'Sequence Diversity';
+  $CONTROL_OVAL{2} = 'Base Quality';
+  $CONTROL_OVAL{3} = 'Sequence Diversity';
   
   $Control_OvQual{'Raw Reads'}{'value'} = $ctotalreads; $Control_OvQual{'Base Quality'}{'value'} = $cbasequality; $Control_OvQual{'Sequence Diversity'}{'value'} = $cseqrep;
   $Control_OvQual{'Raw Reads'}{'score'} = -2; $Control_OvQual{'Base Quality'}{'score'} = -2; $Control_OvQual{'Sequence Diversity'}{'score'} = -2;
@@ -153,7 +166,7 @@ if ($cbamflag) {
     print OUT "Control BAM : Aligned percentage,",$calignedpercent, "\n";
     
     #QCdash
-    $CONTROL_OVAL{3} = 'Aligned Percent';
+    $CONTROL_OVAL{4} = 'Aligned Percent';
     $Control_OvQual{'Aligned Percent'}{'value'} = $calignedpercent; $Control_OvQual{'Aligned Percent'}{'score'} = -2;
     if ($Control_OvQual{'Aligned Percent'}{'value'} >= 50) {$Control_OvQual{'Aligned Percent'}{'score'} = -1;}
     if ($Control_OvQual{'Aligned Percent'}{'value'} >= 60) {$Control_OvQual{'Aligned Percent'}{'score'} = 0;}
@@ -244,7 +257,7 @@ if ($sppout) {
 
 if ($countsfile) {
   #FRIP score
-  print "Processing FRIP score ... ";
+  print "Processing FRIP score ... \n";
   open(IN,"<$countsfile")|| die $!;
   while(<IN>){
     chomp;
@@ -271,10 +284,89 @@ if ($countsfile) {
   if ($OvQual{'FRiP'}{'value'} >= 0.05) {$OvQual{'FRiP'}{'score'} = 2;}
   
 }
+
+#working with Control Peaks
+if ($ccountsfile) {
+  #x3x
   
-  #Estimated fragment width & estimated tag length
+  if ($cbambed) {
+    open(IN, "<$cbambed") || die $!;
+    while(<IN>){
+      chomp;
+      my @line = split("\t",$_); 
+      $cTotalcnt++; #from bam file mapped reads
+      my $t = join("_",@line[0..2]);
+      #$Uniquecnt++ unless($t eq $prev);
+      unless ($t eq $prev) {
+        $cUniquecnt++;
+      } else {
+        $cHASH{$t} = 1;
+      }
+      $prev=$t;
+    } close (IN);
+   
+    my $cOneread = $cUniquecnt - scalar keys %cHASH;
+    if ($cUniquecnt >= 0 && $cTotalcnt >= 0 && $cOneread >= 0) {
+      $NRF = sprintf ("%.4f", ($cUniquecnt/$cTotalcnt));
+      $PBC = sprintf ("%.4f", ($cOneread/$cUniquecnt));
+    } else { $NRF = 0; $PBC = 0; }
+    print OUT "Unique Genomic Locations,$cUniquecnt\nNRF score,$NRF\nPCR Bottleneck Coefficient,$PBC\n";
+    
+    #QCdash
+    $CONTROL_OVAL{$output_counter++} = 'NRF';
+    $CONTROL_OVAL{$output_counter++} = 'PBC';
+  
+    $Control_OvQual{'NRF'}{'value'} = $NRF;
+    $Control_OvQual{'PBC'}{'value'} = $PBC;
+    $Control_OvQual{'NRF'}{'score'} = -2;
+    $Control_OvQual{'PBC'}{'score'} = -2;
+    if ($Control_OvQual{'NRF'}{'value'} >= 0.5) { $Control_OvQual{'NRF'}{'score'} = -1; }
+    if ($Control_OvQual{'NRF'}{'value'} >= 0.6) { $Control_OvQual{'NRF'}{'score'} = 0; }
+    if ($Control_OvQual{'NRF'}{'value'} >= 0.7) { $Control_OvQual{'NRF'}{'score'} = 1; }
+    if ($Control_OvQual{'NRF'}{'value'} >= 0.8) { $Control_OvQual{'NRF'}{'score'} = 2; }
+    if ($Control_OvQual{'PBC'}{'value'} >= 0.5) { $Control_OvQual{'PBC'}{'score'} = -1; }
+    if ($Control_OvQual{'PBC'}{'value'} >= 0.66) { $Control_OvQual{'PBC'}{'score'} = 0; }
+    if ($Control_OvQual{'PBC'}{'value'} >= 0.75) { $Control_OvQual{'PBC'}{'score'} = 1; }
+    if ($Control_OvQual{'PBC'}{'value'} >= 0.9) { $Control_OvQual{'PBC'}{'score'} = 2; }
+  }
+    
+  #FRIP score
+  print "Processing FRIP score for control ... \n";
+  open(IN,"<$ccountsfile")|| die $!;
+  while(<IN>){
+    chomp;
+    my @l=split("\t",$_);
+    $cFripcnt+=$l[-1];
+    $cpeaks++; 
+  } close (IN);
+  $cFRIP = sprintf ("%.4f", ($cFripcnt/$cTotalcnt));
+  print OUT "Control: FRIP score,$cFRIP\n";
+
+  #QCdash
+  $CONTROL_OVAL{$output_counter++} = 'FRiP';
+
+  $Control_OvQual{'FRiP'}{'value'} = $cFRIP; $Control_OvQual{'FRiP'}{'score'} = -2;
+  if ($Control_OvQual{'FRiP'}{'value'} >= 0.0075) {$Control_OvQual{'FRiP'}{'score'} = -1;}
+  if ($Control_OvQual{'FRiP'}{'value'} >= 0.01) {$Control_OvQual{'FRiP'}{'score'} = 0;}
+  if ($Control_OvQual{'FRiP'}{'value'} >= 0.02) {$Control_OvQual{'FRiP'}{'score'} = 1;}
+  if ($Control_OvQual{'FRiP'}{'value'} >= 0.05) {$Control_OvQual{'FRiP'}{'score'} = 2;}
+  #x3X
+  
+  #QCdash
+  print OUT "Control: Total Peaks,$cpeaks\n";
+  $CONTROL_OVAL{$output_counter++} = 'Total Peaks';
+
+  $Control_OvQual{'Total Peaks'}{'value'} = $cpeaks; $Control_OvQual{'Total Peaks'}{'score'} = -2;
+  if ($Control_OvQual{'Total Peaks'}{'value'} > 1000) {$Control_OvQual{'Total Peaks'}{'score'} = -1;}
+  if ($Control_OvQual{'Total Peaks'}{'value'} > 2000) {$Control_OvQual{'Total Peaks'}{'score'} = 0;}
+  if ($Control_OvQual{'Total Peaks'}{'value'} > 5000) {$Control_OvQual{'Total Peaks'}{'score'} = 1;}
+  if ($Control_OvQual{'Total Peaks'}{'value'} >= 10000) {$Control_OvQual{'Total Peaks'}{'score'} = 2;}
+  
+}
+
+#Estimated fragment width & estimated tag length
 if ($peaksxls) {
-  print "Processing Fragment width & Tag length score ... ";
+  print "Processing Fragment width & Tag length score ... \n";
   my $fragmentwidth = `grep "\# d = " $peaksxls | head -n 1 | awk '{print \$NF}'`;
   print OUT "Estimated Fragment Width,$fragmentwidth"; chop $fragmentwidth;
   
@@ -283,8 +375,8 @@ if ($peaksxls) {
   print OUT "Estimated Tag Length,$predictedtaglength"; chop $predictedtaglength;
 
   #QCdash
-  $OVAL{4} = 'Estimated Fragment Width';
-  $OVAL{5} = 'Estimated Tag Length';
+  $OVAL{5} = 'Estimated Fragment Width';
+  $OVAL{6} = 'Estimated Tag Length';
 
   $OvQual{'Estimated Fragment Width'}{'value'} = $fragmentwidth; $OvQual{'Estimated Fragment Width'}{'score'} = 2;
   $OvQual{'Estimated Tag Length'}{'value'} = $predictedtaglength; $OvQual{'Estimated Tag Length'}{'score'} = 2;
@@ -295,6 +387,24 @@ if ($peaksxls) {
       $OvQual{'Estimated Tag Length'}{'score'} = -2; #QC hash
     }
   } # end if fastqmetrics
+} #end if peaksxls
+
+#Control Estimated fragment width & estimated tag length
+if ($cpeaksxls) {
+  print "Processing Fragment width & Tag length score for control ... \n";
+  my $cfragmentwidth = `grep "\# d = " $cpeaksxls | head -n 1 | awk '{print \$NF}'`;
+  print OUT "Control: Estimated Fragment Width,$cfragmentwidth"; chop $cfragmentwidth;
+  
+  #Estimated Tag Length
+  my $cpredictedtaglength = `grep "\# tag size is determined" $cpeaksxls | head -n 1 | awk '{print \$(NF-1)}'`;
+  print OUT "Control: Estimated Tag Length,$cpredictedtaglength"; chop $cpredictedtaglength;
+
+  #QCdash
+  $CONTROL_OVAL{5} = 'Estimated Fragment Width';
+  $CONTROL_OVAL{6} = 'Estimated Tag Length';
+
+  $Control_OvQual{'Estimated Fragment Width'}{'value'} = $cfragmentwidth; $Control_OvQual{'Estimated Fragment Width'}{'score'} = 2;
+  $Control_OvQual{'Estimated Tag Length'}{'value'} = $cpredictedtaglength; $Control_OvQual{'Estimated Tag Length'}{'score'} = 2;
 } #end if peaksxls
  
 #Stitched regions & Superenhancers
@@ -351,7 +461,7 @@ if ((sprintf ("%.1f", ($totalscore/$count))) >= 0) { $color = $color{0}; $score 
 if ((sprintf ("%.1f", ($totalscore/$count))) >= 1) { $color = $color{1}; $score = 1; $OverallQuality = "GOOD";}
 if ((sprintf ("%.1f", ($totalscore/$count))) >= 2) { $color = $color{2}; $score = 2; $OverallQuality = "EXCELLENT";}
 
-my $htmlheader = "<table border='1' cellpadding='5'><tr><th>";
+my $htmlheader = "<table class='results'><tr><th>";
 my $textheader = "Sample_Name";
 my $samplehtmlvalues = "<tr><td><center>".$samplename."</center></td>";
 my $controlhtmlvalues = "<tr><td><center>".$samplename."</center></td>";

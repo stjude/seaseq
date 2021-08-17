@@ -244,6 +244,7 @@ task bamtogff_plot {
         cp ~{s_promoters} ~{s_genebody} ~{s_upstream} ~{s_downstream} sample_matrixfiles/
 
         cd sample_matrixfiles; zip -9r ../sample_matrixfiles.zip *; cd ..
+        #sed -i "s/library\(pdftools\)//" /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R
 
         #creating plots w/ or w/o input bam files if provided
         if [ -f "~{control_bamfile}" ]; then
@@ -255,19 +256,22 @@ task bamtogff_plot {
 
             cd input_matrixfiles; zip -9r ../input_matrixfiles.zip *; cd ..
 
-            mv $RSCRIPT sample_matrixfiles.zip input_matrixfiles.zip *png *pdf ~{default_location}
+            mv input_matrixfiles.zip ~{default_location}
 
         else
             echo "Making PLOTS for ~{basename(bamfile)} read densities"
             BAM2GFF_plots.R -n ~{samplename} -d ~{distance} -f sample_matrixfiles
 
-            ##convert pdf to png #not needed since using pdftools
-            #pdftoppm ~{samplename}-heatmap.entiregene.pdf ~{samplename}-heatmap.entiregene -png -singlefile -r 300
-            #pdftoppm ~{samplename}-heatmap.promoters.pdf ~{samplename}-heatmap.promoters -png -singlefile -r 300
-
-            mv $RSCRIPT sample_matrixfiles.zip *png *pdf *jpg ~{default_location}
-
         fi
+
+        if [ ! -f "~{samplename}-heatmap.entiregene.png" ]; then
+            echo "using PDFtoPPM"
+            #convert pdf to png #not needed since using pdftools
+            pdftoppm ~{samplename}-heatmap.entiregene.pdf ~{samplename}-heatmap.entiregene -png -singlefile -r 300
+            pdftoppm ~{samplename}-heatmap.promoters.pdf ~{samplename}-heatmap.promoters -png -singlefile -r 300
+        fi
+
+        mv $RSCRIPT sample_matrixfiles.zip *png *pdf *jpg ~{default_location}
         
         echo "Done!"
 
