@@ -9,8 +9,7 @@ use Getopt::Long;
 
 my ($help, $manual, $sppout, $bambed, $countsfile, $peaksxls, $bamflag, $rmdupflag,
     $bkflag, $outfile, $fastqmetrics, $fastqczip, $rose_stitched, $rose_superstitched,
-    $samplename, $cbamflag, $crmdupflag, $cbkflag, $cfastqczip, $ccountsfile, $cbambed,
-    $cpeaksxls);
+    $samplename);
 my $usage = "perl $0 -s <spp file> -c <countsfile> -b <bambed> -px <peaks xls> -fmetric <fastq metrics> -rose <rose directory> -bamflag <bamflagstat> -fqc <fastqczipfile> [-bkflag <bklistflagstat>] [-rmdupflag <rmdupflagstat>] -outfile <outputfile>\n";
 # USAGE DETAILS
 #<spp file> : run_spp.R output file
@@ -29,9 +28,7 @@ GetOptions (
             "px|peakxls=s"=>\$peaksxls, "bamflag=s"=>\$bamflag, "rmdupflag=s"=>\$rmdupflag,
             "bkflag=s"=>\$bkflag, "fqc|fastqczip=s"=>\$fastqczip, "fmetric|fx=s"=>\$fastqmetrics,
             "roseenhancers|re=s"=>\$rose_stitched, "rosesuper|rs=s"=>\$rose_superstitched,
-            "cbamflag=s"=>\$cbamflag, "crmdupflag=s"=>\$crmdupflag, "cbkflag=s"=>\$cbkflag,
-            "cfqc|cfastqczip=s"=>\$cfastqczip, "ccount=s"=>\$ccountsfile, "cpx|cpeaksxls=s"=>\$cpeaksxls,
-            "cb|cbed=s"=>\$cbambed, "outfile|o=s"=>\$outfile);
+            "outfile|o=s"=>\$outfile);
 unless ($sppout || $bambed || $countsfile || $peaksxls || $bamflag || $rmdupflag || $bkflag || $fastqczip || $fastqmetrics || $rose_stitched || $rose_superstitched) { die $usage;}
 
 #Filenames
@@ -39,8 +36,7 @@ my ($statsout, $htmlfile, $textfile, $configfile);
 
 #Initialize variables
 my ($Uniquecnt, $Totalcnt, $Fripcnt, $FRIP, $peaks, $PBC, $NRF, $PhantomQual) = (0,0,0,0,0,0,0,0);
-my ($cUniquecnt, $cTotalcnt, $cFripcnt, $cFRIP, $cpeaks) = (0,0,0,0,0);
-my (%HASH, %cHASH, %OVAL, %CONTROL_OVAL, %OvQual, %Control_OvQual, $alignedpercent, $totalreads, $calignedpercent, $ctotalreads);
+my (%HASH, %OVAL, %OvQual, $alignedpercent, $totalreads);
 my $prev = "NA";
 my $output_counter = 7;
 
@@ -93,7 +89,7 @@ unless ($peaksxls) {
   if ($fastqmetrics) {
     $OVAL{1} = 'Read Length';
     my $avgreadlength = `tail -n 1 $fastqmetrics | awk '{print \$4}'`; chop $avgreadlength;
-    $OvQual{'Read Length'}{'value'} = $peaks; $OvQual{'Read Length'}{'score'} = 2;
+    $OvQual{'Read Length'}{'value'} = $avgreadlength; $OvQual{'Read Length'}{'score'} = 2;
     print OUT "Read Length,$avgreadlength\n";
   } # end if fastqmetrics
 }
@@ -127,65 +123,6 @@ if ($rmdupflag) {
   my $rmdupreads = `head -n 5 $rmdupflag | tail -n 1 | awk -F" " '{print \$1}'`;
   print OUT "Total After RM Duplicates,",$rmdupreads;
 }
-
-#Working with control
-#working with FastQC
-if ($cfastqczip) {
-  $ctotalreads = `unzip -p $cfastqczip */fastqc_data.txt | grep "Total Sequences" | awk -F' ' '{print \$NF}'`;
-  my $cbasequality = `unzip -p $fastqczip */fastqc_data.txt | grep "base sequence quality" | awk -F' ' '{print \$NF}'`;
-  my $cseqrep = `unzip -p $cfastqczip */fastqc_data.txt | grep "Overrepresented sequences" | awk -F' ' '{print \$NF}'`;
-  print OUT "Control BAM : Raw Reads,$ctotalreads"; chop $ctotalreads;
-  print OUT "Control BAM : Base Quality,$cbasequality"; chop $cbasequality;
-  print OUT "Control BAM : Sequence Diversity,$cseqrep"; chop $cseqrep;
-  
-  #QCdash
-  $CONTROL_OVAL{0} = 'Raw Reads';
-  $CONTROL_OVAL{2} = 'Base Quality';
-  $CONTROL_OVAL{3} = 'Sequence Diversity';
-  
-  $Control_OvQual{'Raw Reads'}{'value'} = $ctotalreads; $Control_OvQual{'Base Quality'}{'value'} = $cbasequality; $Control_OvQual{'Sequence Diversity'}{'value'} = $cseqrep;
-  $Control_OvQual{'Raw Reads'}{'score'} = -2; $Control_OvQual{'Base Quality'}{'score'} = -2; $Control_OvQual{'Sequence Diversity'}{'score'} = -2;
-  
-  if ($Control_OvQual{'Raw Reads'}{'value'} >= 15000000) { $Control_OvQual{'Raw Reads'}{'score'} = -1; }
-  if ($Control_OvQual{'Raw Reads'}{'value'} >= 20000000) { $Control_OvQual{'Raw Reads'}{'score'} = 0; }
-  if ($Control_OvQual{'Raw Reads'}{'value'} >= 25000000) { $Control_OvQual{'Raw Reads'}{'score'} = 1; }
-  if ($Control_OvQual{'Raw Reads'}{'value'} >= 30000000) { $Control_OvQual{'Raw Reads'}{'score'} = 2; }
-  if ($Control_OvQual{'Base Quality'}{'value'} eq 'warn') { $Control_OvQual{'Base Quality'}{'score'} = 0; }
-  if ($Control_OvQual{'Base Quality'}{'value'} eq 'pass') { $Control_OvQual{'Base Quality'}{'score'} = 2; }
-  if ($Control_OvQual{'Sequence Diversity'}{'value'} eq 'warn') { $Control_OvQual{'Sequence Diversity'}{'score'} = 0; }
-  if ($Control_OvQual{'Sequence Diversity'}{'value'} eq 'pass') { $Control_OvQual{'Sequence Diversity'}{'score'} = 2; }
-} # end if fastqczip
-
-#Working with Flagstat
-if ($cbamflag) {
-  my $cmappedreads = `head -n 5 $cbamflag | tail -n 1 | awk -F" " '{print \$1}'`;
-  print OUT "Control BAM : Total Mapped Reads,$cmappedreads"; chop $cmappedreads;
-  
-  if ($cfastqczip) {
-    $calignedpercent = sprintf ("%.3f", ($cmappedreads/$ctotalreads * 100));
-    print OUT "Control BAM : Aligned percentage,",$calignedpercent, "\n";
-    
-    #QCdash
-    $CONTROL_OVAL{4} = 'Aligned Percent';
-    $Control_OvQual{'Aligned Percent'}{'value'} = $calignedpercent; $Control_OvQual{'Aligned Percent'}{'score'} = -2;
-    if ($Control_OvQual{'Aligned Percent'}{'value'} >= 50) {$Control_OvQual{'Aligned Percent'}{'score'} = -1;}
-    if ($Control_OvQual{'Aligned Percent'}{'value'} >= 60) {$Control_OvQual{'Aligned Percent'}{'score'} = 0;}
-    if ($Control_OvQual{'Aligned Percent'}{'value'} >= 70) {$Control_OvQual{'Aligned Percent'}{'score'} = 1;}
-    if ($Control_OvQual{'Aligned Percent'}{'value'} >= 80) {$Control_OvQual{'Aligned Percent'}{'score'} = 2;}
-  } #end if cfastqczip
-  
-} #end if bamflag
-
-if ($cbkflag) {
-  my $cbklistreads = `head -n 5 $cbkflag | tail -n 1 | awk -F" " '{print \$1}'`;
-  print OUT "Control BAM : Total After RM BlackList regions,",$cbklistreads;
-}
-
-if ($crmdupflag) {
-  my $crmdupreads = `head -n 5 $crmdupflag | tail -n 1 | awk -F" " '{print \$1}'`;
-  print OUT "Control BAM : Total After RM Duplicates,",$crmdupreads;
-}
-#end of working with control
 
 #PROCESS NRF (Non-Redundant Fraction)
 #the ratio between the number of positions in the genome that uniquely mappable reads map to and the total number of uniquely mappable reads
@@ -285,85 +222,6 @@ if ($countsfile) {
   
 }
 
-#working with Control Peaks
-if ($ccountsfile) {
-  #x3x
-  
-  if ($cbambed) {
-    open(IN, "<$cbambed") || die $!;
-    while(<IN>){
-      chomp;
-      my @line = split("\t",$_); 
-      $cTotalcnt++; #from bam file mapped reads
-      my $t = join("_",@line[0..2]);
-      #$Uniquecnt++ unless($t eq $prev);
-      unless ($t eq $prev) {
-        $cUniquecnt++;
-      } else {
-        $cHASH{$t} = 1;
-      }
-      $prev=$t;
-    } close (IN);
-   
-    my $cOneread = $cUniquecnt - scalar keys %cHASH;
-    if ($cUniquecnt >= 0 && $cTotalcnt >= 0 && $cOneread >= 0) {
-      $NRF = sprintf ("%.4f", ($cUniquecnt/$cTotalcnt));
-      $PBC = sprintf ("%.4f", ($cOneread/$cUniquecnt));
-    } else { $NRF = 0; $PBC = 0; }
-    print OUT "Unique Genomic Locations,$cUniquecnt\nNRF score,$NRF\nPCR Bottleneck Coefficient,$PBC\n";
-    
-    #QCdash
-    $CONTROL_OVAL{$output_counter++} = 'NRF';
-    $CONTROL_OVAL{$output_counter++} = 'PBC';
-  
-    $Control_OvQual{'NRF'}{'value'} = $NRF;
-    $Control_OvQual{'PBC'}{'value'} = $PBC;
-    $Control_OvQual{'NRF'}{'score'} = -2;
-    $Control_OvQual{'PBC'}{'score'} = -2;
-    if ($Control_OvQual{'NRF'}{'value'} >= 0.5) { $Control_OvQual{'NRF'}{'score'} = -1; }
-    if ($Control_OvQual{'NRF'}{'value'} >= 0.6) { $Control_OvQual{'NRF'}{'score'} = 0; }
-    if ($Control_OvQual{'NRF'}{'value'} >= 0.7) { $Control_OvQual{'NRF'}{'score'} = 1; }
-    if ($Control_OvQual{'NRF'}{'value'} >= 0.8) { $Control_OvQual{'NRF'}{'score'} = 2; }
-    if ($Control_OvQual{'PBC'}{'value'} >= 0.5) { $Control_OvQual{'PBC'}{'score'} = -1; }
-    if ($Control_OvQual{'PBC'}{'value'} >= 0.66) { $Control_OvQual{'PBC'}{'score'} = 0; }
-    if ($Control_OvQual{'PBC'}{'value'} >= 0.75) { $Control_OvQual{'PBC'}{'score'} = 1; }
-    if ($Control_OvQual{'PBC'}{'value'} >= 0.9) { $Control_OvQual{'PBC'}{'score'} = 2; }
-  }
-    
-  #FRIP score
-  print "Processing FRIP score for control ... \n";
-  open(IN,"<$ccountsfile")|| die $!;
-  while(<IN>){
-    chomp;
-    my @l=split("\t",$_);
-    $cFripcnt+=$l[-1];
-    $cpeaks++; 
-  } close (IN);
-  $cFRIP = sprintf ("%.4f", ($cFripcnt/$cTotalcnt));
-  print OUT "Control: FRIP score,$cFRIP\n";
-
-  #QCdash
-  $CONTROL_OVAL{$output_counter++} = 'FRiP';
-
-  $Control_OvQual{'FRiP'}{'value'} = $cFRIP; $Control_OvQual{'FRiP'}{'score'} = -2;
-  if ($Control_OvQual{'FRiP'}{'value'} >= 0.0075) {$Control_OvQual{'FRiP'}{'score'} = -1;}
-  if ($Control_OvQual{'FRiP'}{'value'} >= 0.01) {$Control_OvQual{'FRiP'}{'score'} = 0;}
-  if ($Control_OvQual{'FRiP'}{'value'} >= 0.02) {$Control_OvQual{'FRiP'}{'score'} = 1;}
-  if ($Control_OvQual{'FRiP'}{'value'} >= 0.05) {$Control_OvQual{'FRiP'}{'score'} = 2;}
-  #x3X
-  
-  #QCdash
-  print OUT "Control: Total Peaks,$cpeaks\n";
-  $CONTROL_OVAL{$output_counter++} = 'Total Peaks';
-
-  $Control_OvQual{'Total Peaks'}{'value'} = $cpeaks; $Control_OvQual{'Total Peaks'}{'score'} = -2;
-  if ($Control_OvQual{'Total Peaks'}{'value'} > 1000) {$Control_OvQual{'Total Peaks'}{'score'} = -1;}
-  if ($Control_OvQual{'Total Peaks'}{'value'} > 2000) {$Control_OvQual{'Total Peaks'}{'score'} = 0;}
-  if ($Control_OvQual{'Total Peaks'}{'value'} > 5000) {$Control_OvQual{'Total Peaks'}{'score'} = 1;}
-  if ($Control_OvQual{'Total Peaks'}{'value'} >= 10000) {$Control_OvQual{'Total Peaks'}{'score'} = 2;}
-  
-}
-
 #Estimated fragment width & estimated tag length
 if ($peaksxls) {
   print "Processing Fragment width & Tag length score ... \n";
@@ -388,28 +246,10 @@ if ($peaksxls) {
     }
   } # end if fastqmetrics
 } #end if peaksxls
-
-#Control Estimated fragment width & estimated tag length
-if ($cpeaksxls) {
-  print "Processing Fragment width & Tag length score for control ... \n";
-  my $cfragmentwidth = `grep "\# d = " $cpeaksxls | head -n 1 | awk '{print \$NF}'`;
-  print OUT "Control: Estimated Fragment Width,$cfragmentwidth"; chop $cfragmentwidth;
-  
-  #Estimated Tag Length
-  my $cpredictedtaglength = `grep "\# tag size is determined" $cpeaksxls | head -n 1 | awk '{print \$(NF-1)}'`;
-  print OUT "Control: Estimated Tag Length,$cpredictedtaglength"; chop $cpredictedtaglength;
-
-  #QCdash
-  $CONTROL_OVAL{5} = 'Estimated Fragment Width';
-  $CONTROL_OVAL{6} = 'Estimated Tag Length';
-
-  $Control_OvQual{'Estimated Fragment Width'}{'value'} = $cfragmentwidth; $Control_OvQual{'Estimated Fragment Width'}{'score'} = 2;
-  $Control_OvQual{'Estimated Tag Length'}{'value'} = $cpredictedtaglength; $Control_OvQual{'Estimated Tag Length'}{'score'} = 2;
-} #end if peaksxls
  
 #Stitched regions & Superenhancers
 if ($rose_stitched && $rose_superstitched){
-  print "Processing ROSE counts ...";
+  print "Processing ROSE counts ... \n";
   my $enhancers = `wc -l $rose_stitched | awk '{print \$1-6}'`; chop $enhancers;
   my $superenhancers = `wc -l $rose_superstitched | awk '{print \$1-6}'`; chop $superenhancers;
   unless ($enhancers > 0 ) { $enhancers = 0; }  #making sure enhancers  is numeric
@@ -464,59 +304,26 @@ if ((sprintf ("%.1f", ($totalscore/$count))) >= 2) { $color = $color{2}; $score 
 my $htmlheader = "<table class='results'><tr><th>";
 my $textheader = "Sample_Name";
 my $samplehtmlvalues = "<tr><td><center>".$samplename."</center></td>";
-my $controlhtmlvalues = "<tr><td><center>".$samplename."</center></td>";
 my $sampletextvalues = $samplename;
-my $controltextvalues = $samplename;
-
-if ($cfastqczip) {
-  $htmlheader .= "FASTQ";
-  $textheader = "FASTQ";
-  $samplehtmlvalues = "<tr><td><center>SAMPLE</center></td>";
-  $controlhtmlvalues = "<tr><td><center>CONTROL</center></td>";
-  $sampletextvalues = "SAMPLE";
-  $controltextvalues = "CONTROL";
-} else {
-  $htmlheader .= "Sample Name";
-}
 
 open (CONFIG, ">$configfile");
-print CONFIG "$samplename\tvalue\tscore\n";
 
 #Adding Overall Quality
 #if ($totaloutput) {
   $htmlheader .= "</th><th>"."Overall Quality";
   $textheader .= "\tOverall_Quality";
-  if ($cfastqczip) { $samplehtmlvalues .= "<td bgcolor='$color' rowSpan='2'><center>".$OverallQuality."</center></td>"; }
-  else { $samplehtmlvalues .= "<td bgcolor='$color'><center>".$OverallQuality."</center></td>";}
+  $samplehtmlvalues .= "<td bgcolor='$color'><center>".$OverallQuality."</center></td>";
   $sampletextvalues .= "\t$OverallQuality";
-  $controltextvalues .= "\t$OverallQuality";
   print CONFIG "Overall_Quality\t$OverallQuality\t$score\n";
 #}
 
-if ($cfastqczip) {
-  foreach (sort {$a <=> $b} keys %CONTROL_OVAL){
-    my $convertheader = $CONTROL_OVAL{$_};
-    $convertheader =~ s/ /_/g; #change space to underscore for txt file
-    $controlhtmlvalues .="<td bgcolor='".$color{$Control_OvQual{$CONTROL_OVAL{$_}}{'score'}}."'><center>".$Control_OvQual{$CONTROL_OVAL{$_}}{'value'}."</center></td>";
-    $controltextvalues .= "\t$Control_OvQual{$CONTROL_OVAL{$_}}{'value'}";
-    print CONFIG "control-$convertheader\t$Control_OvQual{$CONTROL_OVAL{$_}}{'value'}\t$Control_OvQual{$CONTROL_OVAL{$_}}{'score'}\n";
-  }
-  $controlhtmlvalues .= "</tr>";
-}
 
 foreach (sort {$a <=> $b} keys %OVAL){
   $htmlheader .= "</th><th>".$OVAL{$_};
   my $convertheader = $OVAL{$_};
   $convertheader =~ s/ /_/g; #change space to underscore for txt file
   $textheader .= "\t$convertheader";
-  unless (exists $CONTROL_OVAL{$_}) {
-    $samplehtmlvalues .= "<td bgcolor='".$color{$OvQual{$OVAL{$_}}{'score'}}."'";
-    if ($cfastqczip) { $samplehtmlvalues .= " rowSpan='2'"; }
-    $samplehtmlvalues .= "><center>".$OvQual{$OVAL{$_}}{'value'}."</center></td>";
-    $controltextvalues .= "\t$OvQual{$OVAL{$_}}{'value'}";
-  } else {
-    $samplehtmlvalues .="<td bgcolor='".$color{$OvQual{$OVAL{$_}}{'score'}}."'><center>".$OvQual{$OVAL{$_}}{'value'}."</center></td>";
-  }
+  $samplehtmlvalues .="<td bgcolor='".$color{$OvQual{$OVAL{$_}}{'score'}}."'><center>".$OvQual{$OVAL{$_}}{'value'}."</center></td>";
   $sampletextvalues .= "\t$OvQual{$OVAL{$_}}{'value'}";
   print CONFIG "$convertheader\t$OvQual{$OVAL{$_}}{'value'}\t$OvQual{$OVAL{$_}}{'score'}\n";
 }
@@ -526,10 +333,8 @@ close(CONFIG);
 
 open (OUT2, ">$htmlfile"); #creating htmlfile
 print OUT2 $htmlheader, "\n", $samplehtmlvalues;
-if ($cfastqczip) { print OUT2 "\n", $controlhtmlvalues, "\n"; } 
 close (OUT2);
 
 open (OUT3, ">$textfile"); #creating htmlfile
 print OUT3 $textheader, "\n", $sampletextvalues, "\n";
-if ($cfastqczip) { print OUT3 $controltextvalues, "\n"; }
 close (OUT3);

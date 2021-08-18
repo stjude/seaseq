@@ -244,7 +244,6 @@ task bamtogff_plot {
         cp ~{s_promoters} ~{s_genebody} ~{s_upstream} ~{s_downstream} sample_matrixfiles/
 
         cd sample_matrixfiles; zip -9r ../sample_matrixfiles.zip *; cd ..
-        #sed -i "s/library\(pdftools\)//" /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R
 
         #creating plots w/ or w/o input bam files if provided
         if [ -f "~{control_bamfile}" ]; then

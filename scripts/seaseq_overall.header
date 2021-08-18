@@ -48,7 +48,7 @@
         
         div.body {
             padding: 10px;
-            margin-bottom: 2em;
+            margin-bottom: 1em;
             font-family: Helvetica, Verdana, Arial, sans-serif;
             line-height: 0.5em;
             display: block;
@@ -97,7 +97,7 @@
 </div>
 </head>
 <body>
-<div class="body">
+<div style='margin-top: 5em;' class="body">
     <h2>Sample FASTQs Quality Results</h2>
 
 <html>
@@ -150,7 +150,7 @@
         
         div.body {
             padding: 10px;
-            margin-bottom: 2em;
+            margin-bottom: 1em;
             font-family: Helvetica, Verdana, Arial, sans-serif;
             line-height: 0.5em;
             display: block;
@@ -200,4 +200,4 @@
 </div>
 </head>
 <body>
-<div class="body">
+<div style='margin-top: 5em;' class="body">
