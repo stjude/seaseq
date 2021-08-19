@@ -301,7 +301,7 @@ if ((sprintf ("%.1f", ($totalscore/$count))) >= 0) { $color = $color{0}; $score 
 if ((sprintf ("%.1f", ($totalscore/$count))) >= 1) { $color = $color{1}; $score = 1; $OverallQuality = "GOOD";}
 if ((sprintf ("%.1f", ($totalscore/$count))) >= 2) { $color = $color{2}; $score = 2; $OverallQuality = "EXCELLENT";}
 
-my $htmlheader = "<table class='results'><tr><th>";
+my $htmlheader = "<table class='results'><tr><th>Sample Name";
 my $textheader = "Sample_Name";
 my $samplehtmlvalues = "<tr><td><center>".$samplename."</center></td>";
 my $sampletextvalues = $samplename;

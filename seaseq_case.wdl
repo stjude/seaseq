@@ -216,7 +216,7 @@ workflow seaseq {
                 input :
                     fastqfile=eachfastq,
                     index_files=bowtie_index_,
-                    metricsfile=bfs.metrics_out,
+                    metricsfile=indv_bfs.metrics_out,
                     blacklist=blacklist,
                     default_location='SAMPLE/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/BAM_files'
             }
@@ -239,6 +239,7 @@ workflow seaseq {
 
             call util.evalstats as indv_summarystats {
                 input:
+                    fastq_type="Sample FASTQ",
                     bambed=indv_bamtobed.bedfile,
                     sppfile=indv_runspp.spp_out,
                     fastqczip=indv_fastqc.zipfile,
@@ -259,8 +260,8 @@ workflow seaseq {
         # merge bam files and perform fasTQC if more than one is provided
         call util.mergehtml {
             input:
-                htmlfiles=s_summarystats.htmlfile,
-                txtfiles=s_summarystats.textfile,
+                htmlfiles=indv_summarystats.xhtml,
+                txtfiles=indv_summarystats.textfile,
                 default_location='SAMPLE',
                 outputfile = 'AllMapped_' + length(fastqfiles) + '_seaseq-summary-stats.html'
         }
@@ -570,9 +571,10 @@ workflow seaseq {
         call util.evalstats as uno_summarystats {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             input:
+                fastq_type="Sample FASTQ",
                 bambed=finalbed.bedfile,
                 sppfile=runspp.spp_out,
-                fastqczip=select_first([uno_s_bamfqc.zipfile, string_qual]),
+                fastqczip=select_first([uno_bamfqc.zipfile, string_qual]),
                 bamflag=mapping.bam_stats,
                 rmdupflag=mapping.mkdup_stats,
                 bkflag=mapping.bklist_stats,
@@ -583,12 +585,20 @@ workflow seaseq {
                 superenhancers=rose.super_enhancers,
                 default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
         }
+
+        call util.summaryreport as uno_overallsummary {
+            # Presenting all quality stats for the analysis
+            input:
+                overallqc_html=uno_summarystats.xhtml,
+                overallqc_txt=uno_summarystats.textfile
+        }
     } # end if one_fastq
 
     if ( multi_fastq ) {
         call util.evalstats as merge_summarystats {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             input:
+                fastq_type="Comprehensive",
                 bambed=finalbed.bedfile,
                 sppfile=runspp.spp_out,
                 fastqczip=select_first([mergebamfqc.zipfile, string_qual]),
@@ -601,32 +611,32 @@ workflow seaseq {
                 superenhancers=rose.super_enhancers,
                 default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
         }
+        
+        call util.summaryreport as merge_overallsummary {
+            # Presenting all quality stats for the analysis
+            input:
+                sampleqc_html=mergehtml.xhtml,
+                overallqc_html=merge_summarystats.xhtml,
+                sampleqc_txt=mergehtml.mergetxt,
+                overallqc_txt=merge_summarystats.textfile
+        }
     } # end if multi_fastq
-
-    call util.summaryreport as overallsummary {
-        # Presenting all quality stats for the analysis
-        input:
-            sampleqc_html=select_first([uno_s_summarystats.xhtml, mergehtml.xhtml]),
-            overallqc_html=select_first([uno_summarystats.xhtml, merge_summarystats.xhtml]),
-            sampleqc_txt=select_first([uno_s_summarystats.textfile, mergehtml.mergetxt]),
-            overallqc_txt=select_first([uno_summarystats.textfile, merge_summarystats.textfile])
-    }
 
     output {
         #FASTQC
-        Array[File?]? htmlfile = fastqc.htmlfile
-        Array[File?]? zipfile = fastqc.zipfile
-        Array[File?]? bam_htmlfile = bamfqc.htmlfile
-        Array[File?]? bam_zipfile = bamfqc.zipfile
+        Array[File?]? htmlfile = indv_fastqc.htmlfile
+        Array[File?]? zipfile = indv_fastqc.zipfile
+        Array[File?]? bam_htmlfile = indv_bamfqc.htmlfile
+        Array[File?]? bam_zipfile = indv_bamfqc.zipfile
         File? mergebam_htmlfile = mergebamfqc.htmlfile
         File? mergebam_zipfile = mergebamfqc.zipfile
-        File? uno_htmlfile = uno_s_fastqc.htmlfile
-        File? uno_zipfile = uno_s_fastqc.zipfile
-        File? uno_bam_htmlfile = uno_s_bamfqc.htmlfile
-        File? uno_bam_zipfile = uno_s_bamfqc.zipfile
+        File? uno_htmlfile = uno_fastqc.htmlfile
+        File? uno_zipfile = uno_fastqc.zipfile
+        File? uno_bam_htmlfile = uno_bamfqc.htmlfile
+        File? uno_bam_zipfile = uno_bamfqc.zipfile
 
         #BASICMETRICS
-        Array[File?]? metrics_out = bfs.metrics_out
+        Array[File?]? metrics_out = indv_bfs.metrics_out
         File? uno_metrics_out = uno_bfs.metrics_out
 
         #BAMFILES
@@ -776,9 +786,9 @@ workflow seaseq {
         File? mergeqc_statsfile = merge_summarystats.statsfile
         File? mergeqc_htmlfile = merge_summarystats.htmlfile
         File? mergeqc_textfile = merge_summarystats.textfile
-        File? all_summaryhtml = overallsummary.summaryhtml
-        File? all_summarytxt = overallsummary.summarytxt
+        File? uno_summaryhtml = uno_overallsummary.summaryhtml
+        File? uno_summarytxt = uno_overallsummary.summarytxt
+        File? merge_summaryhtml = merge_overallsummary.summaryhtml
+        File? merge_summarytxt = merge_overallsummary.summarytxt
     }
 }
-
-
