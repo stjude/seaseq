@@ -303,8 +303,8 @@ if ((sprintf ("%.1f", ($totalscore/$count))) >= 2) { $color = $color{2}; $score 
 
 my $htmlheader = "<table class='results'><tr><th>Sample Name";
 my $textheader = "Sample_Name";
-my $samplehtmlvalues = "<tr><td><center>".$samplename."</center></td>";
-my $sampletextvalues = $samplename;
+my $htmlvalues = "<tr><td><center>".$samplename."</center></td>";
+my $textvalues = $samplename;
 
 open (CONFIG, ">$configfile");
 
@@ -312,8 +312,8 @@ open (CONFIG, ">$configfile");
 #if ($totaloutput) {
   $htmlheader .= "</th><th>"."Overall Quality";
   $textheader .= "\tOverall_Quality";
-  $samplehtmlvalues .= "<td bgcolor='$color'><center>".$OverallQuality."</center></td>";
-  $sampletextvalues .= "\t$OverallQuality";
+  $htmlvalues .= "<td bgcolor='$color'><center>".$OverallQuality."</center></td>";
+  $textvalues .= "\t$OverallQuality";
   print CONFIG "Overall_Quality\t$OverallQuality\t$score\n";
 #}
 
@@ -323,18 +323,18 @@ foreach (sort {$a <=> $b} keys %OVAL){
   my $convertheader = $OVAL{$_};
   $convertheader =~ s/ /_/g; #change space to underscore for txt file
   $textheader .= "\t$convertheader";
-  $samplehtmlvalues .="<td bgcolor='".$color{$OvQual{$OVAL{$_}}{'score'}}."'><center>".$OvQual{$OVAL{$_}}{'value'}."</center></td>";
-  $sampletextvalues .= "\t$OvQual{$OVAL{$_}}{'value'}";
+  $htmlvalues .="<td bgcolor='".$color{$OvQual{$OVAL{$_}}{'score'}}."'><center>".$OvQual{$OVAL{$_}}{'value'}."</center></td>";
+  $textvalues .= "\t$OvQual{$OVAL{$_}}{'value'}";
   print CONFIG "$convertheader\t$OvQual{$OVAL{$_}}{'value'}\t$OvQual{$OVAL{$_}}{'score'}\n";
 }
-$htmlheader .= "</th></tr>"; $samplehtmlvalues .= "</tr>";
+$htmlheader .= "</th></tr>"; $htmlvalues .= "</tr>";
 
 close(CONFIG);
 
 open (OUT2, ">$htmlfile"); #creating htmlfile
-print OUT2 $htmlheader, "\n", $samplehtmlvalues;
+print OUT2 $htmlheader, "\n", $htmlvalues;
 close (OUT2);
 
 open (OUT3, ">$textfile"); #creating htmlfile
-print OUT3 $textheader, "\n", $sampletextvalues, "\n";
+print OUT3 $textheader, "\n", $textvalues, "\n";
 close (OUT3);
