@@ -59,6 +59,7 @@ $textfile = $statsout; $textfile =~ s/stats.html/stats.txt/; #creating html file
 #Reading Sample QC
 open(SAMPLE, "<$sampleqc") || die $!;
 while(<SAMPLE>){
+  chomp $_;
   my @data = split("\t", $_);
   $SQC{$data[0]}{'value'} = $data[1];
   $SQC{$data[0]}{'score'} = $data[2];
@@ -68,6 +69,7 @@ close(SAMPLE);
 #Reading Control QC
 open(CONTROL, "<$controlqc") || die $!;
 while(<CONTROL>){
+  chomp $_;
   my @data = split("\t", $_);
   $CQC{$data[0]}{'value'} = $data[1];
   $CQC{$data[0]}{'score'} = $data[2];
@@ -77,14 +79,15 @@ close(CONTROL);
 #Reading Overall QC
 open(OVERALL, "<$overallqc") || die $!;
 while(<OVERALL>){
+  chomp $_;
   my @data = split("\t", $_);
   $OQC{$data[0]}{'value'} = $data[1];
   $OQC{$data[0]}{'score'} = $data[2];
 }
 close(OVERALL);
 
-my $htmlheader = "<table class='results'><tr><th>TYPE";
-my $textheader = "TYPE";
+my $htmlheader = "<table class='results'><tr><th>DATA";
+my $textheader = "DATA";
 my $samplehtmlvalues = "<tr><td><center>SAMPLE</center></td>";
 my $controlhtmlvalues = "<tr><td><center>CONTROL</center></td>";
 my $overallhtmlvalues = "<tr><td><center>SAMPLE+CONTROL</center></td>";
@@ -93,24 +96,24 @@ my $controltextvalues = "CONTROL";
 my $overalltextvalues = "SAMPLE+CONTROL";
 
 foreach (sort {$a <=> $b} keys %stats) {
-  my $convertheader = $_; $convertheader =~ s/_/ /g; #change space to underscore for txt file
-  $textheader .= "\t$_";
+  my $convertheader = $stats{$_}; $convertheader =~ s/_/ /g; #change space to underscore for txt file
+  $textheader .= "\t$stats{$_}";
   $htmlheader .= "</th><th>".$convertheader;
-  if (exists $SQC{$_}) {
-    $samplehtmlvalues .="<td bgcolor='".$color{$SQC{$_}{'score'}}."'><center>".$SQC{$_}{'value'}."</center></td>";
-    $sampletextvalues .= "\t$SQC{$_}{'value'}";
+  if (exists $SQC{$stats{$_}}) {
+    $samplehtmlvalues .="<td bgcolor='".$color{$SQC{$stats{$_}}{'score'}}."'><center>".$SQC{$stats{$_}}{'value'}."</center></td>";
+    $sampletextvalues .= "\t$SQC{$stats{$_}}{'value'}";
   } else {
     $samplehtmlvalues .="<td></td>"; $sampletextvalues .= "\t";
   }
-  if (exists $CQC{$_}) {
-    $controlhtmlvalues .="<td bgcolor='".$color{$CQC{$_}{'score'}}."'><center>".$CQC{$_}{'value'}."</center></td>";
-    $controltextvalues .= "\t$CQC{$_}{'value'}";
+  if (exists $CQC{$stats{$_}}) {
+    $controlhtmlvalues .="<td bgcolor='".$color{$CQC{$stats{$_}}{'score'}}."'><center>".$CQC{$stats{$_}}{'value'}."</center></td>";
+    $controltextvalues .= "\t$CQC{$stats{$_}}{'value'}";
   } else {
     $controlhtmlvalues .="<td></td>"; $controltextvalues .= "\t";
   }
-  if (exists $OQC{$_}) {
-    $overallhtmlvalues .="<td bgcolor='".$color{$OQC{$_}{'score'}}."'><center>".$OQC{$_}{'value'}."</center></td>";
-    $overalltextvalues .= "\t$OQC{$_}{'value'}";
+  if (exists $OQC{$stats{$_}}) {
+    $overallhtmlvalues .="<td bgcolor='".$color{$OQC{$stats{$_}}{'score'}}."'><center>".$OQC{$stats{$_}}{'value'}."</center></td>";
+    $overalltextvalues .= "\t$OQC{$stats{$_}}{'value'}";
   } else {
     $overallhtmlvalues .="<td></td>"; $overalltextvalues .= "\t";
   }
