@@ -416,3 +416,47 @@ task linkname {
         File out_fastq = "~{prefix}.fastq.gz"
     }
 }
+
+
+task concatstats {
+    input {
+        File sample_config
+        File control_config
+        File overall_config
+        String outputfile = sub(basename(overall_config),'-config.ml','')
+        String default_location = "QC_files"
+        String fastq_type = "Sample FASTQs"
+
+        Int memory_gb = 10
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+
+        mkdir -p ~{default_location}
+        cd ~{default_location}
+
+        concat-statistics.pl \
+            -sample ~{sample_config} \
+            -control ~{control_config} \
+            -overall ~{overall_config} \
+            -outfile ~{outputfile}-stats.html 
+
+        tail -n 101 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}-stats.html
+        cat ~{outputfile}-stats.htmlx >> ~{outputfile}-stats.html
+        sed -i "s/SEAseq Sample FASTQ Report/SEAseq ~{fastq_type} Report/" ~{outputfile}-stats.html
+
+
+    >>> 
+    runtime {
+        memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'abralab/seaseq:v2.1.0'
+        cpu: ncpu
+    }
+    output {
+        File htmlfile = "~{default_location}/~{outputfile}-stats.html"
+        File textfile = "~{default_location}/~{outputfile}-stats.txt"
+        File xhtml = "~{default_location}/~{outputfile}-stats.htmlx"
+    }
+}

@@ -35,8 +35,14 @@ task sicer {
             -g ~{gap_size} \
             -e ~{evalue}
 
+        mv ~{basename(bedfile,'.bed')}-W~{window}-G~{gap_size}.scoreisland ~{outputname}-W~{window}-G~{gap_size}.scoreisland
+        mv ~{basename(bedfile,'.bed')}-W~{window}-normalized.wig ~{outputname}-W~{window}-normalized.wig
+        mv ~{basename(bedfile,'.bed')}-W~{window}-G~{gap_size}-islands-summary ~{outputname}-W~{window}-G~{gap_size}-islands-summary
+        if [ -f "~{basename(bedfile,'.bed')}-W~{window}-G~{gap_size}-FDR0.01-island.bed" ]; then
+            mv ~{basename(bedfile,'.bed')}-W~{window}-G~{gap_size}-FDR0.01-island.bed ~{outputname}-W~{window}-G~{gap_size}-FDR0.01-island.bed
+        fi
         gzip *wig
-        mv *W200* ~{default_location}
+        mv ~{outputname}-* ~{default_location}
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"

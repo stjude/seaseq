@@ -113,6 +113,7 @@ workflow bamtogff {
             c_genebody=c_genebody.matrix_file,
             c_upstream=c_upstream.matrix_file,
             c_downstream=c_downstream.matrix_file,
+            samplename=samplename,
             default_location=default_location
     }
 
