@@ -24,6 +24,28 @@ my (%SQC, %CQC, %OQC);
 my ($statsout);
 
 #QC dictionary
+my %mergestats = (
+  1 => 'Overall_Quality',
+  14 => 'Normalized_Peaks*',
+  15 => 'Linear_Stitched_Peaks',
+  16 => 'SE-like_Enriched_Regions'
+);
+
+my %indvstats = (
+  2 => 'Raw_Reads',
+  3 => 'Base_Quality',
+  4 => 'Sequence_Diversity',
+  5 => 'Aligned_Percent',
+  6 => 'Estimated_Fragment_Width',
+  7 => 'Estimated_Tag_Length',
+  8 => 'NRF',
+  9 => 'PBC',
+  10 => 'NSC',
+  11 => 'RSC',
+  12 => 'FRiP',
+  13 => 'Total_Peaks'
+);
+
 my %stats = (
   1 => 'Overall_Quality',
   2 => 'Raw_Reads',
@@ -38,9 +60,10 @@ my %stats = (
   11 => 'RSC',
   12 => 'FRiP',
   13 => 'Total_Peaks',
-  14 => 'Linear_Stitched_Peaks',
-  15 => 'SE-like_Enriched_Regions');
-
+  14 => 'Normalized_Peaks*',
+  15 => 'Linear_Stitched_Peaks',
+  16 => 'SE-like_Enriched_Regions'
+);
 #color names
 my %color = ( "-2" => "#FF0000", "-1" => "#FF8C00", "0" => "#FFFF00", "1" => "#ADFF2F", "2" => "#008000" ); #red #orangered #yellow #greenyellow #green
 
@@ -90,44 +113,36 @@ my $htmlheader = "<table class='results'><tr><th>DATA";
 my $textheader = "DATA";
 my $samplehtmlvalues = "<tr><td><center>SAMPLE</center></td>";
 my $controlhtmlvalues = "<tr><td><center>CONTROL</center></td>";
-my $overallhtmlvalues = "<tr><td><center>SAMPLE+CONTROL</center></td>";
 my $sampletextvalues = "SAMPLE";
 my $controltextvalues = "CONTROL";
-my $overalltextvalues = "SAMPLE+CONTROL";
+
+
+
 
 foreach (sort {$a <=> $b} keys %stats) {
   my $convertheader = $stats{$_}; $convertheader =~ s/_/ /g; #change space to underscore for txt file
   $textheader .= "\t$stats{$_}";
   $htmlheader .= "</th><th>".$convertheader;
-  if (exists $SQC{$stats{$_}}) {
+  if (exists $mergestats{$_}){
+    if ($_ == 14) {
+      $samplehtmlvalues .= "<td rowspan='2' bgcolor='".$color{$OQC{'Total_Peaks'}{'score'}}."'><center>".$OQC{'Total_Peaks'}{'value'}."</center></td>";
+    } else {
+      $samplehtmlvalues .= "<td rowspan='2' bgcolor='".$color{$OQC{$stats{$_}}{'score'}}."'><center>".$OQC{$stats{$_}}{'value'}."</center></td>";
+    }
+  } else {
     $samplehtmlvalues .="<td bgcolor='".$color{$SQC{$stats{$_}}{'score'}}."'><center>".$SQC{$stats{$_}}{'value'}."</center></td>";
-    $sampletextvalues .= "\t$SQC{$stats{$_}}{'value'}";
-  } else {
-    $samplehtmlvalues .="<td></td>"; $sampletextvalues .= "\t";
-  }
-  if (exists $CQC{$stats{$_}}) {
     $controlhtmlvalues .="<td bgcolor='".$color{$CQC{$stats{$_}}{'score'}}."'><center>".$CQC{$stats{$_}}{'value'}."</center></td>";
-    $controltextvalues .= "\t$CQC{$stats{$_}}{'value'}";
-  } else {
-    $controlhtmlvalues .="<td></td>"; $controltextvalues .= "\t";
-  }
-  if (exists $OQC{$stats{$_}}) {
-    $overallhtmlvalues .="<td bgcolor='".$color{$OQC{$stats{$_}}{'score'}}."'><center>".$OQC{$stats{$_}}{'value'}."</center></td>";
-    $overalltextvalues .= "\t$OQC{$stats{$_}}{'value'}";
-  } else {
-    $overallhtmlvalues .="<td></td>"; $overalltextvalues .= "\t";
   }
 }
 $htmlheader .= "</th></tr>";
 $samplehtmlvalues .= "</tr>";
 $controlhtmlvalues .= "</tr>";
-$overallhtmlvalues .= "</tr>";
 
 open (OUT1, ">$htmlfile"); #creating htmlfile
-print OUT1 $htmlheader, "\n", $samplehtmlvalues, "\n", $controlhtmlvalues, "\n", $overallhtmlvalues;
+print OUT1 $htmlheader, "\n", $samplehtmlvalues, "\n", $controlhtmlvalues;
 close (OUT1);
 
 open (OUT2, ">$textfile"); #creating htmlfile
-print OUT2 $textheader, "\n", $sampletextvalues, "\n", $controltextvalues, "\n", $overalltextvalues, "\n";
+print OUT2 $textheader, "\n", $sampletextvalues, "\n", $controltextvalues;
 close (OUT2);
 

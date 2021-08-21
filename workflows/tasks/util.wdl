@@ -436,11 +436,11 @@ task concatstats {
         mkdir -p ~{default_location}
         cd ~{default_location}
 
-        concat-statistics.pl \
+        concat-statistics.py \
             -sample ~{sample_config} \
             -control ~{control_config} \
             -overall ~{overall_config} \
-            -outfile ~{outputfile}-stats.html 
+            -outfile ~{outputfile}-stats.htmlx 
 
         tail -n 101 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}-stats.html
         cat ~{outputfile}-stats.htmlx >> ~{outputfile}-stats.html

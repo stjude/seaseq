@@ -646,7 +646,7 @@ workflow seaseq {
             pvalue = "1e-9",
             keep_dup="auto",
             output_name = if defined(experiment_name) then experiment_name + '-p9_kd-auto' else basename(sample_bam,'\.bam') + '+control-p9_kd-auto',
-            default_location = if defined(experiment_name) then experiment_name + '/PEAKS/NARROW_peaks/' + experiment_name + '-p9_kd-auto' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '-p9_kd-auto'
+            default_location = if defined(experiment_name) then experiment_name + '/PEAKS/NARROW_peaks/' + experiment_name + '-p9_kd-auto' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '+control-p9_kd-auto'
     }
 
     call macs.macs as all {
@@ -656,7 +656,7 @@ workflow seaseq {
             pvalue = "1e-9",
             keep_dup="all",
             output_name = if defined(experiment_name) then experiment_name + '-p9_kd-all' else basename(sample_bam,'\.bam') + '+control-p9_kd-all',
-            default_location = if defined(experiment_name) then experiment_name + '/PEAKS/NARROW_peaks/' + experiment_name + '-p9_kd-all' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '-p9_kd-all'
+            default_location = if defined(experiment_name) then experiment_name + '/PEAKS/NARROW_peaks/' + experiment_name + '-p9_kd-all' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '+control-p9_kd-all'
     }
 
     call macs.macs as nomodel {
@@ -665,7 +665,7 @@ workflow seaseq {
             control=control_bam,
             nomodel=true,
             output_name = if defined(experiment_name) then experiment_name + '-nm' else basename(sample_bam,'\.bam') + '+control-nm',
-            default_location = if defined(experiment_name) then experiment_name + '/PEAKS/NARROW_peaks/' + experiment_name + '-nm' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '-nm'
+            default_location = if defined(experiment_name) then experiment_name + '/PEAKS/NARROW_peaks/' + experiment_name + '-nm' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '+control-nm'
     }
 
     call bamtogff.bamtogff {
@@ -677,7 +677,7 @@ workflow seaseq {
             control_bamfile=select_first([c_merge_markdup.mkdupbam, c_mapping.mkdup_bam]),
             control_bamindex=select_first([c_merge_mkdup.indexbam, c_mapping.mkdup_index]),
             samplename=if defined(experiment_name) then experiment_name else basename(sample_bam,'\.bam') + '+control',
-            default_location=if defined(experiment_name) then experiment_name + '/BAM_Density' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/BAM_Density'
+            default_location=if defined(experiment_name) then experiment_name + '/BAM_Density' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/BAM_Density'
     }
 
     call bedtools.bamtobed as s_forsicerbed {
@@ -696,7 +696,7 @@ workflow seaseq {
             control_bed=c_forsicerbed.bedfile,
             chromsizes=samtools_faidx.chromsizes,
             outputname=if defined(experiment_name) then experiment_name else basename(s_forsicerbed.bedfile,'\.bed') + '+control',
-            default_location=if defined(experiment_name) then experiment_name + '/PEAKS/BROAD_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS/BROAD_peaks'
+            default_location=if defined(experiment_name) then experiment_name + '/PEAKS/BROAD_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/BROAD_peaks'
     }
 
     call rose.rose {
@@ -708,7 +708,7 @@ workflow seaseq {
             controlindex=select_first([c_merge_bklist.indexbam, c_mergeindexstats.indexbam, c_mapping.bklist_index, c_mapping.bam_index]),
             bedfile_auto=macs.peakbedfile,
             bedfile_all=all.peakbedfile,
-            default_location=if defined(experiment_name) then experiment_name + '/PEAKS/STITCHED_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS/STITCHED_peaks'
+            default_location=if defined(experiment_name) then experiment_name + '/PEAKS/STITCHED_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/STITCHED_peaks'
     }
 
     call runspp.runspp {
@@ -734,7 +734,7 @@ workflow seaseq {
             chromsizes=samtools_faidx.chromsizes,
             control=true,
             xlsfile=macs.peakxlsfile,
-            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') + '/control' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') + '/control'
+            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') + '/control' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') + '/control'
     }
 
     call viz.visualization as c_vizall {
@@ -743,7 +743,7 @@ workflow seaseq {
             chromsizes=samtools_faidx.chromsizes,
             control=true,
             xlsfile=all.peakxlsfile,
-            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') + '/control' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') + '/control'
+            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') + '/control' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') + '/control'
     }
     call viz.visualization as c_viznomodel {
         input:
@@ -751,7 +751,7 @@ workflow seaseq {
             chromsizes=samtools_faidx.chromsizes,
             control=true,
             xlsfile=nomodel.peakxlsfile,
-            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') + '/control' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') + '/control'
+            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') + '/control' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') + '/control'
     }
 
     call util.peaksanno {
@@ -760,7 +760,7 @@ workflow seaseq {
             bedfile=macs.peakbedfile,
             chromsizes=samtools_faidx.chromsizes,
             summitfile=macs.summitsfile,
-            default_location=if defined(experiment_name) then experiment_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','')
+            default_location=if defined(experiment_name) then experiment_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS_Annotation/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','')
     }
 
     call util.peaksanno as all_peaksanno {
@@ -769,7 +769,7 @@ workflow seaseq {
             bedfile=all.peakbedfile,
             chromsizes=samtools_faidx.chromsizes,
             summitfile=all.summitsfile,
-            default_location=if defined(experiment_name) then experiment_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','')
+            default_location=if defined(experiment_name) then experiment_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS_Annotation/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','')
     }
 
     call util.peaksanno as nomodel_peaksanno {
@@ -778,7 +778,7 @@ workflow seaseq {
             bedfile=nomodel.peakbedfile,
             chromsizes=samtools_faidx.chromsizes,
             summitfile=nomodel.summitsfile,
-            default_location=if defined(experiment_name) then experiment_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','')
+            default_location=if defined(experiment_name) then experiment_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS_Annotation/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','')
     }
 
     call util.peaksanno as sicer_peaksanno {
@@ -786,7 +786,7 @@ workflow seaseq {
             gtffile=gtf,
             bedfile=select_first([sicer.fdrisland, string_ctrlwig]),
             chromsizes=samtools_faidx.chromsizes,
-            default_location=if defined(experiment_name) then experiment_name + '/PEAKS_Annotation/BROAD_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/BROAD_peaks'
+            default_location=if defined(experiment_name) then experiment_name + '/PEAKS_Annotation/BROAD_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS_Annotation/BROAD_peaks'
     }
 
     # Motif Analysis
@@ -796,13 +796,13 @@ workflow seaseq {
             reference_index=samtools_faidx.faidx_file,
             bedfile=macs.peakbedfile,
             motif_databases=motif_databases,
-            default_location=if defined(experiment_name) then experiment_name + '/MOTIFS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+            default_location=if defined(experiment_name) then experiment_name + '/MOTIFS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/MOTIFS'
     }
 
     call util.flankbed {
         input :
             bedfile=macs.summitsfile,
-            default_location=if defined(experiment_name) then experiment_name + '/MOTIFS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+            default_location=if defined(experiment_name) then experiment_name + '/MOTIFS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/MOTIFS'
     }
 
     call motifs.motifs as flank {
@@ -811,7 +811,7 @@ workflow seaseq {
             reference_index=samtools_faidx.faidx_file,
             bedfile=flankbed.flankbedfile,
             motif_databases=motif_databases,
-            default_location=if defined(experiment_name) then experiment_name + '/MOTIFS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+            default_location=if defined(experiment_name) then experiment_name + '/MOTIFS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/MOTIFS'
     }
 
     call viz.visualization {
@@ -819,7 +819,7 @@ workflow seaseq {
             wigfile=macs.wigfile,
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=macs.peakxlsfile,
-            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','')
+            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','')
     }
 
     call viz.visualization as vizall {
@@ -827,7 +827,7 @@ workflow seaseq {
             wigfile=all.wigfile,
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=all.peakxlsfile,
-            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','')
+            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','')
     }
 
     call viz.visualization as viznomodel {
@@ -835,14 +835,14 @@ workflow seaseq {
             wigfile=nomodel.wigfile,
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=nomodel.peakxlsfile,
-            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','')
+            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','')
     }
 
     call viz.visualization as vizsicer {
         input:
             wigfile=sicer.wigfile,
             chromsizes=samtools_faidx.chromsizes,
-            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/BROAD_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/BROAD_peaks'
+            default_location=if defined(experiment_name) then experiment_name + '/COVERAGE_files/BROAD_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/BROAD_peaks'
     }
 
     #Peak Calling for Sample BAM only
@@ -1043,7 +1043,7 @@ workflow seaseq {
             control_config=select_first([all_c_summarystats.configfile, merge_c_summarystats.configfile]),
             overall_config=select_first([all_summarystats.configfile, merge_summarystats.configfile]),
             outputfile=if defined(experiment_name) then experiment_name else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control',
-            default_location=if defined(experiment_name) then experiment_name + '/QC/SummaryStats' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+            default_location=if defined(experiment_name) then experiment_name + '/QC/SummaryStats' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/QC/SummaryStats'
     }
 
     call util.summaryreport as overallsummary {
