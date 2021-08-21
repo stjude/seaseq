@@ -26,10 +26,13 @@ def main(reorg_conf___=None, reorg_status___=None):  # pylint: disable=unused-ar
     for file_identifiers in output_map.values():
         if isinstance(file_identifiers, (list, tuple)):
             for indvfile in file_identifiers:
-                default_location = dxpy.describe(
-                    dxpy.describe(indvfile["$dnanexus_link"])["createdBy"]["job"]
-                )["runInput"]["default_location"]
-                folder = folder_location + "/" + default_location
+                try:
+                    default_location = dxpy.describe(
+                        dxpy.describe(indvfile["$dnanexus_link"])["createdBy"]["job"]
+                    )["runInput"]["default_location"]
+                    folder = folder_location + "/" + default_location
+                except:
+                    folder = folder_location
                 project_container.new_folder(folder, parents=True)
         
                 file_container = dxpy.describe(indvfile["$dnanexus_link"])["project"]
@@ -44,9 +47,12 @@ def main(reorg_conf___=None, reorg_status___=None):  # pylint: disable=unused-ar
                     )
         elif isinstance(file_identifiers, dict):
             if '$dnanexus_link' in file_identifiers:
-                default_location = dxpy.describe(
-                dxpy.describe(file_identifiers["$dnanexus_link"])["createdBy"]["job"])["runInput"]["default_location"]
-                folder = folder_location + "/" + default_location
+                try:
+                    default_location = dxpy.describe(
+                    dxpy.describe(file_identifiers["$dnanexus_link"])["createdBy"]["job"])["runInput"]["default_location"]
+                    folder = folder_location + "/" + default_location
+                except:
+                    folder = folder_location
                 project_container.new_folder(folder, parents=True)
         
                 file_container = dxpy.describe(file_identifiers["$dnanexus_link"])["project"]

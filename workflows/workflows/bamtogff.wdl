@@ -113,6 +113,7 @@ workflow bamtogff {
             c_genebody=c_genebody.matrix_file,
             c_upstream=c_upstream.matrix_file,
             c_downstream=c_downstream.matrix_file,
+            samplename=samplename,
             default_location=default_location
     }
 
@@ -123,9 +124,11 @@ workflow bamtogff {
         File? pdf_gene = bamtogff_plot.pdf_gene
         File? pdf_h_gene = bamtogff_plot.pdf_h_gene
         File? png_h_gene = bamtogff_plot.png_h_gene
+        File? jpg_h_gene = bamtogff_plot.jpg_h_gene
         File? pdf_promoters = bamtogff_plot.pdf_promoters
         File? pdf_h_promoters = bamtogff_plot.pdf_h_promoters
         File? png_h_promoters = bamtogff_plot.png_h_promoters
+        File? jpg_h_promoters = bamtogff_plot.jpg_h_promoters
     }
 }
 
@@ -222,21 +225,20 @@ task bamtogff_plot {
 
         #create a custom R script to recreate plots
         RSCRIPT="densityplots.R"
-        head -n 415 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R > $RSCRIPT
+        head -n 419 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R > $RSCRIPT
+        echo 'if ("pdftools" %in% rownames(installed.packages()) == FALSE){ install.packages("pdftools") }' >> $RSCRIPT
         echo '' >> $RSCRIPT
-        echo '=========================================' >> $RSCRIPT
+        echo '#=========================================' >> $RSCRIPT
         echo '' >> $RSCRIPT
         echo 'folder = "'sample_matrixfiles.zip'"' >> $RSCRIPT
-        ~{if defined(control_bamfile) then "echo \'opt <- list(z=TRUE, c=\"input_matrixfiles.zip\")\' \>\> $RSCRIPT" else "echo \'opt <- list(z=TRUE)\' \>\> $RSCRIPT"}
+        ~{if defined(control_bamfile) then "echo \'opt <- list(z=TRUE, c=\"input_matrixfiles.zip\")\' \>\> $RSCRIPT" else "echo \'opt <- list(z=TRUE, c=NA)\' \>\> $RSCRIPT"}
         echo 'samplename = "'~{samplename}'"' >> $RSCRIPT
         echo 'unzipped_folder = "UNZIPPED"' >> $RSCRIPT
         echo 'distance = round(~{distance}/1000,1)' >> $RSCRIPT
         echo '' >> $RSCRIPT
-        echo '=========================================' >> $RSCRIPT
+        echo '#=========================================' >> $RSCRIPT
         echo '' >> $RSCRIPT
-        tail -n 107 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R >> $RSCRIPT 
-
-        sed -i "s/\,\ type=\"cairo\"//" $RSCRIPT
+        tail -n 112 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R | head -n -3 >> $RSCRIPT 
 
         #moving sample matrix files to sample_matrixfiles folder
         mkdir -p ~{default_location} sample_matrixfiles
@@ -254,15 +256,22 @@ task bamtogff_plot {
 
             cd input_matrixfiles; zip -9r ../input_matrixfiles.zip *; cd ..
 
-            mv $RSCRIPT sample_matrixfiles.zip input_matrixfiles.zip *png *pdf ~{default_location}
+            mv input_matrixfiles.zip ~{default_location}
 
         else
             echo "Making PLOTS for ~{basename(bamfile)} read densities"
             BAM2GFF_plots.R -n ~{samplename} -d ~{distance} -f sample_matrixfiles
 
-            mv $RSCRIPT sample_matrixfiles.zip *png *pdf ~{default_location}
-
         fi
+
+        if [ ! -f "~{samplename}-heatmap.entiregene.png" ]; then
+            echo "using PDFtoPPM"
+            #convert pdf to png #not needed since using pdftools
+            pdftoppm ~{samplename}-heatmap.entiregene.pdf ~{samplename}-heatmap.entiregene -png -singlefile -r 300
+            pdftoppm ~{samplename}-heatmap.promoters.pdf ~{samplename}-heatmap.promoters -png -singlefile -r 300
+        fi
+
+        mv $RSCRIPT sample_matrixfiles.zip *png *pdf *jpg ~{default_location}
         
         echo "Done!"
 
@@ -280,9 +289,11 @@ task bamtogff_plot {
         File? pdf_gene = "~{default_location}/~{samplename}-entiregene.pdf"
         File? pdf_h_gene = "~{default_location}/~{samplename}-heatmap.entiregene.pdf"
         File? png_h_gene = "~{default_location}/~{samplename}-heatmap.entiregene.png"
+        File? jpg_h_gene = "~{default_location}/~{samplename}-heatmap.entiregene.jpg"
         File? pdf_promoters = "~{default_location}/~{samplename}-promoters.pdf"
         File? pdf_h_promoters = "~{default_location}/~{samplename}-heatmap.promoters.pdf"
         File? png_h_promoters = "~{default_location}/~{samplename}-heatmap.promoters.png"
+        File? jpg_h_promoters = "~{default_location}/~{samplename}-heatmap.promoters.jpg"
     }
 
 }

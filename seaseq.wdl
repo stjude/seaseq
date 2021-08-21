@@ -561,7 +561,11 @@ workflow seaseq {
                 sample_bkflag=mapping.bklist_stats,
                 sample_fastqczip=uno_s_fastqc.zipfile,
                 fastqmetrics=uno_s_bfs.metrics_out,
-                default_location='SAMPLE/' + sub(basename(uno_s_fastqfile),'\.f.*q\.gz','') + '/QC/SummaryStats'
+                outputfile = sub(basename(s_fastqfiles[0]),'\.f.*q\.gz', '-stats.csv'),
+                outputhtml = sub(basename(s_fastqfiles[0]),'\.f.*q\.gz', '-stats.html'),
+                outputtext = sub(basename(s_fastqfiles[0]),'\.f.*q\.gz', '-stats.txt'),
+                configml = sub(basename(s_fastqfiles[0]),'\.f.*q\.gz', '-config.ml'),
+                default_location='SAMPLE/' + sub(basename(s_fastqfiles[0]),'\.f.*q\.gz','') + '/QC/SummaryStats'
         }
     } # end if length(fastqfiles) == 1: one_sample_fastq
 
@@ -689,6 +693,11 @@ workflow seaseq {
                 default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/BAM_Density'
         }
 
+        call bedtools.bamtobed as s_forsicerbed {
+            input :
+                bamfile=select_first([merge_markdup.mkdupbam, mapping.mkdup_bam])
+        }
+        
         call bedtools.bamtobed as c_forsicerbed {
             input :
                 bamfile=select_first([c_merge_markdup.mkdupbam, c_mapping.mkdup_bam])
@@ -696,7 +705,7 @@ workflow seaseq {
 
         call sicer.sicer as c_sicer {
             input :
-                bedfile=forsicerbed.bedfile,
+                bedfile=s_forsicerbed.bedfile,
                 control_bed=c_forsicerbed.bedfile,
                 chromsizes=samtools_faidx.chromsizes,
                 default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS/BROAD_peaks'
@@ -786,6 +795,11 @@ workflow seaseq {
                 default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/BAM_Density'
         }
 
+        call bedtools.bamtobed as forsicerbed {
+            input :
+                bamfile=select_first([merge_markdup.mkdupbam, mapping.mkdup_bam])
+        }
+
         call sicer.sicer {
             input :
                 bedfile=forsicerbed.bedfile,
@@ -835,11 +849,6 @@ workflow seaseq {
             chromsizes=samtools_faidx.chromsizes,
             summitfile=select_first([nomodel.summitsfile, c_nomodel.summitsfile]),
             default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(select_first([nomodel.peakbedfile, c_nomodel.peakbedfile])),'\_peaks.bed','')
-    }
-
-    call bedtools.bamtobed as forsicerbed {
-        input :
-            bamfile=select_first([merge_markdup.mkdupbam, mapping.mkdup_bam])
     }
 
     call util.peaksanno as sicer_peaksanno {
@@ -986,8 +995,7 @@ workflow seaseq {
                 overallqc_html=select_first([c_uno_summarystats.htmlfile, c_merge_summarystats.htmlfile]),
                 controlqc_txt=select_first([uno_c_summarystats.textfile, c_mergehtml.mergetxt, string_qual]),
                 sampleqc_txt=select_first([uno_s_summarystats.textfile, mergehtml.mergetxt]),
-                overallqc_txt=select_first([c_uno_summarystats.textfile, c_merge_summarystats.textfile]),
-                default_location='./'
+                overallqc_txt=select_first([c_uno_summarystats.textfile, c_merge_summarystats.textfile])
         }
 
     }
@@ -1037,8 +1045,7 @@ workflow seaseq {
                 sampleqc_html=select_first([uno_s_summarystats.htmlfile, mergehtml.mergefile]),
                 overallqc_html=select_first([uno_summarystats.htmlfile, merge_summarystats.htmlfile]),
                 sampleqc_txt=select_first([uno_s_summarystats.textfile, mergehtml.mergetxt]),
-                overallqc_txt=select_first([uno_summarystats.textfile, merge_summarystats.textfile]),
-                default_location='./'
+                overallqc_txt=select_first([uno_summarystats.textfile, merge_summarystats.textfile])
         }
       
     }

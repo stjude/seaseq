@@ -103,14 +103,13 @@ task summaryreport {
     input {
         File? controlqc_txt
         File? controlqc_html
-        File sampleqc_txt
-        File sampleqc_html
+        File? sampleqc_txt
+        File? sampleqc_html
         File overallqc_txt
         File overallqc_html
-        String default_location = './'
 
-        String outputfile = sub(basename(overallqc_html), 'stats.html', 'seaseq_report.html')
-        String outputtxt = sub(basename(overallqc_html), 'stats.html', 'seaseq_report.txt')
+        String outputfile = sub(basename(overallqc_html), 'stats.htmlx', 'seaseq_report.html')
+        String outputtxt = sub(basename(overallqc_html), 'stats.htmlx', 'seaseq_report.txt')
         
         Int memory_gb = 5
         Int max_retries = 1
@@ -118,33 +117,41 @@ task summaryreport {
     }
     command <<<
 
-        # Printing Sample Quality Reports
-        echo -e '<title>SEAseq Report</title>\n<h1>SEAseq Quality Statistics and Evaluation Report</h1>\n<h2>Sample FASTQs Quality Results</h2><p>' > ~{outputfile}
-        echo -e 'SEAseq Report\nSEAseq Quality Statistics and Evaluation Report\n\nSample FASTQs Quality Results' > ~{outputtxt}
-        cat ~{sampleqc_html} >> ~{outputfile}
-        echo '</table>' >> ~{outputfile}
-        cat ~{sampleqc_txt} >> ~{outputtxt}
-        echo -e '</p><br>' >> ~{outputfile}
-        echo -e '\n' >> ~{outputtxt}
+        # Printing header
+        head -n 100 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}
+        if [ -f "~{sampleqc_html}" ]; then
+            # Printing Sample Quality Reports
+            echo '<h2>Sample FASTQs Quality Results</h2>' >> ~{outputfile}
+            cat ~{sampleqc_html} >> ~{outputfile}
+            echo -e '</table></div>\n<div class="body">' >> ~{outputfile}
+
+            echo -e 'SEAseq Report\nSEAseq Quality Statistics and Evaluation Report\n\nSample FASTQs Quality Results' > ~{outputtxt}
+            cat ~{sampleqc_txt} >> ~{outputtxt}
+            echo -e '\n' >> ~{outputtxt}
+        fi
 
         if [ -f "~{controlqc_html}" ]; then
             # Printing Control Quality Reports
-            echo -e '<h2>Control FASTQs Quality Results</h2><p>' >> ~{outputfile}
-            echo -e 'Control FASTQs Quality Results' >> ~{outputtxt}
+            echo '<h2>Control FASTQs Quality Results</h2>' >> ~{outputfile}
             cat ~{controlqc_html} >> ~{outputfile}
-            echo '</table>' >> ~{outputfile}
+            echo -e '</table></div>\n<div class="body">' >> ~{outputfile}
+
+            echo 'Control FASTQs Quality Results' >> ~{outputtxt}
             cat ~{controlqc_txt} >> ~{outputtxt}
-            echo -e '</p><br>' >> ~{outputfile}
             echo -e '\n' >> ~{outputtxt}
         fi
         
         # Printing Overall Quality Reports
-        echo -e '<h2>Comprehensive Quality Evaluation and Statistics Results</h2><p>' >> ~{outputfile}
-        echo -e 'Comprehensive Quality Evaluation and Statistics Results' >> ~{outputtxt}
+        echo '<h2>Overall Quality Evaluation and Statistics Results</h2><p>' >> ~{outputfile}
         cat ~{overallqc_html} >> ~{outputfile}
         echo '</table>' >> ~{outputfile}
+        echo -e 'Overall Quality Evaluation and Statistics Results' >> ~{outputtxt}
         cat ~{overallqc_txt} >> ~{outputtxt}
-        echo -e '</p><br>' >> ~{outputfile}
+        if [-f "~{sampleqc_html}"]; then
+            echo "<p>* Peaks identified after input/control correction</p>" >> ~{outputfile}
+            echo "* Peaks identified after input/control correction" >> ~{outputfile}
+        fi
+        echo -e '</div>\n</body>\n</html>' >> ~{outputfile}
         echo -e '\n' >> ~{outputtxt}
 
     >>>
@@ -155,8 +162,8 @@ task summaryreport {
         cpu: ncpu
     }
     output {
-        File summaryhtml = "~{default_location}/~{outputfile}"
-        File summarytxt = "~{default_location}/~{outputtxt}"
+        File summaryhtml = "~{outputfile}"
+        File summarytxt = "~{outputtxt}"
     }
 }
 
@@ -165,25 +172,22 @@ task evalstats {
     input {
         File? bambed
         File? sppfile
+        File fastqczip
+        File? bamflag
+        File? rmdupflag
+        File? bkflag
+        File? fastqmetrics
         File? countsfile
         File? peaksxls
-        File sample_fastqczip
-        File? control_fastqczip
-        File? sample_bamflag
-        File? sample_rmdupflag
-        File? sample_bkflag
-        File? control_bamflag
-        File? control_rmdupflag
-        File? control_bkflag
-        File? fastqmetrics
         File? enhancers
         File? superenhancers
 
+        String fastq_type = "Sample FASTQs"
         String default_location = "QC_files/STATS"
-        String outputfile = sub(basename(sample_fastqczip),'_fastqc.zip', '-stats.csv')
-        String outputhtml = sub(basename(sample_fastqczip),'_fastqc.zip', '-stats.html')
-        String outputtext = sub(basename(sample_fastqczip),'_fastqc.zip', '-stats.txt')
-        String configml = sub(basename(sample_fastqczip),'_fastqc.zip', '-config.ml')
+        String outputfile = sub(basename(fastqczip),'_fastqc.zip', '-stats.csv')
+        String outputhtml = sub(basename(fastqczip),'_fastqc.zip', '-stats.html')
+        String outputtext = sub(basename(fastqczip),'_fastqc.zip', '-stats.txt')
+        String configml = sub(basename(fastqczip),'_fastqc.zip', '-config.ml')
 
         Int memory_gb = 10
         Int max_retries = 1
@@ -195,22 +199,23 @@ task evalstats {
         cd ~{default_location}
 
         evaluation-statistics.pl \
-            -fqc ~{sample_fastqczip} \
+            -fqc ~{fastqczip} \
             ~{if defined(bambed) then "-b " + bambed else ""} \
             ~{if defined(sppfile) then "-s " + sppfile else ""} \
             ~{if defined(countsfile) then "-c " + countsfile else ""} \
             ~{if defined(peaksxls) then "-px " + peaksxls else ""} \
-            ~{if defined(sample_bamflag) then "-bamflag " + sample_bamflag else ""} \
-            ~{if defined(sample_bkflag) then "-bkflag " + sample_bkflag else ""} \
-            ~{if defined(sample_rmdupflag) then "-rmdupflag " + sample_rmdupflag else ""} \
-            ~{if defined(control_bamflag) then "-cbamflag " + control_bamflag else ""} \
-            ~{if defined(control_bkflag) then "-cbkflag " + control_bkflag else ""} \
-            ~{if defined(control_rmdupflag) then "-crmdupflag " + control_rmdupflag else ""} \
-            ~{if defined(control_fastqczip) then "-cfqc " + control_fastqczip else ""} \
+            ~{if defined(bamflag) then "-bamflag " + bamflag else ""} \
+            ~{if defined(bkflag) then "-bkflag " + bkflag else ""} \
+            ~{if defined(rmdupflag) then "-rmdupflag " + rmdupflag else ""} \
             ~{if defined(fastqmetrics) then "-fx " + fastqmetrics else ""} \
             ~{if defined(enhancers) then "-re " + enhancers else ""} \
             ~{if defined(superenhancers) then "-rs " + superenhancers else ""} \
             -outfile ~{outputfile}
+
+        tail -n 101 /usr/local/bin/scripts/seaseq_overall.header > ~{outputhtml}
+        cat ~{outputhtml}x >> ~{outputhtml}
+        sed -i "s/SEAseq Sample FASTQ Report/SEAseq ~{fastq_type} Report/" ~{outputhtml}
+
 
     >>> 
     runtime {
@@ -224,6 +229,7 @@ task evalstats {
         File htmlfile = "~{default_location}/~{outputhtml}"
         File textfile = "~{default_location}/~{outputtext}"
         File configfile = "~{default_location}/~{configml}"
+        File xhtml = "~{default_location}/~{outputhtml}x"
     }
 }
 
@@ -352,6 +358,7 @@ task mergehtml {
     input {
         Array[File] htmlfiles
         Array[File] txtfiles
+        String fastq_type = "Sample FASTQs"
         String default_location = "QC_files"
         String outputfile 
 
@@ -362,8 +369,14 @@ task mergehtml {
     command <<<
         mkdir -p ~{default_location} && cd ~{default_location}
 
+        #extract header information
+        tail -n 101 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}
+
         mergeoutput=$(cat ~{sep='; tail -n 1 ' htmlfiles})
-        echo $mergeoutput > ~{outputfile}
+        echo $mergeoutput >> ~{outputfile}
+        sed -i "s/SEAseq Sample FASTQ Report/SEAseq ~{fastq_type} Report/" ~{outputfile}
+
+        echo $mergeoutput > ~{outputfile}x
 
         head -n 1 ~{txtfiles[0]} > ~{outputfile}.txt
         mergeoutput=$(tail -n 1 ~{sep='; echo "xxx"; tail -n 1 ' txtfiles})
@@ -380,6 +393,7 @@ task mergehtml {
     output {
         File mergefile = "~{default_location}/~{outputfile}"
         File mergetxt = "~{default_location}/~{outputfile}.txt"
+        File xhtml = "~{default_location}/~{outputfile}x"
     }
 }
 
@@ -404,5 +418,49 @@ task linkname {
     }
     output {
         File out_fastq = "~{prefix}.fastq.gz"
+    }
+}
+
+
+task concatstats {
+    input {
+        File sample_config
+        File control_config
+        File overall_config
+        String outputfile = sub(basename(overall_config),'-config.ml','')
+        String default_location = "QC_files"
+        String fastq_type = "Sample FASTQs"
+
+        Int memory_gb = 10
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+
+        mkdir -p ~{default_location}
+        cd ~{default_location}
+
+        concat-statistics.py \
+            --sample ~{sample_config} \
+            --control ~{control_config} \
+            --overall ~{overall_config} \
+            --outfile ~{outputfile}-stats.htmlx 
+
+        tail -n 101 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}-stats.html
+        cat ~{outputfile}-stats.htmlx >> ~{outputfile}-stats.html
+        sed -i "s/SEAseq Sample FASTQ Report/SEAseq ~{fastq_type} Report/" ~{outputfile}-stats.html
+
+
+    >>> 
+    runtime {
+        memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'abralab/seaseq:v2.0.0'
+        cpu: ncpu
+    }
+    output {
+        File htmlfile = "~{default_location}/~{outputfile}-stats.html"
+        File textfile = "~{default_location}/~{outputfile}-stats.txt"
+        File xhtml = "~{default_location}/~{outputfile}-stats.htmlx"
     }
 }
