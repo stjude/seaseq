@@ -44,7 +44,7 @@ task basicfastqstats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -90,7 +90,7 @@ task flankbed {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -144,17 +144,21 @@ task summaryreport {
         # Printing Overall Quality Reports
         echo '<h2>Overall Quality Evaluation and Statistics Results</h2><p>' >> ~{outputfile}
         cat ~{overallqc_html} >> ~{outputfile}
-        echo -e '</table></div>\n</body>\n</html>' >> ~{outputfile}
-
+        echo '</table>' >> ~{outputfile}
         echo -e 'Overall Quality Evaluation and Statistics Results' >> ~{outputtxt}
         cat ~{overallqc_txt} >> ~{outputtxt}
+        if [-f "~{sampleqc_html}"]; then
+            echo "<p>* Peaks identified after input/control correction</p>" >> ~{outputfile}
+            echo "* Peaks identified after input/control correction" >> ~{outputfile}
+        fi
+        echo -e '</div>\n</body>\n</html>' >> ~{outputfile}
         echo -e '\n' >> ~{outputtxt}
 
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -217,7 +221,7 @@ task evalstats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -291,7 +295,7 @@ task normalize {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -335,7 +339,7 @@ task peaksanno {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -383,7 +387,7 @@ task mergehtml {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -409,7 +413,7 @@ task linkname {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -437,10 +441,10 @@ task concatstats {
         cd ~{default_location}
 
         concat-statistics.py \
-            -sample ~{sample_config} \
-            -control ~{control_config} \
-            -overall ~{overall_config} \
-            -outfile ~{outputfile}-stats.htmlx 
+            --sample ~{sample_config} \
+            --control ~{control_config} \
+            --overall ~{overall_config} \
+            --outfile ~{outputfile}-stats.htmlx 
 
         tail -n 101 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}-stats.html
         cat ~{outputfile}-stats.htmlx >> ~{outputfile}-stats.html
@@ -451,7 +455,7 @@ task concatstats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.1.0'
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {

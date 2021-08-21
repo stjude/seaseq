@@ -109,9 +109,9 @@ def main():
                 sampletextvalues += "\t" + OQCvalue[stats[key]]
                 controltextvalues += "\t"
         else:
-            samplehtmlvalues += "<td rowspan='2' bgcolor='" + color[SQCscore[stats[key]]] + \
+            samplehtmlvalues += "<td bgcolor='" + color[SQCscore[stats[key]]] + \
                                 "'><center>" + SQCvalue[stats[key]] + "</center></td>"
-            controlhtmlvalues += "<td rowspan='2' bgcolor='" + color[CQCscore[stats[key]]] + \
+            controlhtmlvalues += "<td bgcolor='" + color[CQCscore[stats[key]]] + \
                                 "'><center>" + CQCvalue[stats[key]] + "</center></td>"
             sampletextvalues += "\t" + SQCvalue[stats[key]]
             controltextvalues += "\t" + CQCvalue[stats[key]]
