@@ -5,7 +5,7 @@ set -e -o -x
 main() {
     git clone https://github.com/stjude/seaseq.git seaseq
     cd seaseq
-    git checkout p-cloud
+    git checkout 2.0
     cd dnanexus
     reorg_id=$(dx build -f /seaseq-reorg | jq -r '.id')
     echo "Reorg applet ID: ${reorg_id}"
@@ -15,10 +15,7 @@ main() {
     wget -nv https://github.com/dnanexus/dxWDL/releases/download/v1.50/dxWDL-v1.50.jar
     echo '476621564b3b310b17598ee1f02a1865 dxWDL-v1.50.jar' > dxWDL-v1.50.jar.md5
     md5sum -c dxWDL-v1.50.jar.md5
-
-    ls -ltr /home/dnanexus/
     
-    cat /home/dnanexus/job_input.json
     if grep -F "control_fastq" /home/dnanexus/job_input.json; then
         SEASEQ="seaseq-control.wdl"
     elif grep -F "control_sraid" /home/dnanexus/job_input.json; then
