@@ -97,81 +97,61 @@
       ]
     },
     {
-      "name": "sample_name",
+      "name": "results_name",
       "class": "string",
       "optional": true,
-      "help": "Input results name prefix (recommended if multiple FASTQs are provided)."
+      "help": "Input preferred analysis results name (recommended if multiple FASTQs are provided)."
     }
   ],
   "outputSpec": [
     {
-      "name": "htmlfile",
+      "name": "indv_s_htmlfile",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "zipfile",
+      "name": "indv_s_zipfile",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "bam_htmlfile",
+      "name": "indv_s_bam_htmlfile",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "bam_zipfile",
+      "name": "indv_s_bam_zipfile",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "mergebam_htmlfile",
+      "name": "indv_c_htmlfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_c_zipfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_c_bam_htmlfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_c_bam_zipfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "s_mergebam_htmlfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "mergebam_zipfile",
+      "name": "s_mergebam_zipfile",
       "class": "file",
-      "optional": true
-    },
-    {
-      "name": "uno_htmlfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "uno_zipfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "uno_bam_htmlfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "uno_bam_zipfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_htmlfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "c_zipfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "c_bam_htmlfile",
-      "class": "array:file",
-      "optional": true
-    },
-    {
-      "name": "c_bam_zipfile",
-      "class": "array:file",
       "optional": true
     },
     {
@@ -181,6 +161,26 @@
     },
     {
       "name": "c_mergebam_zipfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_s_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_s_zipfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_s_bam_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_s_bam_zipfile",
       "class": "file",
       "optional": true
     },
@@ -205,12 +205,12 @@
       "optional": true
     },
     {
-      "name": "metrics_out",
+      "name": "s_metrics_out",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "uno_metrics_out",
+      "name": "uno_s_metrics_out",
       "class": "file",
       "optional": true
     },
@@ -225,102 +225,42 @@
       "optional": true
     },
     {
-      "name": "sortedbam",
+      "name": "indv_s_sortedbam",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "indexbam",
+      "name": "indv_s_indexbam",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "indv_bkbam",
+      "name": "indv_s_bkbam",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "indv_bkindexbam",
+      "name": "indv_s_bkindexbam",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "indv_rmbam",
+      "name": "indv_s_rmbam",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "indv_rmindexbam",
+      "name": "indv_s_rmindexbam",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "uno_sortedbam",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "uno_indexstatsbam",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "uno_bkbam",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "uno_bkindexbam",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "uno_rmbam",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "uno_rmindexbam",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "mergebamfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "mergebamindex",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "bkbam",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "bkindexbam",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "rmbam",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "rmindexbam",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_sortedbam",
+      "name": "indv_c_sortedbam",
       "class": "array:file",
       "optional": true
     },
     {
-      "name": "c_indexbam",
+      "name": "indv_c_indexbam",
       "class": "array:file",
       "optional": true
     },
@@ -342,6 +282,36 @@
     {
       "name": "indv_c_rmindexbam",
       "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "uno_s_sortedbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_s_indexstatsbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_s_bkbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_s_bkindexbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_s_rmbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "uno_s_rmindexbam",
+      "class": "file",
       "optional": true
     },
     {
@@ -371,6 +341,36 @@
     },
     {
       "name": "uno_c_rmindexbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_mergebamfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_mergebamindex",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_bkbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_bkindexbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_rmbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_rmindexbam",
       "class": "file",
       "optional": true
     },
@@ -425,6 +425,11 @@
       "optional": true
     },
     {
+      "name": "ctrlwigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "all_peakbedfile",
       "class": "file",
       "optional": true
@@ -441,6 +446,11 @@
     },
     {
       "name": "all_wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "all_ctrlwigfile",
       "class": "file",
       "optional": true
     },
@@ -465,77 +475,47 @@
       "optional": true
     },
     {
-      "name": "c_peakbedfile",
+      "name": "nm_ctrlwigfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "c_peakxlsfile",
+      "name": "only_s_peakbedfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "c_summitsfile",
+      "name": "only_s_peakxlsfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "c_wigfile",
+      "name": "only_s_summitsfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "c_ctrlwigfile",
+      "name": "only_s_wigfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "c_all_peakbedfile",
+      "name": "only_c_peakbedfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "c_all_peakxlsfile",
+      "name": "only_c_peakxlsfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "c_all_summitsfile",
+      "name": "only_c_summitsfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "c_all_wigfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_all_ctrlwigfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_nm_peakbedfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_nm_peakxlsfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_nm_summitsfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_nm_wigfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_nm_ctrlwigfile",
+      "name": "only_c_wigfile",
       "class": "file",
       "optional": true
     },
@@ -550,22 +530,12 @@
       "optional": true
     },
     {
-      "name": "c_scoreisland",
+      "name": "sicer_summary",
       "class": "file",
       "optional": true
     },
     {
-      "name": "c_sicer_wigfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_sicer_summary",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_sicer_fdrisland",
+      "name": "sicer_fdrisland",
       "class": "file",
       "optional": true
     },
@@ -631,71 +601,6 @@
     },
     {
       "name": "g_to_e_super_enhancers",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_pngfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_mapped_union",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_mapped_stitch",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_enhancers",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_super_enhancers",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_gff_file",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_gff_union",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_union_enhancers",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_stitch_enhancers",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_e_to_g_enhancers",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_g_to_e_enhancers",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_e_to_g_super_enhancers",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_g_to_e_super_enhancers",
       "class": "file",
       "optional": true
     },
@@ -785,11 +690,6 @@
       "optional": true
     },
     {
-      "name": "jpg_h_gene",
-      "class": "file",
-      "optional": true
-    },
-    {
       "name": "pdf_promoters",
       "class": "file",
       "optional": true
@@ -801,56 +701,6 @@
     },
     {
       "name": "png_h_promoters",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "jpg_h_promoters",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_s_matrices",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_c_matrices",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_densityplot",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_pdf_gene",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_pdf_h_gene",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_png_h_gene",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_pdf_promoters",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_pdf_h_promoters",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_png_h_promoters",
       "class": "file",
       "optional": true
     },
@@ -1170,82 +1020,37 @@
       "optional": true
     },
     {
-      "name": "uno_qc_statsfile",
+      "name": "statsfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "uno_qc_htmlfile",
+      "name": "htmlfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "uno_qc_textfile",
+      "name": "textfile",
       "class": "file",
       "optional": true
     },
     {
-      "name": "mergeqc_statsfile",
+      "name": "summaryhtml",
       "class": "file",
       "optional": true
     },
     {
-      "name": "mergeqc_htmlfile",
+      "name": "summarytxt",
       "class": "file",
       "optional": true
     },
     {
-      "name": "mergeqc_textfile",
+      "name": "m_summaryhtml",
       "class": "file",
       "optional": true
     },
     {
-      "name": "all_summaryhtml",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "all_summarytxt",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_uno_qc_statsfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_uno_qc_htmlfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_uno_qc_textfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_mergeqc_statsfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_mergeqc_htmlfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_mergeqc_textfile",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_all_summaryhtml",
-      "class": "file",
-      "optional": true
-    },
-    {
-      "name": "c_all_summarytxt",
+      "name": "m_summarytxt",
       "class": "file",
       "optional": true
     }

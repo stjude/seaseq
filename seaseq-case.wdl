@@ -68,7 +68,7 @@ workflow seaseq {
         Array[File]? sample_fastq
 
         # group: analysis_parameter
-        String? sample_name
+        String? results_name
 
     }
 
@@ -114,10 +114,10 @@ workflow seaseq {
             help: 'Upload zipped FASTQ files.',
             patterns: ["*fq", "*.fq.gz", "*.fastq", "*.fastq.gz"]
         }
-        sample_name: {
-            description: 'Sample results custom name',
+        results_name: {
+            description: 'Experiment results custom name',
             group: 'analysis_parameter',
-            help: 'Input preferred analysis results file name (recommended if multiple FASTQs are provided).',
+            help: 'Input preferred analysis results name (recommended if multiple FASTQs are provided).',
             example: 'AllMerge_mapped'
         }
     }
@@ -269,8 +269,8 @@ workflow seaseq {
         call samtools.mergebam {
             input:
                 bamfiles=indv_mapping.sorted_bam,
-                default_location = if defined(sample_name) then sample_name + '/BAM_files' else 'AllMerge_' + length(indv_mapping.sorted_bam) + '_mapped' + '/BAM_files',
-                outputfile = if defined(sample_name) then sample_name + '.sorted.bam' else 'AllMerge_' + length(fastqfiles) + '_mapped.sorted.bam'
+                default_location = if defined(results_name) then results_name + '/BAM_files' else 'AllMerge_' + length(indv_mapping.sorted_bam) + '_mapped' + '/BAM_files',
+                outputfile = if defined(results_name) then results_name + '.sorted.bam' else 'AllMerge_' + length(fastqfiles) + '_mapped.sorted.bam'
         }
 
         call fastqc.fastqc as mergebamfqc {
@@ -624,64 +624,62 @@ workflow seaseq {
 
     output {
         #FASTQC
-        Array[File?]? htmlfile = indv_fastqc.htmlfile
-        Array[File?]? zipfile = indv_fastqc.zipfile
-        Array[File?]? bam_htmlfile = indv_bamfqc.htmlfile
-        Array[File?]? bam_zipfile = indv_bamfqc.zipfile
-        File? mergebam_htmlfile = mergebamfqc.htmlfile
-        File? mergebam_zipfile = mergebamfqc.zipfile
-        File? uno_htmlfile = uno_fastqc.htmlfile
-        File? uno_zipfile = uno_fastqc.zipfile
-        File? uno_bam_htmlfile = uno_bamfqc.htmlfile
-        File? uno_bam_zipfile = uno_bamfqc.zipfile
+        Array[File?]? indv_s_htmlfile = indv_fastqc.htmlfile
+        Array[File?]? indv_s_zipfile = indv_fastqc.zipfile
+        Array[File?]? indv_s_bam_htmlfile = indv_bamfqc.htmlfile
+        Array[File?]? indv_s_bam_zipfile = indv_bamfqc.zipfile
+
+        File? s_mergebam_htmlfile = mergebamfqc.htmlfile
+        File? s_mergebam_zipfile = mergebamfqc.zipfile
+
+        File? uno_s_htmlfile = uno_fastqc.htmlfile
+        File? uno_s_zipfile = uno_fastqc.zipfile
+        File? uno_s_bam_htmlfile = uno_bamfqc.htmlfile
+        File? uno_s_bam_zipfile = uno_bamfqc.zipfile
 
         #BASICMETRICS
-        Array[File?]? metrics_out = indv_bfs.metrics_out
-        File? uno_metrics_out = uno_bfs.metrics_out
+        Array[File?]? s_metrics_out = indv_bfs.metrics_out
+        File? uno_s_metrics_out = uno_bfs.metrics_out
 
         #BAMFILES
-        Array[File?]? sortedbam = indv_mapping.sorted_bam
-        Array[File?]? indexbam = indv_mapping.bam_index
-        Array[File?]? indv_bkbam = indv_mapping.bklist_bam
-        Array[File?]? indv_bkindexbam = indv_mapping.bklist_index
-        Array[File?]? indv_rmbam = indv_mapping.mkdup_bam
-        Array[File?]? indv_rmindexbam = indv_mapping.mkdup_index
+        Array[File?]? indv_s_sortedbam = indv_mapping.sorted_bam
+        Array[File?]? indv_s_indexbam = indv_mapping.bam_index
+        Array[File?]? indv_s_bkbam = indv_mapping.bklist_bam
+        Array[File?]? indv_s_bkindexbam = indv_mapping.bklist_index
+        Array[File?]? indv_s_rmbam = indv_mapping.mkdup_bam
+        Array[File?]? indv_s_rmindexbam = indv_mapping.mkdup_index
 
-        File? uno_sortedbam = mapping.sorted_bam
-        File? uno_indexstatsbam = mapping.bam_index
-        File? uno_bkbam = mapping.bklist_bam
-        File? uno_bkindexbam = mapping.bklist_index
-        File? uno_rmbam = mapping.mkdup_bam
-        File? uno_rmindexbam = mapping.mkdup_index
+        File? uno_s_sortedbam = mapping.sorted_bam
+        File? uno_s_indexstatsbam = mapping.bam_index
+        File? uno_s_bkbam = mapping.bklist_bam
+        File? uno_s_bkindexbam = mapping.bklist_index
+        File? uno_s_rmbam = mapping.mkdup_bam
+        File? uno_s_rmindexbam = mapping.mkdup_index
 
-        File? mergebamfile = mergebam.mergebam
-        File? mergebamindex = mergeindexstats.indexbam
-        File? bkbam = merge_rmblklist.intersect_out
-        File? bkindexbam = merge_bklist.indexbam
-        File? rmbam = merge_markdup.mkdupbam
-        File? rmindexbam = merge_mkdup.indexbam
+        File? s_mergebamfile = mergebam.mergebam
+        File? s_mergebamindex = mergeindexstats.indexbam
+        File? s_bkbam = merge_rmblklist.intersect_out
+        File? s_bkindexbam = merge_bklist.indexbam
+        File? s_rmbam = merge_markdup.mkdupbam
+        File? s_rmindexbam = merge_mkdup.indexbam
 
         #MACS
         File? peakbedfile = macs.peakbedfile
         File? peakxlsfile = macs.peakxlsfile
         File? summitsfile = macs.summitsfile
         File? wigfile = macs.wigfile
-        File? ctrlwigfile = macs.ctrlwigfile
         File? all_peakbedfile = all.peakbedfile
         File? all_peakxlsfile = all.peakxlsfile
         File? all_summitsfile = all.summitsfile
         File? all_wigfile = all.wigfile
-        File? all_ctrlwigfile = all.ctrlwigfile
         File? nm_peakbedfile = nomodel.peakbedfile
         File? nm_peakxlsfile = nomodel.peakxlsfile
         File? nm_summitsfile = nomodel.summitsfile
         File? nm_wigfile = nomodel.wigfile
-        File? nm_ctrlwigfile = nomodel.ctrlwigfile
 
         #SICER
         File? scoreisland = sicer.scoreisland
         File? sicer_wigfile = sicer.wigfile
-        File? sicer_summary = sicer.summary
 
         #ROSE
         File? pngfile = rose.pngfile
@@ -715,16 +713,13 @@ workflow seaseq {
 
         #BAM2GFF
         File? s_matrices = bamtogff.s_matrices
-        File? c_matrices = bamtogff.c_matrices
         File? densityplot = bamtogff.densityplot
         File? pdf_gene = bamtogff.pdf_gene
         File? pdf_h_gene = bamtogff.pdf_h_gene
         File? png_h_gene = bamtogff.png_h_gene
-        File? jpg_h_gene = bamtogff.jpg_h_gene
         File? pdf_promoters = bamtogff.pdf_promoters
         File? pdf_h_promoters = bamtogff.pdf_h_promoters
         File? png_h_promoters = bamtogff.png_h_promoters
-        File? jpg_h_promoters = bamtogff.jpg_h_promoters
 
         #PEAKS-ANNOTATION
         File? peak_promoters = peaksanno.peak_promoters
@@ -780,15 +775,17 @@ workflow seaseq {
         Array[File?]? s_qc_textfile = indv_summarystats.textfile
         File? s_qc_mergehtml = mergehtml.mergefile
 
-        File? uno_qc_statsfile = uno_summarystats.statsfile
-        File? uno_qc_htmlfile = uno_summarystats.htmlfile
-        File? uno_qc_textfile = uno_summarystats.textfile
-        File? mergeqc_statsfile = merge_summarystats.statsfile
-        File? mergeqc_htmlfile = merge_summarystats.htmlfile
-        File? mergeqc_textfile = merge_summarystats.textfile
-        File? uno_summaryhtml = uno_overallsummary.summaryhtml
-        File? uno_summarytxt = uno_overallsummary.summarytxt
-        File? merge_summaryhtml = merge_overallsummary.summaryhtml
-        File? merge_summarytxt = merge_overallsummary.summarytxt
+        File? s_uno_statsfile = uno_summarystats.statsfile
+        File? s_uno_htmlfile = uno_summarystats.htmlfile
+        File? s_uno_textfile = uno_summarystats.textfile
+
+        File? statsfile = merge_summarystats.statsfile
+        File? htmlfile = merge_summarystats.htmlfile
+        File? textfile = merge_summarystats.textfile
+
+        File? summaryhtml = uno_overallsummary.summaryhtml
+        File? summarytxt = uno_overallsummary.summarytxt
+        File? m_summaryhtml = merge_overallsummary.summaryhtml
+        File? m_summarytxt = merge_overallsummary.summarytxt
     }
 }

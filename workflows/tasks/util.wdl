@@ -440,16 +440,107 @@ task concatstats {
         mkdir -p ~{default_location}
         cd ~{default_location}
 
-        concat-statistics.py \
-            --sample ~{sample_config} \
-            --control ~{control_config} \
-            --overall ~{overall_config} \
-            --outfile ~{outputfile}-stats.htmlx 
+        python <<CODE
+        
+        sample_content = open("~{sample_config}", 'r')
+        control_content = open("~{control_config}", 'r')
+        overall_content = open("~{overall_config}", 'r')
+        htmlfile = "~{outputfile}-stats.htmlx"
+        statsfile = htmlfile.replace("stats.htmlx", "stats.csv")
+        textfile = htmlfile.replace("stats.htmlx", "stats.txt")
+
+        writestatsfile = open(statsfile, 'w')
+
+        #all statistics
+        stats = {
+            1 : 'Overall_Quality', 2 : 'Raw_Reads', 3 : 'Base_Quality', 
+            4 : 'Sequence_Diversity', 5 : 'Aligned_Percent', 6 : 'Estimated_Fragment_Width', 
+            7 : 'Estimated_Tag_Length', 8 : 'NRF', 9 : 'PBC', 10 : 'NSC', 11 : 'RSC', 
+            12 : 'FRiP', 13 : 'Total_Peaks', 14 : 'Normalized_Peaks*', 
+            15 : 'Linear_Stitched_Peaks', 16 : 'SE-like_Enriched_Regions'
+        }
+
+        #color scheme
+        color = {
+            -2 : "#FF0000", -1 : "#FF8C00", 0 : "#FFFF00", 1 : "#ADFF2F", 2 : "#008000"
+        }
+
+        #merged statistics
+        mergestats = [1, 14, 15, 16]
+
+        #initialize dictionaries
+        SQCvalue = {}
+        CQCvalue = {}
+        OQCvalue = {}
+        SQCscore = {}
+        CQCscore = {}
+        OQCscore = {}
+        
+        for line in sample_content:
+            eachdata = line.rstrip('\n').split('\t')
+            SQCvalue[eachdata[0]] = eachdata[1]
+            SQCscore[eachdata[0]] = int(eachdata[2])
+        for line in control_content:
+            eachdata = line.rstrip('\n').split('\t')
+            CQCvalue[eachdata[0]] = eachdata[1]
+            CQCscore[eachdata[0]] = int(eachdata[2])
+        for line in overall_content:
+            eachdata = line.rstrip('\n').split('\t')
+            OQCvalue[eachdata[0]] = eachdata[1]
+            OQCscore[eachdata[0]] = int(eachdata[2])
+
+        htmlheader = "<table class='results'><tr><th>DATA"
+        textheader = "DATA"
+        samplehtmlvalues = "<tr><td><center>SAMPLE</center></td>"
+        controlhtmlvalues = "<tr><td><center>CONTROL</center></td>"
+        sampletextvalues = "SAMPLE"
+        controltextvalues = "CONTROL"
+
+        for key in sorted(stats.keys()):
+            #change space to underscore for txt fileprint(key)
+            convertheader = stats[key].replace('_', ' ')
+            textheader += "\t" + stats[key]
+            htmlheader += "</th><th>" + convertheader
+            if key in mergestats:
+                if key == 14:
+                    samplehtmlvalues += "<td rowspan='2' bgcolor='" + \
+                                        color[OQCscore['Total_Peaks']] + "'><center>" + \
+                                        OQCvalue['Total_Peaks'] + "</center></td>"
+                    sampletextvalues += "\t" + OQCvalue['Total_Peaks']
+                    controltextvalues += "\t"
+                    writestatsfile.write(convertheader + "," + OQCvalue['Total_Peaks'] + "\n")
+                else:
+                    samplehtmlvalues += "<td rowspan='2' bgcolor='" + \
+                                        color[OQCscore[stats[key]]] + "'><center>" + \
+                                        OQCvalue[stats[key]] + "</center></td>"
+                    sampletextvalues += "\t" + OQCvalue[stats[key]]
+                    controltextvalues += "\t"
+                    writestatsfile.write(convertheader + "," + OQCvalue[stats[key]] + "\n")
+            else:
+                samplehtmlvalues += "<td bgcolor='" + color[SQCscore[stats[key]]] + \
+                                    "'><center>" + SQCvalue[stats[key]] + "</center></td>"
+                controlhtmlvalues += "<td bgcolor='" + color[CQCscore[stats[key]]] + \
+                                    "'><center>" + CQCvalue[stats[key]] + "</center></td>"
+                sampletextvalues += "\t" + SQCvalue[stats[key]]
+                controltextvalues += "\t" + CQCvalue[stats[key]]
+                writestatsfile.write("Sample : " + convertheader + "," + SQCvalue[stats[key]] + "\n")
+                writestatsfile.write("Control : " + convertheader + "," + SQCvalue[stats[key]] + "\n")
+
+        htmlheader += "</th></tr>"
+        samplehtmlvalues += "</tr>"
+        controlhtmlvalues += "</tr>"
+
+        writehtmlfile = open(htmlfile, 'w')
+        writetextfile = open(textfile, 'w')
+
+        writehtmlfile.write(htmlheader + "\n" + samplehtmlvalues + "\n" + controlhtmlvalues)
+        writetextfile.write(textheader + "\n" + sampletextvalues + "\n" + controltextvalues)
+
+        CODE
 
         tail -n 101 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}-stats.html
         cat ~{outputfile}-stats.htmlx >> ~{outputfile}-stats.html
-        sed -i "s/SEAseq Sample FASTQ Report/SEAseq ~{fastq_type} Report/" ~{outputfile}-stats.html
-
+        sed -i "s/SEAseq Sample FASTQ Report/SEAseq Comprehensive Report/" ~{outputfile}-stats.html
 
     >>> 
     runtime {
@@ -459,6 +550,7 @@ task concatstats {
         cpu: ncpu
     }
     output {
+        File statsfile = "~{default_location}/~{outputfile}-stats.csv"
         File htmlfile = "~{default_location}/~{outputfile}-stats.html"
         File textfile = "~{default_location}/~{outputfile}-stats.txt"
         File xhtml = "~{default_location}/~{outputfile}-stats.htmlx"
