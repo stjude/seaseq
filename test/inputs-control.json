@@ -15,5 +15,5 @@
         "./hg19/motifs/JASPAR2018_CORE_vertebrates_redundant.meme",
         "./hg19/motifs/CIS-BP.Homo_sapiens.meme"
     ],
-    "seaseq.experiment_name" : "final-output_data"
+    "seaseq.results_name" : "final-output_data"
 }
