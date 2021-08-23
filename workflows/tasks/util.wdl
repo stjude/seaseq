@@ -445,7 +445,7 @@ task concatstats {
         sample_content = open("~{sample_config}", 'r')
         control_content = open("~{control_config}", 'r')
         overall_content = open("~{overall_config}", 'r')
-        htmlfile = ~{outputfile}-stats.htmlx
+        htmlfile = "~{outputfile}-stats.htmlx"
         statsfile = htmlfile.replace("stats.htmlx", "stats.csv")
         textfile = htmlfile.replace("stats.htmlx", "stats.txt")
 
