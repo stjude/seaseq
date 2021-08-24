@@ -81,7 +81,11 @@ Outputs are grouped into subdirectories:
 SEAseq pipeline requires the [Cromwell](https://github.com/broadinstitute/cromwell/releases) runner, docker/singularity,
 and about 30GB of supplemental data.
 ```bash
-java -jar cromwell.jar run seaseq.wdl -i inputs.json -o options.json
+# For sample FASTQs only
+java -jar cromwell.jar run seaseq-case.wdl -i inputs.json -o options.json
+
+# For sample FASTQs with Input Control or IgG
+java -jar cromwell.jar run seaseq-control.wdl -i inputs.json -o options.json
 ```
 View [`/test`](https://github.com/stjude/seaseq/tree/master/test) folder for example usage and further instructions.
 
@@ -162,10 +166,10 @@ The density matrix files are then used to generate coverage graphs and heatmap p
 a custom R script that will also be provided in the results directory
 `/BAM_Density/densityplots.R` for further customization if needed.
 
-Below is an example of the read coverage profiles in promoters and gene body for [SRR10259398].
+Below is an example of the average read coverage across all promoters and gene body regions for [SRR10259398].
 
 <p align="center">
-<img src="images/SRR10259398-promoters.png"><img src="images/SRR10259398-entiregene.png">
+<img src="images/SRR10259398-density.png">
 </p>
 
 ### Peaks Annotation
@@ -180,7 +184,7 @@ of proximal genes, and the peaks occupancy percentages are graphically presented
 shown for [SRR10259398].
 
 <p align="center">
-<img width="60%" height="auto" src="images/SRR10259398-peaksoccupancy.png">
+<img width="50%" height="auto" src="images/SRR10259398-peaksoccupancy.png">
 </p>
 
 ### QC Metrics
