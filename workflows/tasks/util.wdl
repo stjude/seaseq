@@ -147,9 +147,8 @@ task summaryreport {
         echo '</table>' >> ~{outputfile}
         echo -e 'Overall Quality Evaluation and Statistics Results' >> ~{outputtxt}
         cat ~{overallqc_txt} >> ~{outputtxt}
-        if [-f "~{sampleqc_html}"]; then
-            echo "<p>* Peaks identified after input/control correction</p>" >> ~{outputfile}
-            echo "* Peaks identified after input/control correction" >> ~{outputfile}
+        if [ -f "~{sampleqc_html}" ]; then
+            echo "<p><b>*</b> Peaks identified after Input/Control correction.</p>" >> ~{outputfile}
         fi
         echo -e '</div>\n</body>\n</html>' >> ~{outputfile}
         echo -e '\n' >> ~{outputtxt}
@@ -534,12 +533,15 @@ task concatstats {
         writetextfile = open(textfile, 'w')
 
         writehtmlfile.write(htmlheader + "\n" + samplehtmlvalues + "\n" + controlhtmlvalues)
-        writetextfile.write(textheader + "\n" + sampletextvalues + "\n" + controltextvalues)
+        writetextfile.write(textheader + "\n" + sampletextvalues + "\n" + controltextvalues + "\n")
+        writestatsfile.write("\n" + '* Peaks identified after Input/Control correction')
+        writetextfile.write("\n" + '* Peaks identified after Input/Control correction')
 
         CODE
 
         tail -n 101 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}-stats.html
         cat ~{outputfile}-stats.htmlx >> ~{outputfile}-stats.html
+        echo "</table><p><b>*</b> Peaks identified after Input/Control correction.</p></div> >> ~{outputfile}-stats.html
         sed -i "s/SEAseq Sample FASTQ Report/SEAseq Comprehensive Report/" ~{outputfile}-stats.html
 
     >>> 
