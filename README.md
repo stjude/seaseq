@@ -25,14 +25,14 @@ SEAseq analyses include alignment, peak calling, motif analysis, read coverage p
 
 ### Input configuration
 
-SEASEQ supports FASTQ files and SRA identifiers (SRRs) as Samples Input. A combination of both is also supported.
+SEAseq supports FASTQ files and SRA identifiers (SRRs) as Samples Input. A combination of both is also supported.
 
-SEASEQ requires the Samples Input, Genome Reference, and the Gene Annotation files be provided.
+SEAseq requires the Samples Input, Genome Reference, and the Gene Annotation files be provided.
 
 The Input/Control FASTQ files or SRA ids (SRR) for coverage correction are optional.
 Bowtie genomic indexes and region-based blacklists are optional.
 
-SEASEQ supports Genome Reference and Gene Annotation (or Gene position database) files from
+SEAsrq supports Genome Reference and Gene Annotation (or Gene position database) files from
 most genome repositories, such as [UCSC], [ENSEMBL], [RefSeq] or [GENCODE].
 
 [Motif databases]: https://meme-suite.org/meme/db/motifs
