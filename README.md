@@ -83,7 +83,7 @@ and about 30GB of supplemental data.
 ```bash
 java -jar cromwell.jar run seaseq.wdl -i inputs.json -o options.json
 ```
-View `/test` folder for example usage and further instructions.
+View [`/test`](https://github.com/stjude/seaseq/tree/master/test) folder for example usage and further instructions.
 
 
 ## SEAseq on St. Jude cloud
@@ -196,6 +196,7 @@ thresholds where possible.
 The metrics are color flagged for easy visualization of overall performance in HTML format as shown for [SRR10259398].
 
 <img src="images/SRR10259398-QC.png">
+
 
 SEAseq metrics calculated to infer quality are (in alphabetical order):
 | Quality Metric	                                 | Definition	                                                                                                                                                            |
