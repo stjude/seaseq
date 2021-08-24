@@ -208,13 +208,13 @@ SEAseq metrics calculated to infer quality are (in alphabetical order):
 | FRiP	                                           | The fraction of reads within peaks regions.                                                                                                                            |
 | Linear Stitched Peaks (Enhancers)                | Total number of clustered enriched regions.                                                                                                                            |
 | Non-Redundant Fraction (NRF)                     | Fraction of uniquely mapped reads.                                                                                                                                     |
-| Normalized Peaks                                 | Peaks identified with Input/Control correction (applicable when Control is provided).                                                                                  |
+| *Normalized Peaks*                               | Peaks identified with Input/Control correction *(applicable when Control is provided)*.                                                                                |
 | Normalized Strand-correlation Coefficient (NSC)	 | To determine signal-to-noise ratio using strand cross-correlation. The ratio of the maximum cross-correlation value divided by the background cross-correction.        |
 | Sequence Diversity	                             | Sequence overrepresentation.  If reads/sequences are overrepresented in the library.                                                                                   |
 | PCR Bottleneck Coefficient (PBC)	               | It is a measure of library complexity determined by the fraction of genomic locations with exactly one unique read versus those covered by at least one unique reads.	|
 | Peaks                                            | Total number of enriched regions.                                                                                                                                      |
 | Raw Reads	                                       | Total number of sequencing reads.                                                                                                                                      |
-| Read Length                                      | Average FASTQ read length (applicable when multiple FASTQs are provided).                                                                                              |
+| *Read Length*                                    | Average FASTQ read length *(applicable when multiple FASTQs are provided)*.                                                                                            |
 | Relative Strand-correlation Coefficient (RSC)	   | A strand cross-correlation ratio between the fragment-length cross-correlation and the read-length peak.                                                               |
 | SE-like enriched regions (Super Enhancers)	     | Total number of SE-like clustered enriched regions.                                                                                                                    |
 | Overall Quality	                                 | Cross-metric average score.                                                                                                                                            |
@@ -254,4 +254,3 @@ None yet!
 [AME]: https://meme-suite.org/meme/tools/ame
 [MEME-ChIP]: https://meme-suite.org/meme/tools/meme-chip
 [seaseq]: https://github.com/stjude/seaseq
-≈
