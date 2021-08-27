@@ -541,7 +541,7 @@ task concatstats {
 
         tail -n 101 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}-stats.html
         cat ~{outputfile}-stats.htmlx >> ~{outputfile}-stats.html
-        echo "</table><p><b>*</b> Peaks identified after Input/Control correction.</p></div> >> ~{outputfile}-stats.html
+        echo "</table><p><b>*</b> Peaks identified after Input/Control correction.</p></div>" >> ~{outputfile}-stats.html
         sed -i "s/SEAseq Sample FASTQ Report/SEAseq Comprehensive Report/" ~{outputfile}-stats.html
 
     >>> 
