@@ -118,7 +118,7 @@ task summaryreport {
     command <<<
 
         # Printing header
-        head -n 100 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}
+        head -n 121 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}
         if [ -f "~{sampleqc_html}" ]; then
             # Printing Sample Quality Reports
             echo '<h2>Sample FASTQs Quality Results</h2>' >> ~{outputfile}
@@ -150,7 +150,8 @@ task summaryreport {
         if [ -f "~{sampleqc_html}" ]; then
             echo "<p><b>*</b> Peaks identified after Input/Control correction.</p>" >> ~{outputfile}
         fi
-        echo -e '</div>\n</body>\n</html>' >> ~{outputfile}
+        echo '</div>' >> ~{outputfile}
+        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}
         echo -e '\n' >> ~{outputtxt}
 
     >>>
@@ -211,9 +212,11 @@ task evalstats {
             ~{if defined(superenhancers) then "-rs " + superenhancers else ""} \
             -outfile ~{outputfile}
 
-        tail -n 101 /usr/local/bin/scripts/seaseq_overall.header > ~{outputhtml}
+        head -n 245 /usr/local/bin/scripts/seaseq_overall.header  | tail -n 123 > ~{outputhtml}
         cat ~{outputhtml}x >> ~{outputhtml}
         sed -i "s/SEAseq Sample FASTQ Report/SEAseq ~{fastq_type} Report/" ~{outputhtml}
+        echo '</table></div>' >> ~{outputhtml}
+        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputhtml}
 
 
     >>> 
@@ -369,11 +372,13 @@ task mergehtml {
         mkdir -p ~{default_location} && cd ~{default_location}
 
         #extract header information
-        tail -n 101 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}
+        head -n 245 /usr/local/bin/scripts/seaseq_overall.header  | tail -n 123 > ~{outputfile}
 
         mergeoutput=$(cat ~{sep='; tail -n 1 ' htmlfiles})
         echo $mergeoutput >> ~{outputfile}
         sed -i "s/SEAseq Sample FASTQ Report/SEAseq ~{fastq_type} Report/" ~{outputfile}
+        echo '</table></div>' >> ~{outputfile}
+        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}
 
         echo $mergeoutput > ~{outputfile}x
 
@@ -539,9 +544,10 @@ task concatstats {
 
         CODE
 
-        tail -n 101 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}-stats.html
+        head -n 245 /usr/local/bin/scripts/seaseq_overall.header | tail -n 123 > ~{outputfile}-stats.html
         cat ~{outputfile}-stats.htmlx >> ~{outputfile}-stats.html
         echo "</table><p><b>*</b> Peaks identified after Input/Control correction.</p></div>" >> ~{outputfile}-stats.html
+        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}-stats.html
         sed -i "s/SEAseq Sample FASTQ Report/SEAseq Comprehensive Report/" ~{outputfile}-stats.html
 
     >>> 
