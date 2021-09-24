@@ -17,14 +17,16 @@ task sicer {
 
         String outputname = basename(bedfile,'.bed')
 
-        Int memory_gb = 15
+        Int memory_gb = 5
         Int max_retries = 1
-        Int ncpu = 1
+        Int ncpu = 20
     }
+
     command <<<
         mkdir -p ~{default_location}
 
         sicer \
+            -cpu ~{ncpu} \
             -t ~{bedfile} \
             ~{if defined(control_bed) then "-c" + control_bed else ""} \
             -sc ~{chromsizes} \
