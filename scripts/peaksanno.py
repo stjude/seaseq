@@ -473,9 +473,14 @@ def main():
     gtf_to_genes(options.chrom_sizes, options.gtf)
 
     # Turn 4 column bed to 5 (for SICER peaks: include unique id)
-    command = "awk -F'\\t' '{print NF; exit}' " + options.macs_peaks
-    numberofcolumns = int(subprocess.check_output(command,shell=True).strip())
-    
+    command = "wc -l " + options.macs_peaks + " | awk -F' '  '{print $1}'"
+    checkcolumns = int(subprocess.check_output(command,shell=True).strip())
+    if checkcolumns > 0:
+        command = "awk -F'\\t' '{print NF; exit}' " + options.macs_peaks
+        numberofcolumns = int(subprocess.check_output(command,shell=True).strip())
+    else:
+        sys.exit("ERROR :\tNo peaks were identified\n")
+
     command = "head -n 1 " + options.macs_peaks + ' | cut -f5 '
     fifthcol_value = (str(subprocess.check_output(command,shell=True).strip()).split("'"))[1] #FDRisland from SICER produce a fifth empty column
     
