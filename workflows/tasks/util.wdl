@@ -339,6 +339,7 @@ task peaksanno {
 
     >>>
     runtime {
+        continueOnReturnCode: [0, 1]
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
         docker: 'abralab/seaseq:v2.0.0'
