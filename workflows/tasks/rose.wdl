@@ -154,11 +154,11 @@ task rose {
         cpu: ncpu
     }
     output {
-        File pngfile = "~{default_location}/unionpeaks_Plot_points.png"
+        File? pngfile = "~{default_location}/unionpeaks_Plot_points.png"
         File? mapped_union = "~{default_location}/mappedGFF/unionpeaks_~{outputname}_MAPPED.gff"
         File? mapped_stitch = "~{default_location}/mappedGFF/unionpeaks_12.5KB_STITCHED_TSS_DISTAL_~{outputname}_MAPPED.gff"
-        File enhancers = "~{default_location}/unionpeaks_AllStitched.table.txt"
-        File super_enhancers = "~{default_location}/unionpeaks_SuperStitched.table.txt"
+        File? enhancers = "~{default_location}/unionpeaks_AllStitched.table.txt"
+        File? super_enhancers = "~{default_location}/unionpeaks_SuperStitched.table.txt"
         File? gff_file = "~{default_location}/gff/unionpeaks.gff"
         File? gff_union = "~{default_location}/gff/unionpeaks_12.5KB_STITCHED_TSS_DISTAL.gff"
         File? union_enhancers = "~{default_location}/unionpeaks_Stitched_withSuper.bed"
