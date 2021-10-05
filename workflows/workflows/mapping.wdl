@@ -22,7 +22,7 @@ workflow mapping {
 
     call samtools.viewsort {
         input :
-            samfile=select_first(bowtie.samfile),
+            samfile=bowtie.samfile,
             default_location=default_location
     }
 
