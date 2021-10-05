@@ -112,7 +112,7 @@ workflow seaseq {
             description: 'One or more sample FASTQs',
             group: 'input_genomic_data',
             help: 'Upload zipped FASTQ files.',
-            patterns: ["*fq", "*.fq.gz", "*.fastq", "*.fastq.gz"]
+            patterns: ["*.fq.gz", "*.fastq.gz"]
         }
         results_name: {
             description: 'Experiment results custom name',

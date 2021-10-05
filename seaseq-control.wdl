@@ -114,7 +114,7 @@ workflow seaseq {
             description: 'One or more sample FASTQs',
             group: 'input_genomic_data',
             help: 'Upload zipped FASTQ files.',
-            patterns: ["*fq", "*.fq.gz", "*.fastq", "*.fastq.gz"]
+            patterns: ["*.fq.gz", "*.fastq.gz"]
         }
         control_sraid: {
             description: 'One or more input/control SRA (Sequence Read Archive) run identifiers',
