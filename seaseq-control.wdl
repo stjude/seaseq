@@ -649,6 +649,11 @@ workflow seaseq {
             default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-auto' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '+control-p9_kd-auto'
     }
 
+    call util.addreadme {
+        input :
+            default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS'
+    }
+    
     call macs.macs as all {
         input :
             bamfile=sample_bam,
@@ -1138,6 +1143,7 @@ workflow seaseq {
         File? nm_summitsfile = nomodel.summitsfile
         File? nm_wigfile = nomodel.wigfile
         File? nm_ctrlwigfile = nomodel.ctrlwigfile
+        File? readme_peaks = addreadme.readme_peaks
 
         File? only_c_peakbedfile = only_c_macs.peakbedfile
         File? only_c_peakxlsfile = only_c_macs.peakxlsfile

@@ -40,7 +40,7 @@ most genome repositories, such as [UCSC], [ENSEMBL], [RefSeq] or [GENCODE].
 ## Outputs
 
 SEAseq provides multiple outputs from the different analysis offerings.
-Outputs are grouped into subdirectories:
+Outputs are grouped into subcategories:
 
 | Name                  | Type    | Description                                                                            |
 |-----------------------|---------|----------------------------------------------------------------------------------------|
@@ -51,6 +51,8 @@ Outputs are grouped into subdirectories:
 |  [PEAKS_Annotation]   | Folder  | Genic annotation of peaks tables and plot.                                             |
 |  [PEAKS_Display]      | Folder  | Normalized signal data tracks in wiggle, tdf and bigwig formats.                       |
 |  [QC]                 | Folder  | Quality statistics and metrics of FASTQs and peaks as tables and color-coded HTML.     |
+
+More descriptions on SEAseq Inputs and Outputs can be found [here](https://github.com/stjude/seaseq/blob/master/docs/SEAseq_IO.pdf).
 
 [BAM_Density]: #reads-coverage-profiling
 [BAM_files]: #reads-alignment-and-filtering

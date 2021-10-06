@@ -565,3 +565,39 @@ task concatstats {
         File xhtml = "~{default_location}/~{outputfile}-stats.htmlx"
     }
 }
+
+
+task addreadme {
+    input {
+	    String default_location = "PEAKS_files"
+        String output_file = "readme_peaks.txt"
+
+        Int memory_gb = 2
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+        mkdir -p ~{default_location}
+        cd ~{default_location}
+        echo 'SEAseq performs three peak calling algorithms, and they will be saved into the following descriptive folders:' > ~{output_file}
+        echo -e '1.  NARROW_peaks   : For shorter or narrow regions of enrichment using MACS.' >> ~{output_file}
+        echo '                     SEAseq performs three different peak calls:' >> ~{output_file}
+        echo '                     a.  <samplename>-p9_kd-auto :  Peaks identified excluding duplicate tags.' >> ~{output_file}
+        echo '                     b.  <samplename>-p9_kd-all  :  Peaks identified using duplicates to estimate signal.' >> ~{output_file}
+        echo '                                                        This will be used to identify stitched peaks.' >> ~{output_file}
+        echo '                     c.  <samplename>-nm         :  Peaks identified using a defined shift size (shiftsize=200).' >> ~{output_file}
+        echo '                                                        This is used to generate an unbiased signal coverage plot.' >> ~{output_file}
+        echo -e '\n2.  BROAD_peaks    : For broad peaks or broad domains using SICER.' >> ~{output_file}
+        echo -e '\n3.  STITCHED_peaks : For clusters of stitched peaks identified using the ROSE program.\n' >> ~{output_file}
+
+    >>>
+    runtime {
+	memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'abralab/seaseq:v2.0.0'
+        cpu: ncpu
+    }
+    output {
+	File readme_peaks = "~{default_location}/~{output_file}"
+    }
+}
