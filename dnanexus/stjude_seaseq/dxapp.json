@@ -1,16 +1,17 @@
 {
   "name": "seaseq",
-  "title": "Single-End Antibody sequencing workflow",
-  "summary": "Run SEAseq workflow",
-  "dxapi": "1.0.0",
+  "title": "SEAseq",
+  "summary": "Single-End Antibody sequencing workflow",
+  "dxapi": "1.0.1",
   "version": "2.0.0",
   "openSource" : true,
   "inputSpec": [
     {
       "name": "reference",
+      "label": "Genome Reference",
       "class": "file",
       "optional": false,
-      "help": "Reference FASTA file.",
+      "help": "Reference FASTA file. Required if Host Genome is Custom",
       "patterns": [
         "*.fa",
         "*.fa.gz",
@@ -19,20 +20,11 @@
       ]
     },
     {
-      "name": "blacklist",
-      "class": "file",
-      "optional": true,
-      "help": "If defined, blacklist regions listed are excluded after reference alignment.",
-      "patterns": [
-        "*.bed",
-        "*.bed.gz"
-      ]
-    },
-    {
       "name": "gtf",
+      "label": "Gene Annotation",
       "class": "file",
       "optional": false,
-      "help": "Input gene annotation file from RefSeq or GENCODE (.gtf).",
+      "help": "Input gene annotation file from RefSeq or GENCODE (.gtf). Required if Host Genome is Custom",
       "patterns": [
         "*.gff",
         "*.gtf",
@@ -43,7 +35,41 @@
       ]
     },
     {
+      "name": "sample_fastq",
+      "label": "Sample FASTQs",
+      "class": "array:file",
+      "optional": true,
+      "help": "Upload one or more sample FASTQ files.",
+      "patterns": [
+        "*.fq.gz",
+        "*.fastq.gz",
+      ]
+    },
+    {
+      "name": "control_fastq",
+      "label": "Control FASTQs",
+      "class": "array:file",
+      "optional": true,
+      "help": "Upload one or more input/control FASTQ files.",
+      "patterns": [
+        "*.fq.gz",
+        "*.fastq.gz",
+      ]
+    },
+    {
+      "name": "blacklist",
+      "label": "Blacklist Regions",
+      "class": "file",
+      "optional": true,
+      "help": "If defined, blacklist regions listed are excluded after reference alignment.",
+      "patterns": [
+        "*.bed",
+        "*.bed.gz"
+      ]
+    },
+    {
       "name": "bowtie_index",
+      "label": "Bowtie Indexes",
       "class": "array:file",
       "optional": true,
       "help": "If not defined, bowtie v1 index files are generated, will take a longer compute time.",
@@ -53,6 +79,7 @@
     },
     {
       "name": "motif_databases",
+      "label": "Motif Database Matrix",
       "class": "array:file",
       "optional": true,
       "help": "Input one or more motif databases available from the MEME suite (https://meme-suite.org/meme/db/motifs).",
@@ -62,42 +89,21 @@
     },
     {
       "name": "sample_sraid",
+      "label": "Sample SRRs",
       "class": "array:string",
       "optional": true,
       "help": "Input publicly available sample FASTQs (SRRs). Multiple SRRs are separated by commas (,). e.g. SRR12345678"
     },
     {
       "name": "control_sraid",
+      "label": "Control SRRs",
       "class": "array:string",
       "optional": true,
       "help": "Input publicly available input/control FASTQs (SRRs). Multiple SRRs are separated by commas (,). e.g. SRR12345678"
     },
     {
-      "name": "sample_fastq",
-      "class": "array:file",
-      "optional": true,
-      "help": "Upload one or more sample FASTQ files.",
-      "patterns": [
-        "*.fq.gz",
-        "*.fastq.gz",
-        "*.fq",
-        "*.fastq"
-      ]
-    },
-    {
-      "name": "control_fastq",
-      "class": "array:file",
-      "optional": true,
-      "help": "Upload one or more input/control FASTQ files.",
-      "patterns": [
-        "*.fq.gz",
-        "*.fastq.gz",
-        "*.fq",
-        "*.fastq"
-      ]
-    },
-    {
       "name": "results_name",
+      "label": "Results File Name",
       "class": "string",
       "optional": true,
       "help": "Input preferred analysis results name (recommended if multiple FASTQs are provided)."
@@ -476,6 +482,11 @@
     },
     {
       "name": "nm_ctrlwigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "readme_peaks",
       "class": "file",
       "optional": true
     },
