@@ -32,9 +32,8 @@
       "name": "genome",
       "label": "Host Genome",
       "class": "string",
-      "choices": ["hg19", "hg38", "mm10", "TAIR10", "Custom Genome, specify as input"],
+      "choices": ["GRCh37/hg19", "GRCh38/hg38", "GRCm38/mm10", "MGSCv37/mm9", "Custom Genome, specify as input"],
       "optional": false,
-      "default": "hg19",
       "help": "Select from built-in list of genomes. Otherwise, select Custom Genome and provide 'Genome Reference' and 'Gene Annotation'."
     },
     {

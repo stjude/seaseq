@@ -28,7 +28,7 @@ main() {
         exit 1
       fi
       #adding genome config to the input.json
-      jq -s add /$genome-config.json /home/dnanexus/job_input.json > /home/dnanexus/updated_input.json
+      jq -s add /genomes/${genome##*/}-config.json /home/dnanexus/job_input.json > /home/dnanexus/updated_input.json
 
     else
       if [ "$reference" == "" ]

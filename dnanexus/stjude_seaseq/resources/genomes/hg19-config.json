@@ -1,0 +1,31 @@
+{
+    "reference" : {
+        "$dnanexus_link": "file-G5QJKvQ9YV46xx0j802Z42Qg"
+    },
+    "gtf" : {
+        "$dnanexus_link": "file-G5QJKqQ9YV41fXfy81fZfb2B"
+     },
+    "blacklist" : {
+        "$dnanexus_link": "file-G5YY3Vj9YV4GvYb0G7Vz1qyJ"
+    },
+    "bowtie_index" : [
+        {
+            "$dnanexus_link": "file-G5QJKVQ9YV41fXfy81fZfb15"
+        },
+        {
+            "$dnanexus_link": "file-G5QJKFj9YV4FGfygK3kz6Fzg"
+        },
+        {
+            "$dnanexus_link": "file-G5QJKFj9YV4F3z654pYX1FB1"
+        },
+        {
+            "$dnanexus_link": "file-G5QJKGj9YV4BP5PJBqPPvgJX"
+        },
+        {
+            "$dnanexus_link": "file-G5QJKkj9YV4J8XP4J48yyyX2"
+        },
+        {
+            "$dnanexus_link": "file-G5QJKBj9YV40gp5828Qgz9xQ"
+        }
+    ]
+}
