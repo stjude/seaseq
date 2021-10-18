@@ -65,9 +65,9 @@ task meme {
 
         String outputfolder = basename(folder_output) + '-meme_out'
     }
-
-    Int memory_gb = ceil((size(fastafile, "MiB") / 10) + 5)
     
+    Int memory_gb = ceil((size(fastafile, "MiB") / 10) + 10
+
     command <<<
         mkdir -p ~{default_location} && cd ~{default_location}
 
