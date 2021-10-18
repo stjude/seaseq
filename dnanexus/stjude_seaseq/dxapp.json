@@ -1,39 +1,11 @@
 {
   "name": "seaseq",
-  "title": "SEAseq",
+  "title": "SEAseq (St. Jude)",
   "summary": "Single-End Antibody sequencing workflow",
   "dxapi": "1.0.1",
   "version": "2.0.0",
   "openSource" : true,
   "inputSpec": [
-    {
-      "name": "reference",
-      "label": "Genome Reference",
-      "class": "file",
-      "optional": false,
-      "help": "Reference FASTA file. Required if Host Genome is Custom",
-      "patterns": [
-        "*.fa",
-        "*.fa.gz",
-        "*.fasta",
-        "*.fasta.gz"
-      ]
-    },
-    {
-      "name": "gtf",
-      "label": "Gene Annotation",
-      "class": "file",
-      "optional": false,
-      "help": "Input gene annotation file from RefSeq or GENCODE (.gtf). Required if Host Genome is Custom",
-      "patterns": [
-        "*.gff",
-        "*.gtf",
-        "*.gff3",
-        "*.gff.gz",
-        "*.gtf.gz",
-        "*.gff3.gz"
-      ]
-    },
     {
       "name": "sample_fastq",
       "label": "Sample FASTQs",
@@ -54,6 +26,42 @@
       "patterns": [
         "*.fq.gz",
         "*.fastq.gz"
+      ]
+    },
+    {
+      "name": "genome",
+      "label": "Host Genome",
+      "class": "string",
+      "choices": ["GRCh37/hg19", "GRCh38/hg38", "GRCm38/mm10", "MGSCv37/mm9", "Custom Genome, specify as input"],
+      "optional": false,
+      "help": "Select from built-in list of genomes. Otherwise, select Custom Genome and provide 'Genome Reference' and 'Gene Annotation'."
+    },
+    {
+      "name": "reference",
+      "label": "Genome Reference",
+      "class": "file",
+      "optional": true,
+      "help": "Reference FASTA file. Required if Host Genome is Custom",
+      "patterns": [
+        "*.fa",
+        "*.fa.gz",
+        "*.fasta",
+        "*.fasta.gz"
+      ]
+    },
+    {
+      "name": "gtf",
+      "label": "Gene Annotation",
+      "class": "file",
+      "optional": true,
+      "help": "Input gene annotation file from RefSeq or GENCODE (.gtf). Required if Host Genome is Custom",
+      "patterns": [
+        "*.gff",
+        "*.gtf",
+        "*.gff3",
+        "*.gff.gz",
+        "*.gtf.gz",
+        "*.gff3.gz"
       ]
     },
     {
@@ -1087,7 +1095,8 @@
     "network": [
       "*"
     ],
-    "project": "CONTRIBUTE"
+    "project": "CONTRIBUTE",
+    "allProjects": "VIEW"
   },
   "authorizedUsers": [
     "org-stjude_cloud",
