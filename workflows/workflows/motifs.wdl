@@ -66,7 +66,7 @@ task meme {
         String outputfolder = basename(folder_output) + '-meme_out'
     }
     
-    Int memory_gb = ceil((size(fastafile, "MiB") / 10) + 10
+    Int memory_gb = ceil((size(fastafile, "MiB") / 10) + 10)
 
     command <<<
         mkdir -p ~{default_location} && cd ~{default_location}
@@ -80,6 +80,7 @@ task meme {
        zip -9r ~{outputfolder}.zip ~{outputfolder}
        cp ~{outputfolder}/summary.tsv ~{outputfolder}-summary.tsv
     >>>
+
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
