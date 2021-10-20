@@ -70,7 +70,7 @@ main() {
     # git clone and configure SEAseq
     git clone https://github.com/stjude/seaseq.git seaseq
     cd seaseq
-    git checkout 2.0
+    git checkout 2.1
     cd dnanexus
     reorg_id=$(dx build -f /seaseq-reorg | jq -r '.id')
     echo "Reorg applet ID: ${reorg_id}"
