@@ -69,6 +69,7 @@ workflow seaseq {
 
         # group: analysis_parameter
         String? results_name
+        Boolean run_motifs=true
 
     }
 
@@ -137,7 +138,7 @@ workflow seaseq {
             call sra.fastqdump {
                 input :
                     sra_id=eachsra,
-                    cloud="false"
+                    cloud=false
             }
         }
 
@@ -491,28 +492,30 @@ workflow seaseq {
     }
 
     # Motif Analysis
-    call motifs.motifs {
-        input:
-            reference=reference,
-            reference_index=samtools_faidx.faidx_file,
-            bedfile=macs.peakbedfile,
-            motif_databases=motif_databases,
-            default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
-    }
+    if (run_motifs) { 
+        call motifs.motifs {
+            input:
+                reference=reference,
+                reference_index=samtools_faidx.faidx_file,
+                bedfile=macs.peakbedfile,
+                motif_databases=motif_databases,
+                default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+        }
 
-    call util.flankbed {
-        input :
-            bedfile=macs.summitsfile,
-            default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
-    }
+        call util.flankbed {
+            input :
+                bedfile=macs.summitsfile,
+                default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+        }
 
-    call motifs.motifs as flank {
-        input:
-            reference=reference,
-            reference_index=samtools_faidx.faidx_file,
-            bedfile=flankbed.flankbedfile,
-            motif_databases=motif_databases,
-            default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+        call motifs.motifs as flank {
+            input:
+                reference=reference,
+                reference_index=samtools_faidx.faidx_file,
+                bedfile=flankbed.flankbedfile,
+                motif_databases=motif_databases,
+                default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+        }
     }
 
     call viz.visualization {

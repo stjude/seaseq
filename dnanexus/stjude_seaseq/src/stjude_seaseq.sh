@@ -89,7 +89,8 @@ main() {
         SEASEQ="seaseq-case.wdl"
     fi
 
-    sed -i "s/cloud=\"false\"/cloud=\"true\"/" $SEASEQ
+    sed -i "s/cloud=false/cloud=true/" $SEASEQ
+    grep "cloud" $SEASEQ
     sed -i "s/import \"..\/tasks\/util\.wdl/import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\/util\.wdl/" workflows/workflows/visualization.wdl
     sed -i "s/import \"..\/tasks\/bedtools\.wdl/import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\/bedtools\.wdl/" workflows/workflows/motifs.wdl
     sed -i "s/import \"..\/tasks\//import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\//" workflows/workflows/mapping.wdl

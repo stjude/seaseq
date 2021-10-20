@@ -3,7 +3,8 @@ version 1.0
 task fastqdump {
     input {
         String? sra_id
-        String cloud = "false"
+        Boolean cloud=false
+        Boolean paired=false
         Int memory_gb = 5
         Int max_retries = 1
         Int ncpu = 20
@@ -22,7 +23,11 @@ task fastqdump {
                 echo "number of threads changed to 10 for dnanexus compatibility"
             fi
         fi
-        pfastq-dump -t $threads --gzip -s ~{sra_id} -O ./
+        pfastq-dump \
+            -t $threads \
+            --gzip \
+            ~{true="--split-files" false="" paired} \
+            -s ~{sra_id} -O ./
     }
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
