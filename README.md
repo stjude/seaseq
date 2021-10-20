@@ -91,6 +91,11 @@ java -jar cromwell.jar run seaseq-control.wdl -i inputs.json -o options.json
 ```
 View [`/test`](https://github.com/stjude/seaseq/tree/master/test) folder for example usage and further instructions.
 
+**Additional Configuration** (Recommended)
+
+[Docker Hub Pull Rates](https://www.docker.com/increase-rate-limits?utm_source=docker&utm_medium=web%20referral&utm_campaign=increase%20rate%20limit&utm_budget=)
+are limited to 100 image pulls per six hours. We recommend using a paid (Docker pro or Team subscription) account for multiple (more than 10) in the given instance.
+
 
 ## SEAseq on St. Jude cloud
 
