@@ -652,7 +652,7 @@ workflow seaseq {
 
     call util.addreadme {
         input :
-            default_location=sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS'
+            default_location = if defined(results_name) then results_name + '/PEAKS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/'
     }
     
     call macs.macs as all {
