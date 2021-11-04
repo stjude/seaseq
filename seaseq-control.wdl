@@ -169,7 +169,7 @@ workflow seaseq {
             call sra.fastqdump as c_fastqdump{
                 input :
                     sra_id=eachsra,
-                    cloud="false"
+                    cloud=false
             }
         }
 
