@@ -44,7 +44,6 @@ task basicfastqstats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -158,7 +157,6 @@ task summaryreport {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -392,7 +390,6 @@ task mergehtml {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -418,7 +415,6 @@ task linkname {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -568,8 +564,9 @@ task concatstats {
 
 
 task addreadme {
+    # Include description of the different peak calls in a readme file
     input {
-	    String default_location = "PEAKS_files"
+	String default_location = "PEAKS_files"
         String output_file = "readme_peaks.txt"
 
         Int memory_gb = 2
@@ -592,12 +589,81 @@ task addreadme {
 
     >>>
     runtime {
-	memory: ceil(memory_gb * ncpu) + " GB"
+        memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
 	File readme_peaks = "~{default_location}/~{output_file}"
     }
 }
+
+
+task mergefastqs {
+    # Concat paired-end FASTQ files
+    input {
+        Array[File] fastqfiles
+        String output_file = sub(basename(fastqfiles[0]),'_R?1.*\.f.*q\.gz','')
+        Int memory_gb = 2
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+        zcat -f ~{sep=' ' fastqfiles} | gzip -nc > ~{output_file}.merged.fastq.gz
+    >>>
+    runtime {
+        memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        cpu: ncpu
+    }
+    output {
+	    File mergepaired = "~{output_file}.merged.fastq.gz"
+    }
+
+}
+
+
+task checkinputs {
+    # Sort FASTQ files provided, to make sure files are specified in alphanumeric order
+    input {
+        Array[File] inputfiles
+
+        Int memory_gb = 5
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+        echo -e "~{sep='\n' inputfiles}" > listoffiles.txt
+        mkdir -p R1 R2
+        touch paired_file
+
+python <<CODE
+import os
+import sys
+import re
+
+all = open("listoffiles.txt", 'r')
+for each in all:
+    each = each.rstrip('\n')
+    eachall = each.split('/')[-1]
+    if re.search("_R?1.*\.f.*q\.gz",eachall) :
+        bashCommand = "ln -s " + each + " R1/" + eachall
+    else :
+        bashCommand = "ln -s " + each + " R2/" + eachall + ';echo true > paired_file'
+    os.system(bashCommand)
+
+CODE
+    cat paired_file
+    >>>
+    runtime {
+        memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        cpu: ncpu
+    }
+    output {
+        Array[File] S1 = glob("R1/*")
+        Array[File]? S2 = glob("R2/*")
+        String paired_end = read_string('paired_file')
+    }
+}
+

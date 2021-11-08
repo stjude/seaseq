@@ -4,12 +4,12 @@ task fastqdump {
     input {
         String? sra_id
         Boolean cloud=false
-        Boolean paired=false
         Int memory_gb = 5
         Int max_retries = 1
         Int ncpu = 20
     }
     command {
+        # make number of threads compatible for DNAnexus
         threads=~{ncpu}
         if [ "~{cloud}" == 'true' ]; then
             output=$(sra-stat --meta --quick ~{sra_id})
@@ -23,11 +23,31 @@ task fastqdump {
                 echo "number of threads changed to 10 for dnanexus compatibility"
             fi
         fi
-        pfastq-dump \
-            -t $threads \
-            --gzip \
-            ~{true="--split-files" false="" paired} \
-            -s ~{sra_id} -O ./
+
+        # check if paired ended
+        numLines=$(fastq-dump -X 1 -Z --split-spot ~{sra_id} | wc -l)
+        paired_end="false"
+        if [ "$numLines" -eq 8 ]; then
+            paired_end="true"
+        fi
+
+        # perform fastqdump
+        if [ "$paired_end" == 'true' ]; then
+            echo true > paired_file
+            pfastq-dump \
+                -t $threads \
+                --gzip \
+                --split-files \
+                -s ~{sra_id} -O ./
+
+            zcat -f ~{sra_id}_1.fastq.gz ~{sra_id}_2.fastq.gz | gzip -nc > ~{sra_id}.merged.fastq.gz
+        else
+            touch paired_file
+            pfastq-dump \
+                -t $threads \
+                --gzip \
+                -s ~{sra_id} -O ./
+       fi 
     }
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
@@ -36,6 +56,9 @@ task fastqdump {
         cpu: ncpu
     }
     output {
-        Array[File] fastqfile = glob("~{sra_id}.fastq.gz")
+        File? R1end = "~{sra_id}_1.fastq.gz"
+        File? R2end = "~{sra_id}_2.fastq.gz"
+        Array[File] fastqfile = glob("~{sra_id}.*fastq.gz")
+        String paired_end = read_string('paired_file')
     }
 }
