@@ -509,6 +509,11 @@
       "optional": true
     },
     {
+      "name": "negativexlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "summitsfile",
       "class": "file",
       "optional": true
@@ -534,6 +539,11 @@
       "optional": true
     },
     {
+      "name": "all_negativexlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "all_summitsfile",
       "class": "file",
       "optional": true
@@ -555,6 +565,11 @@
     },
     {
       "name": "nm_peakxlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "nm_negativexlsfile",
       "class": "file",
       "optional": true
     },
