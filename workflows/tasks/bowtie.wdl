@@ -6,7 +6,7 @@ task bowtie {
         File? metricsfile
         Array[File]+ index_files
 
-        String outputfile = sub(basename(fastqfile),'\.f.*q\.gz','.sam')
+        String outputfile = sub(basename(fastqfile),'\.fastq\.gz|\.fq\.gz','.sam')
         
         Int? read_length = 75
         Int limit_alignments = 2

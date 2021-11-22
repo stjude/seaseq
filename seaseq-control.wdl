@@ -165,13 +165,13 @@ workflow seaseq {
                 call fastqc.fastqc as sra_R1_fastqc {
                     input :
                         inputfile=R1,
-                        default_location='SAMPLE/paired-end/' + sub(basename(R1),'\.f.*q\.gz','') + '/QC/FastQC'
+                        default_location='SAMPLE/paired-end/' + sub(basename(R1),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
                 }
 
                 call fastqc.fastqc as sra_R2_fastqc {
                     input :
                         inputfile=R2,
-                        default_location='SAMPLE/paired-end/' + sub(basename(R2),'\.f.*q\.gz','') + '/QC/FastQC'
+                        default_location='SAMPLE/paired-end/' + sub(basename(R2),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
                 }
             }
         } # end scatter each sra
@@ -201,13 +201,13 @@ workflow seaseq {
                 call fastqc.fastqc as c_sra_R1_fastqc {
                     input :
                         inputfile=c_R1,
-                        default_location='SAMPLE/paired-end/' + sub(basename(c_R1),'\.f.*q\.gz','') + '/QC/FastQC'
+                        default_location='SAMPLE/paired-end/' + sub(basename(c_R1),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
                 }
 
                 call fastqc.fastqc as c_sra_R2_fastqc {
                     input :
                         inputfile=c_R2,
-                        default_location='SAMPLE/paired-end/' + sub(basename(c_R2),'\.f.*q\.gz','') + '/QC/FastQC'
+                        default_location='SAMPLE/paired-end/' + sub(basename(c_R2),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
                 }
             }
         } # end scatter each sra
@@ -264,13 +264,13 @@ workflow seaseq {
                 call fastqc.fastqc as fastq_R1_fastqc {
                     input :
                         inputfile=eachfastq[0],
-                        default_location='SAMPLE/paired-end/' + sub(basename(eachfastq[0]),'\.f.*q\.gz','') + '/QC/FastQC'
+                        default_location='SAMPLE/paired-end/' + sub(basename(eachfastq[0]),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
                 }
 
 	            call fastqc.fastqc as fastq_R2_fastqc {
                     input :
                         inputfile=eachfastq[1],
-                        default_location='SAMPLE/paired-end/' + sub(basename(eachfastq[1]),'\.f.*q\.gz','') + '/QC/FastQC'
+                        default_location='SAMPLE/paired-end/' + sub(basename(eachfastq[1]),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
                 }
 
                 call util.mergefastqs as samplefiles {
@@ -302,13 +302,13 @@ workflow seaseq {
                 call fastqc.fastqc as c_fastq_R1_fastqc {
                     input :
                         inputfile=eachfastq[0],
-                        default_location='SAMPLE/paired-end/' + sub(basename(eachfastq[0]),'\.f.*q\.gz','') + '/QC/FastQC'
+                        default_location='SAMPLE/paired-end/' + sub(basename(eachfastq[0]),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
                 }
 
 	            call fastqc.fastqc as c_fastq_R2_fastqc {
                     input :
                         inputfile=eachfastq[1],
-                        default_location='SAMPLE/paired-end/' + sub(basename(eachfastq[1]),'\.f.*q\.gz','') + '/QC/FastQC'
+                        default_location='SAMPLE/paired-end/' + sub(basename(eachfastq[1]),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
                 }
 
                 call util.mergefastqs as controlfiles {
@@ -353,13 +353,13 @@ workflow seaseq {
             call fastqc.fastqc as indv_s_fastqc {
                 input :
                     inputfile=eachfastq,
-                    default_location='SAMPLE/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/FastQC'
+                    default_location='SAMPLE/' + sub(basename(eachfastq),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
             }
 
             call util.basicfastqstats as indv_s_bfs {
                 input :
                     fastqfile=eachfastq,
-                    default_location='SAMPLE/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/SummaryStats'
+                    default_location='SAMPLE/' + sub(basename(eachfastq),'\.fastq\.gz|\.fq\.gz','') + '/QC/SummaryStats'
             }
 
             call mapping.mapping as indv_s_mapping {
@@ -368,13 +368,13 @@ workflow seaseq {
                     index_files=bowtie_index_,
                     metricsfile=indv_s_bfs.metrics_out,
                     blacklist=blacklist,
-                    default_location='SAMPLE/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/BAM_files'
+                    default_location='SAMPLE/' + sub(basename(eachfastq),'\.fastq\.gz|\.fq\.gz','') + '/BAM_files'
             }
 
             call fastqc.fastqc as indv_s_bamfqc {
                 input :
                     inputfile=indv_s_mapping.sorted_bam,
-                    default_location='SAMPLE/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/FastQC'
+                    default_location='SAMPLE/' + sub(basename(eachfastq),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
             }
 
             call runspp.runspp as indv_s_runspp {
@@ -397,7 +397,7 @@ workflow seaseq {
                     rmdupflag=indv_s_mapping.mkdup_stats,
                     bkflag=indv_s_mapping.bklist_stats,
                     fastqmetrics=indv_s_bfs.metrics_out,
-                    default_location='SAMPLE/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/SummaryStats'
+                    default_location='SAMPLE/' + sub(basename(eachfastq),'\.fastq\.gz|\.fq\.gz','') + '/QC/SummaryStats'
             }
         } # end scatter (for each sample fastq)
 
@@ -486,13 +486,13 @@ workflow seaseq {
             call fastqc.fastqc as indv_c_fastqc {
                 input :
                     inputfile=eachfastq,
-                    default_location='CONTROL/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/FastQC'
+                    default_location='CONTROL/' + sub(basename(eachfastq),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
             }
 
             call util.basicfastqstats as indv_c_bfs {
                 input :
                     fastqfile=eachfastq,
-                    default_location='CONTROL/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/SummaryStats'
+                    default_location='CONTROL/' + sub(basename(eachfastq),'\.fastq\.gz|\.fq\.gz','') + '/QC/SummaryStats'
             }
 
             call mapping.mapping as indv_c_mapping {
@@ -501,13 +501,13 @@ workflow seaseq {
                     index_files=bowtie_index_,
                     metricsfile=indv_c_bfs.metrics_out,
                     blacklist=blacklist,
-                    default_location='CONTROL/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/BAM_files'
+                    default_location='CONTROL/' + sub(basename(eachfastq),'\.fastq\.gz|\.fq\.gz','') + '/BAM_files'
             }
 
             call fastqc.fastqc as indv_c_bamfqc {
                 input :
                     inputfile=indv_c_mapping.sorted_bam,
-                    default_location='CONTROL/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/FastQC'
+                    default_location='CONTROL/' + sub(basename(eachfastq),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
             }
 
             call runspp.runspp as indv_c_runspp {
@@ -530,7 +530,7 @@ workflow seaseq {
                     rmdupflag=indv_c_mapping.mkdup_stats,
                     bkflag=indv_c_mapping.bklist_stats,
                     fastqmetrics=indv_c_bfs.metrics_out,
-                    default_location='CONTROL/' + sub(basename(eachfastq),'\.f.*q\.gz','') + '/QC/SummaryStats'
+                    default_location='CONTROL/' + sub(basename(eachfastq),'\.fastq\.gz|\.fq\.gz','') + '/QC/SummaryStats'
             }
         } # end scatter (for each control fastq)
 
@@ -625,13 +625,13 @@ workflow seaseq {
         call fastqc.fastqc as uno_s_fastqc {
             input :
                 inputfile=s_fastqfiles[0],
-                default_location='SAMPLE/' + sub(basename(s_fastqfiles[0]),'\.f.*q\.gz','') + '/QC/FastQC'
+                default_location='SAMPLE/' + sub(basename(s_fastqfiles[0]),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
         }
 
         call util.basicfastqstats as uno_s_bfs {
             input :
                 fastqfile=s_fastqfiles[0],
-                default_location='SAMPLE/' + sub(basename(s_fastqfiles[0]),'\.f.*q\.gz','') + '/QC/SummaryStats'
+                default_location='SAMPLE/' + sub(basename(s_fastqfiles[0]),'\.fastq\.gz|\.fq\.gz','') + '/QC/SummaryStats'
         }
 
         call mapping.mapping as s_mapping {
@@ -640,13 +640,13 @@ workflow seaseq {
                 index_files=bowtie_index_,
                 metricsfile=uno_s_bfs.metrics_out,
                 blacklist=blacklist,
-                default_location='SAMPLE/' + sub(basename(s_fastqfiles[0]),'\.f.*q\.gz','') + '/BAM_files'
+                default_location='SAMPLE/' + sub(basename(s_fastqfiles[0]),'\.fastq\.gz|\.fq\.gz','') + '/BAM_files'
         }
 
         call fastqc.fastqc as uno_s_bamfqc {
             input :
                 inputfile=s_mapping.sorted_bam,
-                default_location='SAMPLE/' + sub(basename(s_fastqfiles[0]),'\.f.*q\.gz','') + '/QC/FastQC'
+                default_location='SAMPLE/' + sub(basename(s_fastqfiles[0]),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
         }
 
         call runspp.runspp as uno_s_runspp {
@@ -669,7 +669,7 @@ workflow seaseq {
                 rmdupflag=s_mapping.mkdup_stats,
                 bkflag=s_mapping.bklist_stats,
                 fastqmetrics=uno_s_bfs.metrics_out,
-                default_location='SAMPLE/' + sub(basename(s_fastqfiles[0]),'\.f.*q\.gz','') + '/QC/SummaryStats'
+                default_location='SAMPLE/' + sub(basename(s_fastqfiles[0]),'\.fastq\.gz|\.fq\.gz','') + '/QC/SummaryStats'
         }
     } # end if length(fastqfiles) == 1: one_sample_fastq
 
@@ -690,13 +690,13 @@ workflow seaseq {
         call fastqc.fastqc as uno_c_fastqc {
             input :
                 inputfile=c_fastqfiles[0],
-                default_location='CONTROL/' + sub(basename(c_fastqfiles[0]),'\.f.*q\.gz','') + '/QC/FastQC'
+                default_location='CONTROL/' + sub(basename(c_fastqfiles[0]),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
         }
 
         call util.basicfastqstats as uno_c_bfs {
             input :
                 fastqfile=c_fastqfiles[0],
-                default_location='CONTROL/' + sub(basename(c_fastqfiles[0]),'\.f.*q\.gz','') + '/QC/SummaryStats'
+                default_location='CONTROL/' + sub(basename(c_fastqfiles[0]),'\.fastq\.gz|\.fq\.gz','') + '/QC/SummaryStats'
         }
 
         call mapping.mapping as c_mapping {
@@ -705,13 +705,13 @@ workflow seaseq {
                 index_files=bowtie_index_,
                 metricsfile=uno_c_bfs.metrics_out,
                 blacklist=blacklist,
-                default_location='CONTROL/' + sub(basename(c_fastqfiles[0]),'\.f.*q\.gz','') + '/BAM_files'
+                default_location='CONTROL/' + sub(basename(c_fastqfiles[0]),'\.fastq\.gz|\.fq\.gz','') + '/BAM_files'
         }
 
         call fastqc.fastqc as uno_c_bamfqc {
             input :
                 inputfile=c_mapping.sorted_bam,
-                default_location='CONTROL/' + sub(basename(c_fastqfiles[0]),'\.f.*q\.gz','') + '/QC/FastQC'
+                default_location='CONTROL/' + sub(basename(c_fastqfiles[0]),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
         }
 
         call runspp.runspp as uno_c_runspp {
@@ -734,7 +734,7 @@ workflow seaseq {
                 rmdupflag=c_mapping.mkdup_stats,
                 bkflag=c_mapping.bklist_stats,
                 fastqmetrics=uno_c_bfs.metrics_out,
-                default_location='CONTROL/' + sub(basename(c_fastqfiles[0]),'\.f.*q\.gz','') + '/QC/SummaryStats'
+                default_location='CONTROL/' + sub(basename(c_fastqfiles[0]),'\.fastq\.gz|\.fq\.gz','') + '/QC/SummaryStats'
         }
     } # end if length(fastqfiles) == 1: one_control_fastq
 

@@ -3,7 +3,7 @@ version 1.0
 task basicfastqstats {
     input {
         File fastqfile
-        String outputfile = sub(basename(fastqfile),'\.f.*q\.gz', '-fastq.readlength_dist.txt')
+        String outputfile = sub(basename(fastqfile),'\.fastq\.gz|\.fq\.gz', '-fastq.readlength_dist.txt')
         String default_location = "QC_files/STATS"
 
         Int max_retries = 1
@@ -157,6 +157,7 @@ task summaryreport {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -390,6 +391,7 @@ task mergehtml {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
+        docker: 'abralab/seaseq:v2.0.0'
         cpu: ncpu
     }
     output {
@@ -648,8 +650,10 @@ for each in all:
     eachall = each.split('/')[-1]
     if re.search("_R?1.*\.f.*q\.gz",eachall) :
         bashCommand = "ln -s " + each + " R1/" + eachall
-    else :
+    elif re.search("_R?2.*\.f.*q\.gz",eachall) :
         bashCommand = "ln -s " + each + " R2/" + eachall + ';echo true > paired_file'
+    else :
+        bashCommand = "ln -s " + each + " R1/" + eachall
     os.system(bashCommand)
 
 CODE
