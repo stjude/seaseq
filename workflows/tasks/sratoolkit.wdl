@@ -40,7 +40,7 @@ task fastqdump {
                 --split-files \
                 -s ~{sra_id} -O ./
 
-            zcat -f ~{sra_id}_1.fastq.gz ~{sra_id}_2.fastq.gz | gzip -nc > ~{sra_id}.merged.fastq.gz
+            #zcat -f ~{sra_id}_1.fastq.gz ~{sra_id}_2.fastq.gz | gzip -nc > ~{sra_id}.merged.fastq.gz
         else
             touch paired_file
             pfastq-dump \
@@ -58,7 +58,7 @@ task fastqdump {
     output {
         File? R1end = "~{sra_id}_1.fastq.gz"
         File? R2end = "~{sra_id}_2.fastq.gz"
-        Array[File] fastqfile = glob("~{sra_id}.*fastq.gz")
+        Array[File] fastqfile = glob("~{sra_id}*fastq.gz")
         String paired_end = read_string('paired_file')
     }
 }
