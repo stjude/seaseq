@@ -155,25 +155,6 @@ workflow seaseq {
                     sra_id=eachsra,
                     cloud=false
             }
-
-            Boolean sra_paired = if fastqdump.paired_end=='true' then true else false
-            if (sra_paired) {
-                # Perform FASTQC on each paired-ended file
-                String string_sra2 = "" #buffer to allow for sra file optionality
-                File R1 = select_first([fastqdump.R1end, string_sra2])
-                File R2 = select_first([fastqdump.R2end, string_sra2])
-                call fastqc.fastqc as sra_R1_fastqc {
-                    input :
-                        inputfile=R1,
-                        default_location='SAMPLE/paired-end/' + sub(basename(R1),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
-                }
-
-                call fastqc.fastqc as sra_R2_fastqc {
-                    input :
-                        inputfile=R2,
-                        default_location='SAMPLE/paired-end/' + sub(basename(R2),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
-                }
-            }
         } # end scatter each sra
 
         Array[File] sample_srafile_ = flatten(fastqdump.fastqfile)
@@ -190,25 +171,6 @@ workflow seaseq {
                 input :
                     sra_id=eachsra,
                     cloud=false
-            }
-
-            Boolean c_sra_paired = if c_fastqdump.paired_end=='true' then true else false
-            if (c_sra_paired) {
-                # Perform FASTQC on each paired-ended file
-                String c_sra2 = "" #buffer to allow for sra file optionality
-                File c_R1 = select_first([c_fastqdump.R1end, c_sra2])
-                File c_R2 = select_first([c_fastqdump.R2end, c_sra2])
-                call fastqc.fastqc as c_sra_R1_fastqc {
-                    input :
-                        inputfile=c_R1,
-                        default_location='SAMPLE/paired-end/' + sub(basename(c_R1),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
-                }
-
-                call fastqc.fastqc as c_sra_R2_fastqc {
-                    input :
-                        inputfile=c_R2,
-                        default_location='SAMPLE/paired-end/' + sub(basename(c_R2),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
-                }
             }
         } # end scatter each sra
 
@@ -250,37 +212,7 @@ workflow seaseq {
         Array[String] string_fastq = [1] #buffer to allow for fastq optionality
         Array[File] s_fastq = select_first([sample_fastq, string_fastq])
 
-        call util.checkinputs {
-            input:
-                inputfiles=s_fastq
-        }
-
-        Boolean fastq_paired = if checkinputs.paired_end=='true' then true else false
-        if (fastq_paired) {
-            Array[File] fastq_S2 = select_first([checkinputs.S2, string_fastq])
-            Array[Array[File]] sorted_sample_fastqs = transpose([checkinputs.S1,fastq_S2])
-        
-            scatter (eachfastq in sorted_sample_fastqs) {
-                call fastqc.fastqc as fastq_R1_fastqc {
-                    input :
-                        inputfile=eachfastq[0],
-                        default_location='SAMPLE/paired-end/' + sub(basename(eachfastq[0]),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
-                }
-
-	            call fastqc.fastqc as fastq_R2_fastqc {
-                    input :
-                        inputfile=eachfastq[1],
-                        default_location='SAMPLE/paired-end/' + sub(basename(eachfastq[1]),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
-                }
-
-                call util.mergefastqs as samplefiles {
-                    input:
-                        fastqfiles=eachfastq
-                }
-            }
-        }
-
-        Array[File] sample_fastqfile_ = select_first([samplefiles.mergepaired, checkinputs.S1])  
+        Array[File] sample_fastqfile_ = s_fastq
     }
 
     if ( defined(control_fastq) ) {
@@ -288,37 +220,7 @@ workflow seaseq {
         Array[String] c_string_fastq = [1] #buffer to allow for fastq optionality
         Array[File] c_fastq = select_first([control_fastq, c_string_fastq])
 
-        call util.checkinputs as c_checkinputs {
-            input:
-                inputfiles=c_fastq
-        }
-
-        Boolean c_fastq_paired = if c_checkinputs.paired_end=='true' then true else false
-        if (c_fastq_paired) {
-            Array[File] c_fastq_S2 = select_first([c_checkinputs.S2, c_string_fastq])
-            Array[Array[File]] c_sorted_sample_fastqs = transpose([c_checkinputs.S1,c_fastq_S2])
-        
-            scatter (eachfastq in c_sorted_sample_fastqs) {
-                call fastqc.fastqc as c_fastq_R1_fastqc {
-                    input :
-                        inputfile=eachfastq[0],
-                        default_location='SAMPLE/paired-end/' + sub(basename(eachfastq[0]),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
-                }
-
-	            call fastqc.fastqc as c_fastq_R2_fastqc {
-                    input :
-                        inputfile=eachfastq[1],
-                        default_location='SAMPLE/paired-end/' + sub(basename(eachfastq[1]),'\.fastq\.gz|\.fq\.gz','') + '/QC/FastQC'
-                }
-
-                call util.mergefastqs as controlfiles {
-                    input:
-                        fastqfiles=eachfastq
-                }
-            }
-        }
-
-        Array[File] control_fastqfile_ = select_first([controlfiles.mergepaired, c_checkinputs.S1])  
+        Array[File] control_fastqfile_ = c_fastq
     }
 
     Array[File] bowtie_index_ = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
@@ -1175,24 +1077,6 @@ workflow seaseq {
     }
 
     output {
-        #PAIRED FASTQC
-        Array[File?]? s_R1_htmlfile = sra_R1_fastqc.htmlfile
-        Array[File?]? s_R1_zipfile = sra_R1_fastqc.zipfile
-        Array[File?]? s_R2_htmlfile = sra_R2_fastqc.htmlfile
-        Array[File?]? s_R2_zipfile = sra_R2_fastqc.zipfile
-        Array[File?]? c_R1_htmlfile = c_sra_R1_fastqc.htmlfile
-        Array[File?]? c_R1_zipfile = c_sra_R1_fastqc.zipfile
-        Array[File?]? c_R2_htmlfile = c_sra_R2_fastqc.htmlfile
-        Array[File?]? c_R2_zipfile = c_sra_R2_fastqc.zipfile
-        Array[File?]? f_R1_htmlfile = fastq_R1_fastqc.htmlfile
-        Array[File?]? f_R1_zipfile = fastq_R1_fastqc.zipfile
-        Array[File?]? f_R2_htmlfile = fastq_R2_fastqc.htmlfile
-        Array[File?]? f_R2_zipfile = fastq_R2_fastqc.zipfile
-        Array[File?]? cf_R1_htmlfile = c_fastq_R1_fastqc.htmlfile
-        Array[File?]? cf_R1_zipfile = c_fastq_R1_fastqc.zipfile
-        Array[File?]? cf_R2_htmlfile = c_fastq_R2_fastqc.htmlfile
-        Array[File?]? cf_R2_zipfile = c_fastq_R2_fastqc.zipfile
-       
         #FASTQC
         Array[File?]? indv_s_htmlfile = indv_s_fastqc.htmlfile
         Array[File?]? indv_s_zipfile = indv_s_fastqc.zipfile
@@ -1267,16 +1151,19 @@ workflow seaseq {
         File? peakbedfile = macs.peakbedfile
         File? peakxlsfile = macs.peakxlsfile
         File? summitsfile = macs.summitsfile
+        File? negativexlsfile = macs.negativepeaks
         File? wigfile = macs.wigfile
         File? ctrlwigfile = macs.ctrlwigfile
         File? all_peakbedfile = all.peakbedfile
         File? all_peakxlsfile = all.peakxlsfile
         File? all_summitsfile = all.summitsfile
+        File? all_negativexlsfile = all.negativepeaks
         File? all_wigfile = all.wigfile
         File? all_ctrlwigfile = all.ctrlwigfile
         File? nm_peakbedfile = nomodel.peakbedfile
         File? nm_peakxlsfile = nomodel.peakxlsfile
         File? nm_summitsfile = nomodel.summitsfile
+        File? nm_negativexlsfile = nomodel.negativepeaks
         File? nm_wigfile = nomodel.wigfile
         File? nm_ctrlwigfile = nomodel.ctrlwigfile
         File? readme_peaks = addreadme.readme_peaks
