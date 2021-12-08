@@ -924,6 +924,14 @@ workflow seaseq {
             sorted=true
     }
 
+    call bedtools.intersect {
+        input:
+            fileA=macs.peakbedfile,
+            fileB=only_s_sortbed.sortbed_out,
+            countoverlap=true,
+            sorted=true
+    }
+
 ### ---------------------------------------- ###
 ### ------------ S E C T I O N 4 ----------- ###
 ### ---------- Summary Statistics ---------- ###
@@ -963,7 +971,7 @@ workflow seaseq {
                 rmdupflag=s_mapping.mkdup_stats,
                 bkflag=s_mapping.bklist_stats,
                 fastqmetrics=uno_s_bfs.metrics_out,
-                countsfile=only_s_intersect.intersect_out,
+                countsfile=intersect.intersect_out,
                 peaksxls=macs.peakxlsfile,
                 enhancers=rose.enhancers,
                 superenhancers=rose.super_enhancers,
@@ -1024,7 +1032,7 @@ workflow seaseq {
                 bamflag=s_mergeindexstats.flagstats,
                 rmdupflag=s_merge_mkdup.flagstats,
                 bkflag=s_merge_bklist.flagstats,
-                countsfile=only_s_intersect.intersect_out,
+                countsfile=intersect.intersect_out,
                 peaksxls=macs.peakxlsfile,
                 enhancers=rose.enhancers,
                 superenhancers=rose.super_enhancers,
