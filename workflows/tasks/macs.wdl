@@ -12,6 +12,7 @@ task macs {
 
         String pvalue = '1e-9'
         String keep_dup = 'auto'
+        String egs = 'hs'
         Int space = 50
         Int shiftsize = 200
         Boolean wiggle = true
@@ -32,6 +33,7 @@ task macs {
                 -t ~{bamfile} \
                 ~{if defined(control) then "-c" + control else ""} \
                 --space=~{space} \
+                --gsize=~{egs} \
                 --shiftsize=~{shiftsize} \
                 ~{true="-w" false="" wiggle} \
                 ~{true="-S" false="" single_profile} \
@@ -47,6 +49,7 @@ task macs {
                 -p ~{pvalue} \
                 --keep-dup=~{keep_dup} \
                 --space=~{space} \
+                --gsize=~{egs} \
                 ~{true="-w" false="" wiggle} \
                 ~{true="-S" false="" single_profile} \
                 -n ~{output_name} \

@@ -671,3 +671,29 @@ CODE
     }
 }
 
+task effective_genome_size {
+    # Calculate effective genome size and fraction
+    input {
+        File reference
+
+        Int memory_gb = 5
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+        faCount -summary ~{reference} | cut -f3,4,5,6 | tail -n 2 > genomeinformation.txt
+        
+        head -n 1 genomeinformation.txt | awk -F'[\t ]' '{print $1 + $2 + $3 + $4}' > genomesize
+        tail -n 1 genomeinformation.txt | awk -F'[\t ]' '{print $1 + $2 + $3 + $4}' > genomefraction
+    >>>
+    runtime {
+        memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'abralab/kentutils:latest'
+        cpu: ncpu
+    }
+    output {
+        Float genomefraction = read_float('genomefraction')
+        String genomesize = read_string('genomesize')
+    }
+}

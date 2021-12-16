@@ -206,6 +206,12 @@ workflow seaseq {
             reference=reference
     }
 
+    call util.effective_genome_size as egs {
+        # effective genome size for FASTA
+        input :
+            reference=reference
+    }
+    
     # Process FASTQs
     if ( defined(sample_fastq) ) {
 
@@ -661,8 +667,9 @@ workflow seaseq {
         input :
             bamfile=sample_bam,
             control=control_bam,
-            pvalue = "1e-9",
+            pvalue="1e-9",
             keep_dup="auto",
+            egs=egs.genomesize,
             output_name = if defined(results_name) then results_name + '-p9_kd-auto' else basename(sample_bam,'\.bam') + '+control-p9_kd-auto',
             default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-auto' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '+control-p9_kd-auto'
     }
@@ -676,8 +683,9 @@ workflow seaseq {
         input :
             bamfile=sample_bam,
             control=control_bam,
-            pvalue = "1e-9",
+            pvalue="1e-9",
             keep_dup="all",
+            egs=egs.genomesize,
             output_name = if defined(results_name) then results_name + '-p9_kd-all' else basename(sample_bam,'\.bam') + '+control-p9_kd-all',
             default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-all' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '+control-p9_kd-all'
     }
@@ -687,6 +695,7 @@ workflow seaseq {
             bamfile=sample_bam,
             control=control_bam,
             nomodel=true,
+            egs=egs.genomesize,
             output_name = if defined(results_name) then results_name + '-nm' else basename(sample_bam,'\.bam') + '+control-nm',
             default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-nm' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '+control-nm'
     }
@@ -718,6 +727,7 @@ workflow seaseq {
             bedfile=s_forsicerbed.bedfile,
             control_bed=c_forsicerbed.bedfile,
             chromsizes=samtools_faidx.chromsizes,
+            genome_fraction=egs.genomefraction,
             outputname=if defined(results_name) then results_name else basename(s_forsicerbed.bedfile,'\.bed') + '+control',
             default_location=if defined(results_name) then results_name + '/PEAKS/BROAD_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/BROAD_peaks'
     }
@@ -874,8 +884,9 @@ workflow seaseq {
     call macs.macs as only_s_macs {
         input :
             bamfile=sample_bam,
-            pvalue = "1e-9",
+            pvalue="1e-9",
             keep_dup="auto",
+            egs=egs.genomesize,
             default_location='SAMPLE/' + sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS_forQC/' + basename(sample_bam,'\.bam') + '-p9_kd-auto'
     }
 
@@ -883,8 +894,9 @@ workflow seaseq {
     call macs.macs as only_c_macs {
         input :
             bamfile=control_bam,
-            pvalue = "1e-9",
+            pvalue="1e-9",
             keep_dup="auto",
+            egs=egs.genomesize,
             default_location='CONTROL/' + sub(basename(control_bam),'\.sorted\.b.*$','') + '/PEAKS_forQC/' + basename(control_bam,'\.bam') + '-p9_kd-auto'
     }
 
