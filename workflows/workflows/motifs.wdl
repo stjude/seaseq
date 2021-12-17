@@ -1,6 +1,6 @@
 version 1.0
 
-import "../tasks/bedtools.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/bedtools.wdl"
 
 workflow motifs {
     input {

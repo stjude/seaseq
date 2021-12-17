@@ -1,19 +1,19 @@
 version 1.0
-import "workflows/tasks/fastqc.wdl"
-import "workflows/tasks/bedtools.wdl"
-import "workflows/tasks/bowtie.wdl"
-import "workflows/tasks/samtools.wdl"
-import "workflows/tasks/macs.wdl"
-import "workflows/workflows/bamtogff.wdl"
-import "workflows/tasks/sicer.wdl"
-import "workflows/workflows/motifs.wdl"
-import "workflows/tasks/rose.wdl"
-import "workflows/tasks/util.wdl"
-import "workflows/workflows/visualization.wdl" as viz
-import "workflows/workflows/mapping.wdl"
-import "workflows/tasks/runspp.wdl"
-import "workflows/tasks/sortbed.wdl"
-import "workflows/tasks/sratoolkit.wdl" as sra
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/fastqc.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/bedtools.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/bowtie.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/samtools.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/macs.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/workflows/bamtogff.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/sicer.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/workflows/motifs.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/rose.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/util.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/workflows/visualization.wdl" as viz
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/workflows/mapping.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/runspp.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/sortbed.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/sratoolkit.wdl" as sra
 
 workflow seaseq {
     String pipeline_ver = 'v2.0.0'

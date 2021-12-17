@@ -1,8 +1,8 @@
 version 1.0
 
-import "../tasks/bedtools.wdl"
-import "../tasks/bowtie.wdl"
-import "../tasks/samtools.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/bedtools.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/bowtie.wdl"
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/samtools.wdl"
 
 workflow mapping {
     input {
@@ -10,6 +10,7 @@ workflow mapping {
         Array[File] index_files
         File metricsfile
         File? blacklist
+        Int? read_length = 75
         String default_location = "BAM_files"
     }
 
@@ -17,7 +18,8 @@ workflow mapping {
         input :
             fastqfile=fastqfile,
             index_files=index_files,
-            metricsfile=metricsfile
+            metricsfile=metricsfile,
+            read_length=read_length
     }   
 
     call samtools.viewsort {
