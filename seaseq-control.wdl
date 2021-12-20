@@ -297,7 +297,7 @@ workflow seaseq {
 
             call util.evalstats as indv_s_summarystats {
                 input:
-                    fastq_type="Sample FASTQ",
+                    fastq_type="SEAseq Sample FASTQ",
                     bambed=indv_s_bamtobed.bedfile,
                     sppfile=indv_s_runspp.spp_out,
                     fastqczip=indv_s_fastqc.zipfile,
@@ -430,7 +430,7 @@ workflow seaseq {
 
             call util.evalstats as indv_c_summarystats {
                 input:
-                    fastq_type="Control FASTQ",
+                    fastq_type="SEAseq Control FASTQ",
                     bambed=indv_c_bamtobed.bedfile,
                     sppfile=indv_c_runspp.spp_out,
                     fastqczip=indv_c_fastqc.zipfile,
@@ -451,7 +451,7 @@ workflow seaseq {
         # merge bam files and perform fasTQC if more than one is provided
         call util.mergehtml as c_mergehtml {
             input:
-                fastq_type="Control FASTQs",
+                fastq_type="SEAseq Control FASTQs",
                 htmlfiles=indv_c_summarystats.xhtml,
                 txtfiles=indv_c_summarystats.textfile,
                 default_location='CONTROL',
@@ -569,7 +569,7 @@ workflow seaseq {
 
         call util.evalstats as uno_s_summarystats {
             input:
-                fastq_type="Sample FASTQ",
+                fastq_type="SEAseq Sample FASTQ",
                 bambed=uno_s_bamtobed.bedfile,
                 sppfile=uno_s_runspp.spp_out,
                 fastqczip=uno_s_fastqc.zipfile,
@@ -634,7 +634,7 @@ workflow seaseq {
 
         call util.evalstats as uno_c_summarystats {
             input:
-                fastq_type="Control FASTQ",
+                fastq_type="SEAseq Control FASTQ",
                 bambed=uno_c_bamtobed.bedfile,
                 sppfile=uno_c_runspp.spp_out,
                 fastqczip=uno_c_fastqc.zipfile,
@@ -956,7 +956,7 @@ workflow seaseq {
         call util.evalstats as all_s_summarystats {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             input:
-                fastq_type="Sample",
+                fastq_type="SEAseq Sample",
                 bambed=only_s_finalbed.bedfile,
                 sppfile=only_s_runspp.spp_out,
                 fastqczip=select_first([uno_s_bamfqc.zipfile, string_qual]),
@@ -975,7 +975,7 @@ workflow seaseq {
         call util.evalstats as all_summarystats {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             input:
-                fastq_type="Comprehensive",
+                fastq_type="SEAseq Comprehensive",
                 bambed=only_s_finalbed.bedfile,
                 sppfile=runspp.spp_out,
                 fastqczip=select_first([uno_s_bamfqc.zipfile, string_qual]),
@@ -998,7 +998,7 @@ workflow seaseq {
         call util.evalstats as all_c_summarystats {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             input:
-                fastq_type="Control",
+                fastq_type="SEAseq Control",
                 bambed=only_c_finalbed.bedfile,
                 sppfile=only_c_runspp.spp_out,
                 fastqczip=select_first([uno_c_bamfqc.zipfile, string_qual]),
@@ -1019,7 +1019,7 @@ workflow seaseq {
         call util.evalstats as merge_s_summarystats {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             input:
-                fastq_type="Sample",
+                fastq_type="SEAseq Sample",
                 bambed=only_s_finalbed.bedfile,
                 sppfile=only_s_runspp.spp_out,
                 fastqczip=select_first([s_mergebamfqc.zipfile, string_qual]),
@@ -1037,7 +1037,7 @@ workflow seaseq {
         call util.evalstats as merge_summarystats {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             input:
-                fastq_type="Comprehensive",
+                fastq_type="SEAseq Comprehensive",
                 bambed=only_s_finalbed.bedfile,
                 sppfile=runspp.spp_out,
                 fastqczip=select_first([s_mergebamfqc.zipfile, string_qual]),
@@ -1059,7 +1059,7 @@ workflow seaseq {
         call util.evalstats as merge_c_summarystats {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             input:
-                fastq_type="Control",
+                fastq_type="SEAseq Control",
                 bambed=only_c_finalbed.bedfile,
                 sppfile=only_c_runspp.spp_out,
                 fastqczip=select_first([c_mergebamfqc.zipfile, string_qual]),

@@ -213,7 +213,7 @@ task evalstats {
 
         head -n 245 /usr/local/bin/scripts/seaseq_overall.header  | tail -n 123 > ~{outputhtml}
         cat ~{outputhtml}x >> ~{outputhtml}
-        sed -i "s/SEAseq Sample FASTQ Report/SEAseq ~{fastq_type} Report/" ~{outputhtml}
+        sed -i "s/SEAseq Sample FASTQ Report/~{fastq_type} Report/" ~{outputhtml}
         echo '</table></div>' >> ~{outputhtml}
         tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputhtml}
 
@@ -376,7 +376,7 @@ task mergehtml {
 
         mergeoutput=$(cat ~{sep='; tail -n 1 ' htmlfiles})
         echo $mergeoutput >> ~{outputfile}
-        sed -i "s/SEAseq Sample FASTQ Report/SEAseq ~{fastq_type} Report/" ~{outputfile}
+        sed -i "s/SEAseq Sample FASTQ Report/~{fastq_type} Report/" ~{outputfile}
         echo '</table></div>' >> ~{outputfile}
         tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}
 
