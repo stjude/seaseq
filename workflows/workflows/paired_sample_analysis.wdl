@@ -393,6 +393,18 @@ workflow paired_sample_analysis {
     }
 
     output {
+        #Bedtools
+        File only_s_intersectfile = only_s_intersect.intersect_out
+        File intersect_outfile = intersect.intersect_out
+        File only_c_intersectfile = only_c_intersect.intersect_out
+        File only_s_finalbedfile = only_s_finalbed.bedfile
+        File only_c_finalbedfile = only_c_finalbed.bedfile
+
+        #SPP
+        File? only_s_runspp_file = only_s_runspp.spp_out
+        File? only_c_runspp_file = only_c_runspp.spp_out
+        File? runspp_file = runspp.spp_out
+
         #MACS
         File? peakbedfile = macs.peakbedfile
         File? peakxlsfile = macs.peakxlsfile
