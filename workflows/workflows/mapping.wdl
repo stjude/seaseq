@@ -7,23 +7,39 @@ import "../tasks/samtools.wdl"
 workflow mapping {
     input {
         File fastqfile
+        File? fastqfile_R2
+        Int insert_size = 600
         Array[File] index_files
-        File metricsfile
+        File? metricsfile
         File? blacklist
+        Boolean paired_end = false
         String default_location = "BAM_files"
     }
 
-    call bowtie.bowtie {
-        input :
-            fastqfile=fastqfile,
-            index_files=index_files,
-            metricsfile=metricsfile
+    if ( defined(metricsfile) ) {
+        call bowtie.bowtie as SE_map {
+            input :
+                fastqfile=fastqfile,
+                index_files=index_files,
+                metricsfile=metricsfile
+        }
+    }
+
+    if ( defined(fastqfile_R2) ) {
+        call bowtie.bowtie as PE_map {
+            input :
+                fastqfile=fastqfile,
+                fastqfile_R2=fastqfile_R2,
+                index_files=index_files,
+                insert_size=insert_size
+        }
     }   
 
     call samtools.viewsort {
         input :
-            samfile=bowtie.samfile,
-            default_location=default_location
+            samfile=select_first([SE_map.samfile, PE_map.samfile]),
+            default_location=default_location,
+            paired_end=paired_end
     }
 
     call samtools.indexstats {

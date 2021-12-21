@@ -67,6 +67,7 @@ task viewsort {
         File samfile
         String outputfile = basename(sub(samfile,'\.sam$','\.sorted.bam'))
         String default_location = "BAM_files"
+        Boolean paired_end = false
 
         Int memory_gb = 5
         Int max_retries = 1
@@ -79,9 +80,19 @@ task viewsort {
             ~{samfile} \
             > ~{sub(samfile,'\.sam$','\.bam')}
 
-        samtools sort \
-           ~{sub(samfile,'\.sam$','\.bam')} \
-           -o ~{outputfile}
+        if [ "~{paired_end}" == 'true' ]; then
+            samtools fixmate -m \
+                ~{sub(samfile,'\.sam$','\.bam')} \
+                ~{sub(samfile,'\.sam$','\.fixmate\.bam')}
+            samtools sort \
+                ~{sub(samfile,'\.sam$','\.fixmate\.bam')} \
+                -o ~{outputfile}
+        else
+            samtools sort \
+                ~{sub(samfile,'\.sam$','\.bam')} \
+                -o ~{outputfile}
+        fi
+
     }
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
