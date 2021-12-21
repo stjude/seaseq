@@ -3,6 +3,7 @@ import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/t
 import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/bedtools.wdl"
 import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/bowtie.wdl"
 import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/samtools.wdl"
+#import "workflows/tasks/samtools.wdl"
 import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/macs.wdl"
 import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/workflows/bamtogff.wdl"
 import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/sicer.wdl"
@@ -14,6 +15,8 @@ import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/w
 import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/runspp.wdl"
 import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/sortbed.wdl"
 import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/sratoolkit.wdl" as sra
+import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/workflows/paired_sample_analysis.wdl" as paired
+#import "workflows/workflows/paired_sample_analysis.wdl" as paired
 
 workflow seaseq {
     String pipeline_ver = 'v2.0.0'
@@ -357,6 +360,9 @@ workflow seaseq {
 
         File s_mergebam_afterbklist = select_first([s_merge_rmblklist.intersect_out, s_mergebam.mergebam])
 
+        call samtools.index as s_mergebam_afterbklist_index_ { input: bam=s_mergebam_afterbklist }
+        File s_mergebam_afterbklist_index = s_mergebam_afterbklist_index_.bam_index
+
         call samtools.markdup as s_merge_markdup {
             input :
                 bamfile=s_mergebam_afterbklist,
@@ -490,6 +496,9 @@ workflow seaseq {
         } # end if blacklist provided
 
         File c_mergebam_afterbklist = select_first([c_merge_rmblklist.intersect_out, c_mergebam.mergebam])
+
+        call samtools.index as c_mergebam_afterbklist_index_ { input: bam=c_mergebam_afterbklist }
+        File c_mergebam_afterbklist_index = c_mergebam_afterbklist_index_.bam_index
 
         call samtools.markdup as c_merge_markdup {
             input :
@@ -654,283 +663,15 @@ workflow seaseq {
     #   Complete Summary statistics
 
     #collate correct files for downstream analysis
+    # s_mergebam_afterbklist has no BAM index
+    # s_mapping.bklist_bam has s_mapping.bklist_index
+    # s_mapping.sorted_bam has s_mapping.bam_index
     File sample_bam = select_first([s_mergebam_afterbklist, s_mapping.bklist_bam, s_mapping.sorted_bam])
+    File sample_bai = select_first([s_mergebam_afterbklist_index, s_mapping.bklist_index, s_mapping.bam_index])
     File control_bam = select_first([c_mergebam_afterbklist, c_mapping.bklist_bam, c_mapping.sorted_bam])
+    File control_bai = select_first([c_mergebam_afterbklist_index, c_mapping.bklist_index, c_mapping.bam_index])
 
-    call macs.macs {
-        input :
-            bamfile=sample_bam,
-            control=control_bam,
-            pvalue = "1e-9",
-            keep_dup="auto",
-            output_name = if defined(results_name) then results_name + '-p9_kd-auto' else basename(sample_bam,'\.bam') + '+control-p9_kd-auto',
-            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-auto' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '+control-p9_kd-auto'
-    }
-
-    call util.addreadme {
-        input :
-            default_location = if defined(results_name) then results_name + '/PEAKS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/'
-    }
-    
-    call macs.macs as all {
-        input :
-            bamfile=sample_bam,
-            control=control_bam,
-            pvalue = "1e-9",
-            keep_dup="all",
-            output_name = if defined(results_name) then results_name + '-p9_kd-all' else basename(sample_bam,'\.bam') + '+control-p9_kd-all',
-            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-all' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '+control-p9_kd-all'
-    }
-
-    call macs.macs as nomodel {
-        input :
-            bamfile=sample_bam,
-            control=control_bam,
-            nomodel=true,
-            output_name = if defined(results_name) then results_name + '-nm' else basename(sample_bam,'\.bam') + '+control-nm',
-            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-nm' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '+control-nm'
-    }
-
-    call bamtogff.bamtogff {
-        input :
-            gtffile=gtf,
-            chromsizes=samtools_faidx.chromsizes,
-            bamfile=select_first([s_merge_markdup.mkdupbam, s_mapping.mkdup_bam]),
-            bamindex=select_first([s_merge_mkdup.indexbam, s_mapping.mkdup_index]),
-            control_bamfile=select_first([c_merge_markdup.mkdupbam, c_mapping.mkdup_bam]),
-            control_bamindex=select_first([c_merge_mkdup.indexbam, c_mapping.mkdup_index]),
-            samplename=if defined(results_name) then results_name else basename(sample_bam,'\.bam') + '+control',
-            default_location=if defined(results_name) then results_name + '/BAM_Density' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/BAM_Density'
-    }
-
-    call bedtools.bamtobed as s_forsicerbed {
-        input :
-            bamfile=select_first([s_merge_markdup.mkdupbam, s_mapping.mkdup_bam])
-    }
-
-    call bedtools.bamtobed as c_forsicerbed {
-        input :
-            bamfile=select_first([c_merge_markdup.mkdupbam, c_mapping.mkdup_bam])
-    }
-
-    call sicer.sicer {
-        input :
-            bedfile=s_forsicerbed.bedfile,
-            control_bed=c_forsicerbed.bedfile,
-            chromsizes=samtools_faidx.chromsizes,
-            outputname=if defined(results_name) then results_name else basename(s_forsicerbed.bedfile,'\.bed') + '+control',
-            default_location=if defined(results_name) then results_name + '/PEAKS/BROAD_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/BROAD_peaks'
-    }
-
-    call rose.rose {
-        input :
-            gtffile=gtf,
-            bamfile=sample_bam,
-            bamindex=select_first([s_merge_bklist.indexbam, s_mergeindexstats.indexbam, s_mapping.bklist_index, s_mapping.bam_index]),
-            control=control_bam,
-            controlindex=select_first([c_merge_bklist.indexbam, c_mergeindexstats.indexbam, c_mapping.bklist_index, c_mapping.bam_index]),
-            bedfile_auto=macs.peakbedfile,
-            bedfile_all=all.peakbedfile,
-            default_location=if defined(results_name) then results_name + '/PEAKS/STITCHED_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/STITCHED_peaks'
-    }
-
-    call runspp.runspp {
-        input:
-            bamfile=sample_bam,
-            control=control_bam
-    }
-
-    call runspp.runspp as only_s_runspp {
-        input:
-            bamfile=sample_bam
-    }
-
-    call runspp.runspp as only_c_runspp {
-        input:
-            bamfile=control_bam
-    }
-
-    String string_ctrlwig = ""
-    call viz.visualization as c_visualization {
-        input:
-            wigfile=select_first([macs.ctrlwigfile, string_ctrlwig]),
-            chromsizes=samtools_faidx.chromsizes,
-            control=true,
-            xlsfile=macs.peakxlsfile,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') + '/control' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') + '/control'
-    }
-
-    call viz.visualization as c_vizall {
-        input:
-            wigfile=select_first([all.ctrlwigfile, string_ctrlwig]),
-            chromsizes=samtools_faidx.chromsizes,
-            control=true,
-            xlsfile=all.peakxlsfile,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') + '/control' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') + '/control'
-    }
-    call viz.visualization as c_viznomodel {
-        input:
-            wigfile=select_first([nomodel.ctrlwigfile, string_ctrlwig]),
-            chromsizes=samtools_faidx.chromsizes,
-            control=true,
-            xlsfile=nomodel.peakxlsfile,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') + '/control' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') + '/control'
-    }
-
-    call util.peaksanno {
-        input :
-            gtffile=gtf,
-            bedfile=macs.peakbedfile,
-            chromsizes=samtools_faidx.chromsizes,
-            summitfile=macs.summitsfile,
-            default_location=if defined(results_name) then results_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS_Annotation/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','')
-    }
-
-    call util.peaksanno as all_peaksanno {
-        input :
-            gtffile=gtf,
-            bedfile=all.peakbedfile,
-            chromsizes=samtools_faidx.chromsizes,
-            summitfile=all.summitsfile,
-            default_location=if defined(results_name) then results_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS_Annotation/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','')
-    }
-
-    call util.peaksanno as nomodel_peaksanno {
-        input :
-            gtffile=gtf,
-            bedfile=nomodel.peakbedfile,
-            chromsizes=samtools_faidx.chromsizes,
-            summitfile=nomodel.summitsfile,
-            default_location=if defined(results_name) then results_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS_Annotation/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','')
-    }
-
-    call util.peaksanno as sicer_peaksanno {
-        input :
-            gtffile=gtf,
-            bedfile=select_first([sicer.fdrisland, string_ctrlwig]),
-            chromsizes=samtools_faidx.chromsizes,
-            default_location=if defined(results_name) then results_name + '/PEAKS_Annotation/BROAD_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS_Annotation/BROAD_peaks'
-    }
-
-    # Motif Analysis
-    if (run_motifs) {
-        call motifs.motifs {
-            input:
-                reference=reference,
-                reference_index=samtools_faidx.faidx_file,
-                bedfile=macs.peakbedfile,
-                motif_databases=motif_databases,
-                default_location=if defined(results_name) then results_name + '/MOTIFS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/MOTIFS'
-        }
-
-        call util.flankbed {
-            input :
-                bedfile=macs.summitsfile,
-                default_location=if defined(results_name) then results_name + '/MOTIFS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/MOTIFS'
-        }
-
-        call motifs.motifs as flank {
-            input:
-                reference=reference,
-                reference_index=samtools_faidx.faidx_file,
-                bedfile=flankbed.flankbedfile,
-                motif_databases=motif_databases,
-                default_location=if defined(results_name) then results_name + '/MOTIFS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/MOTIFS'
-        }
-    }
-
-    call viz.visualization {
-        input:
-            wigfile=macs.wigfile,
-            chromsizes=samtools_faidx.chromsizes,
-            xlsfile=macs.peakxlsfile,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','')
-    }
-
-    call viz.visualization as vizall {
-        input:
-            wigfile=all.wigfile,
-            chromsizes=samtools_faidx.chromsizes,
-            xlsfile=all.peakxlsfile,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','')
-    }
-
-    call viz.visualization as viznomodel {
-        input:
-            wigfile=nomodel.wigfile,
-            chromsizes=samtools_faidx.chromsizes,
-            xlsfile=nomodel.peakxlsfile,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','')
-    }
-
-    call viz.visualization as vizsicer {
-        input:
-            wigfile=sicer.wigfile,
-            chromsizes=samtools_faidx.chromsizes,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/BROAD_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/BROAD_peaks'
-    }
-
-    #Peak Calling for Sample BAM only
-    call macs.macs as only_s_macs {
-        input :
-            bamfile=sample_bam,
-            pvalue = "1e-9",
-            keep_dup="auto",
-            default_location='SAMPLE/' + sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS_forQC/' + basename(sample_bam,'\.bam') + '-p9_kd-auto'
-    }
-
-    #Peak Calling for Control BAM only
-    call macs.macs as only_c_macs {
-        input :
-            bamfile=control_bam,
-            pvalue = "1e-9",
-            keep_dup="auto",
-            default_location='CONTROL/' + sub(basename(control_bam),'\.sorted\.b.*$','') + '/PEAKS_forQC/' + basename(control_bam,'\.bam') + '-p9_kd-auto'
-    }
-
-    call bedtools.bamtobed as only_c_finalbed {
-        input:
-            bamfile=control_bam
-    }
-
-    call sortbed.sortbed as only_c_sortbed {
-        input:
-            bedfile=only_c_finalbed.bedfile
-    }
-
-    call bedtools.intersect as only_c_intersect {
-        input:
-            fileA=only_c_macs.peakbedfile,
-            fileB=only_c_sortbed.sortbed_out,
-            countoverlap=true,
-            sorted=true
-    }
-
-    call bedtools.bamtobed as only_s_finalbed {
-        input:
-            bamfile=sample_bam
-    }
-
-    call sortbed.sortbed as only_s_sortbed {
-        input:
-            bedfile=only_s_finalbed.bedfile
-    }
-
-    call bedtools.intersect as only_s_intersect {
-        input:
-            fileA=only_s_macs.peakbedfile,
-            fileB=only_s_sortbed.sortbed_out,
-            countoverlap=true,
-            sorted=true
-    }
-
-    call bedtools.intersect {
-        input:
-            fileA=macs.peakbedfile,
-            fileB=only_s_sortbed.sortbed_out,
-            countoverlap=true,
-            sorted=true
-    }
+    call paired.paired_sample_analysis { input: reference=reference, blacklist=blacklist, gtf=gtf, motif_databases=motif_databases, chromsizes=samtools_faidx.chromsizes, faidx=samtools_faidx.faidx_file, sample_bam=sample_bam, sample_bai=sample_bai, control_bam=control_bam, control_bai=control_bai, results_name=results_name, run_motifs=run_motifs}
 
 ### ---------------------------------------- ###
 ### ------------ S E C T I O N 4 ----------- ###
@@ -945,15 +686,15 @@ workflow seaseq {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             input:
                 fastq_type="Sample",
-                bambed=only_s_finalbed.bedfile,
-                sppfile=only_s_runspp.spp_out,
+                bambed=paired_sample_analysis.only_s_finalbedfile,
+                sppfile=paired_sample_analysis.only_s_runspp_file,
                 fastqczip=select_first([uno_s_bamfqc.zipfile, string_qual]),
                 bamflag=s_mapping.bam_stats,
                 rmdupflag=s_mapping.mkdup_stats,
                 bkflag=s_mapping.bklist_stats,
                 fastqmetrics=uno_s_bfs.metrics_out,
-                countsfile=only_s_intersect.intersect_out,
-                peaksxls=only_s_macs.peakxlsfile,
+                countsfile=paired_sample_analysis.only_s_intersectfile,
+                peaksxls=paired_sample_analysis.only_s_peakxlsfile,
                 outputfile = sub(basename(sample_bam),'\.sorted\.b.*$','-stats.csv'),
                 outputhtml = sub(basename(sample_bam),'\.sorted\.b.*$', '-stats.html'),
                 outputtext = sub(basename(sample_bam),'\.sorted\.b.*$', '-stats.txt'),
@@ -964,17 +705,17 @@ workflow seaseq {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             input:
                 fastq_type="Comprehensive",
-                bambed=only_s_finalbed.bedfile,
-                sppfile=runspp.spp_out,
+                bambed=paired_sample_analysis.only_s_finalbedfile,
+                sppfile=paired_sample_analysis.runspp_file,
                 fastqczip=select_first([uno_s_bamfqc.zipfile, string_qual]),
                 bamflag=s_mapping.bam_stats,
                 rmdupflag=s_mapping.mkdup_stats,
                 bkflag=s_mapping.bklist_stats,
                 fastqmetrics=uno_s_bfs.metrics_out,
-                countsfile=intersect.intersect_out,
-                peaksxls=macs.peakxlsfile,
-                enhancers=rose.enhancers,
-                superenhancers=rose.super_enhancers,
+                countsfile=paired_sample_analysis.intersect_outfile,
+                peaksxls=paired_sample_analysis.peakxlsfile,
+                enhancers=paired_sample_analysis.enhancers,
+                superenhancers=paired_sample_analysis.super_enhancers,
                 outputfile = sub(basename(sample_bam),'\.sorted\.b.*$', '-stats.csv'),
                 outputhtml = sub(basename(sample_bam),'\.sorted\.b.*$','-stats.html'),
                 outputtext = sub(basename(sample_bam),'\.sorted\.b.*$', '-stats.txt'),
@@ -987,15 +728,15 @@ workflow seaseq {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             input:
                 fastq_type="Control",
-                bambed=only_c_finalbed.bedfile,
-                sppfile=only_c_runspp.spp_out,
+                bambed=paired_sample_analysis.only_c_finalbedfile,
+                sppfile=paired_sample_analysis.only_c_runspp_file,
                 fastqczip=select_first([uno_c_bamfqc.zipfile, string_qual]),
                 bamflag=c_mapping.bam_stats,
                 rmdupflag=c_mapping.mkdup_stats,
                 bkflag=c_mapping.bklist_stats,
                 fastqmetrics=uno_c_bfs.metrics_out,
-                countsfile=only_c_intersect.intersect_out,
-                peaksxls=only_c_macs.peakxlsfile,
+                countsfile=paired_sample_analysis.only_c_intersectfile,
+                peaksxls=paired_sample_analysis.only_c_peakxlsfile,
                 outputfile = sub(basename(control_bam),'\.sorted\.b.*$','-stats.csv'),
                 outputhtml = sub(basename(control_bam),'\.sorted\.b.*$','-stats.html'),
                 outputtext = sub(basename(control_bam),'\.sorted\.b.*$','-stats.txt'),
@@ -1008,14 +749,14 @@ workflow seaseq {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             input:
                 fastq_type="Sample",
-                bambed=only_s_finalbed.bedfile,
-                sppfile=only_s_runspp.spp_out,
+                bambed=paired_sample_analysis.only_s_finalbedfile,
+                sppfile=paired_sample_analysis.only_s_runspp_file,
                 fastqczip=select_first([s_mergebamfqc.zipfile, string_qual]),
                 bamflag=s_mergeindexstats.flagstats,
                 rmdupflag=s_merge_mkdup.flagstats,
                 bkflag=s_merge_bklist.flagstats,
-                countsfile=only_s_intersect.intersect_out,
-                peaksxls=only_s_macs.peakxlsfile,
+                countsfile=paired_sample_analysis.only_s_intersectfile,
+                peaksxls=paired_sample_analysis.only_s_peakxlsfile,
                 outputfile = sub(basename(sample_bam),'\.sorted\.b.*$','-stats.csv'),
                 outputhtml = sub(basename(sample_bam),'\.sorted\.b.*$','-stats.html'),
                 outputtext = sub(basename(sample_bam),'\.sorted\.b.*$','-stats.txt'),
@@ -1026,16 +767,16 @@ workflow seaseq {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             input:
                 fastq_type="Comprehensive",
-                bambed=only_s_finalbed.bedfile,
-                sppfile=runspp.spp_out,
+                bambed=paired_sample_analysis.only_s_finalbedfile,
+                sppfile=paired_sample_analysis.runspp_file,
                 fastqczip=select_first([s_mergebamfqc.zipfile, string_qual]),
                 bamflag=s_mergeindexstats.flagstats,
                 rmdupflag=s_merge_mkdup.flagstats,
                 bkflag=s_merge_bklist.flagstats,
-                countsfile=intersect.intersect_out,
-                peaksxls=macs.peakxlsfile,
-                enhancers=rose.enhancers,
-                superenhancers=rose.super_enhancers,
+                countsfile=paired_sample_analysis.intersect_outfile,
+                peaksxls=paired_sample_analysis.peakxlsfile,
+                enhancers=paired_sample_analysis.enhancers,
+                superenhancers=paired_sample_analysis.super_enhancers,
                 outputfile = sub(basename(sample_bam),'\.sorted\.b.*$','-stats.csv'),
                 outputhtml = sub(basename(sample_bam),'\.sorted\.b.*$','-stats.html'),
                 outputtext = sub(basename(sample_bam),'\.sorted\.b.*$','-stats.txt'),
@@ -1048,14 +789,14 @@ workflow seaseq {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             input:
                 fastq_type="Control",
-                bambed=only_c_finalbed.bedfile,
-                sppfile=only_c_runspp.spp_out,
+                bambed=paired_sample_analysis.only_c_finalbedfile,
+                sppfile=paired_sample_analysis.only_c_runspp_file,
                 fastqczip=select_first([c_mergebamfqc.zipfile, string_qual]),
                 bamflag=c_mergeindexstats.flagstats,
                 rmdupflag=c_merge_mkdup.flagstats,
                 bkflag=c_merge_bklist.flagstats,
-                countsfile=only_c_intersect.intersect_out,
-                peaksxls=only_c_macs.peakxlsfile,
+                countsfile=paired_sample_analysis.only_c_intersectfile,
+                peaksxls=paired_sample_analysis.only_c_peakxlsfile,
                 outputfile = sub(basename(control_bam),'\.sorted\.b.*$','-stats.csv'),
                 outputhtml = sub(basename(control_bam),'\.sorted\.b.*$','-stats.html'),
                 outputtext = sub(basename(control_bam),'\.sorted\.b.*$','-stats.txt'),
@@ -1156,139 +897,139 @@ workflow seaseq {
         File? c_rmindexbam = c_merge_mkdup.indexbam
         
         #MACS
-        File? peakbedfile = macs.peakbedfile
-        File? peakxlsfile = macs.peakxlsfile
-        File? summitsfile = macs.summitsfile
-        File? negativexlsfile = macs.negativepeaks
-        File? wigfile = macs.wigfile
-        File? ctrlwigfile = macs.ctrlwigfile
-        File? all_peakbedfile = all.peakbedfile
-        File? all_peakxlsfile = all.peakxlsfile
-        File? all_summitsfile = all.summitsfile
-        File? all_negativexlsfile = all.negativepeaks
-        File? all_wigfile = all.wigfile
-        File? all_ctrlwigfile = all.ctrlwigfile
-        File? nm_peakbedfile = nomodel.peakbedfile
-        File? nm_peakxlsfile = nomodel.peakxlsfile
-        File? nm_summitsfile = nomodel.summitsfile
-        File? nm_negativexlsfile = nomodel.negativepeaks
-        File? nm_wigfile = nomodel.wigfile
-        File? nm_ctrlwigfile = nomodel.ctrlwigfile
-        File? readme_peaks = addreadme.readme_peaks
+        File? peakbedfile = paired_sample_analysis.peakbedfile
+        File? peakxlsfile = paired_sample_analysis.peakxlsfile
+        File? summitsfile = paired_sample_analysis.summitsfile
+        File? negativexlsfile = paired_sample_analysis.negativexlsfile
+        File? wigfile = paired_sample_analysis.wigfile
+        File? ctrlwigfile = paired_sample_analysis.ctrlwigfile
+        File? all_peakbedfile = paired_sample_analysis.all_peakbedfile
+        File? all_peakxlsfile = paired_sample_analysis.all_peakxlsfile
+        File? all_summitsfile = paired_sample_analysis.all_summitsfile
+        File? all_negativexlsfile = paired_sample_analysis.all_negativexlsfile
+        File? all_wigfile = paired_sample_analysis.all_wigfile
+        File? all_ctrlwigfile = paired_sample_analysis.all_ctrlwigfile
+        File? nm_peakbedfile = paired_sample_analysis.nm_peakbedfile
+        File? nm_peakxlsfile = paired_sample_analysis.nm_peakxlsfile
+        File? nm_summitsfile = paired_sample_analysis.nm_summitsfile
+        File? nm_negativexlsfile = paired_sample_analysis.nm_negativexlsfile
+        File? nm_wigfile = paired_sample_analysis.nm_wigfile
+        File? nm_ctrlwigfile = paired_sample_analysis.nm_ctrlwigfile
+        File? readme_peaks = paired_sample_analysis.readme_peaks
 
-        File? only_c_peakbedfile = only_c_macs.peakbedfile
-        File? only_c_peakxlsfile = only_c_macs.peakxlsfile
-        File? only_c_summitsfile = only_c_macs.summitsfile
-        File? only_c_wigfile = only_c_macs.wigfile
-        File? only_s_peakbedfile = only_s_macs.peakbedfile
-        File? only_s_peakxlsfile = only_s_macs.peakxlsfile
-        File? only_s_summitsfile = only_s_macs.summitsfile
-        File? only_s_wigfile = only_s_macs.wigfile
+        File? only_c_peakbedfile = paired_sample_analysis.only_c_peakbedfile
+        File? only_c_peakxlsfile = paired_sample_analysis.only_c_peakxlsfile
+        File? only_c_summitsfile = paired_sample_analysis.only_c_summitsfile
+        File? only_c_wigfile = paired_sample_analysis.only_c_wigfile
+        File? only_s_peakbedfile = paired_sample_analysis.only_s_peakbedfile
+        File? only_s_peakxlsfile = paired_sample_analysis.only_s_peakxlsfile
+        File? only_s_summitsfile = paired_sample_analysis.only_s_summitsfile
+        File? only_s_wigfile = paired_sample_analysis.only_s_wigfile
 
         #SICER
-        File? scoreisland = sicer.scoreisland
-        File? sicer_wigfile = sicer.wigfile
-        File? sicer_summary = sicer.summary
-        File? sicer_fdrisland = sicer.fdrisland
+        File? scoreisland = paired_sample_analysis.scoreisland
+        File? sicer_wigfile = paired_sample_analysis.sicer_wigfile
+        File? sicer_summary = paired_sample_analysis.sicer_summary
+        File? sicer_fdrisland = paired_sample_analysis.sicer_fdrisland
 
         #ROSE
-        File? pngfile = rose.pngfile
-        File? mapped_union = rose.mapped_union
-        File? mapped_stitch = rose.mapped_stitch
-        File? enhancers = rose.enhancers
-        File? super_enhancers = rose.super_enhancers
-        File? gff_file = rose.gff_file
-        File? gff_union = rose.gff_union
-        File? union_enhancers = rose.union_enhancers
-        File? stitch_enhancers = rose.stitch_enhancers
-        File? e_to_g_enhancers = rose.e_to_g_enhancers
-        File? g_to_e_enhancers = rose.g_to_e_enhancers
-        File? e_to_g_super_enhancers = rose.e_to_g_super_enhancers
-        File? g_to_e_super_enhancers = rose.g_to_e_super_enhancers
+        File? pngfile = paired_sample_analysis.pngfile
+        File? mapped_union = paired_sample_analysis.mapped_union
+        File? mapped_stitch = paired_sample_analysis.mapped_stitch
+        File? enhancers = paired_sample_analysis.enhancers
+        File? super_enhancers = paired_sample_analysis.super_enhancers
+        File? gff_file = paired_sample_analysis.gff_file
+        File? gff_union = paired_sample_analysis.gff_union
+        File? union_enhancers = paired_sample_analysis.union_enhancers
+        File? stitch_enhancers = paired_sample_analysis.stitch_enhancers
+        File? e_to_g_enhancers = paired_sample_analysis.e_to_g_enhancers
+        File? g_to_e_enhancers = paired_sample_analysis.g_to_e_enhancers
+        File? e_to_g_super_enhancers = paired_sample_analysis.e_to_g_super_enhancers
+        File? g_to_e_super_enhancers = paired_sample_analysis.g_to_e_super_enhancers
 
         #MOTIFS
-        File? flankbedfile = flankbed.flankbedfile
+        File? flankbedfile = paired_sample_analysis.flankbedfile
 
-        File? ame_tsv = motifs.ame_tsv
-        File? ame_html = motifs.ame_html
-        File? ame_seq = motifs.ame_seq
-        File? meme = motifs.meme_out
-        File? meme_summary = motifs.meme_summary
+        File? ame_tsv = paired_sample_analysis.ame_tsv
+        File? ame_html = paired_sample_analysis.ame_html
+        File? ame_seq = paired_sample_analysis.ame_seq
+        File? meme = paired_sample_analysis.meme
+        File? meme_summary = paired_sample_analysis.meme_summary
 
-        File? summit_ame_tsv = flank.ame_tsv
-        File? summit_ame_html = flank.ame_html
-        File? summit_ame_seq = flank.ame_seq
-        File? summit_meme = flank.meme_out
-        File? summit_meme_summary = flank.meme_summary
+        File? summit_ame_tsv = paired_sample_analysis.summit_ame_tsv
+        File? summit_ame_html = paired_sample_analysis.summit_ame_html
+        File? summit_ame_seq = paired_sample_analysis.summit_ame_seq
+        File? summit_meme = paired_sample_analysis.summit_meme
+        File? summit_meme_summary = paired_sample_analysis.summit_meme_summary
 
         #BAM2GFF
-        File? s_matrices = bamtogff.s_matrices
-        File? c_matrices = bamtogff.c_matrices
-        File? densityplot = bamtogff.densityplot
-        File? pdf_gene = bamtogff.pdf_gene
-        File? pdf_h_gene = bamtogff.pdf_h_gene
-        File? png_h_gene = bamtogff.png_h_gene
-        File? pdf_promoters = bamtogff.pdf_promoters
-        File? pdf_h_promoters = bamtogff.pdf_h_promoters
-        File? png_h_promoters = bamtogff.png_h_promoters
+        File? s_matrices = paired_sample_analysis.s_matrices
+        File? c_matrices = paired_sample_analysis.c_matrices
+        File? densityplot = paired_sample_analysis.densityplot
+        File? pdf_gene = paired_sample_analysis.pdf_gene
+        File? pdf_h_gene = paired_sample_analysis.pdf_h_gene
+        File? png_h_gene = paired_sample_analysis.png_h_gene
+        File? pdf_promoters = paired_sample_analysis.pdf_promoters
+        File? pdf_h_promoters = paired_sample_analysis.pdf_h_promoters
+        File? png_h_promoters = paired_sample_analysis.png_h_promoters
 
         #PEAKS-ANNOTATION
-        File? peak_promoters = peaksanno.peak_promoters
-        File? peak_genebody = peaksanno.peak_genebody
-        File? peak_window = peaksanno.peak_window
-        File? peak_closest = peaksanno.peak_closest
-        File? peak_comparison = peaksanno.peak_comparison
-        File? gene_comparison = peaksanno.gene_comparison
-        File? pdf_comparison = peaksanno.pdf_comparison
+        File? peak_promoters = paired_sample_analysis.peak_promoters
+        File? peak_genebody = paired_sample_analysis.peak_genebody
+        File? peak_window = paired_sample_analysis.peak_window
+        File? peak_closest = paired_sample_analysis.peak_closest
+        File? peak_comparison = paired_sample_analysis.peak_comparison
+        File? gene_comparison = paired_sample_analysis.gene_comparison
+        File? pdf_comparison = paired_sample_analysis.pdf_comparison
 
-        File? all_peak_promoters = all_peaksanno.peak_promoters
-        File? all_peak_genebody = all_peaksanno.peak_genebody
-        File? all_peak_window = all_peaksanno.peak_window
-        File? all_peak_closest = all_peaksanno.peak_closest
-        File? all_peak_comparison = all_peaksanno.peak_comparison
-        File? all_gene_comparison = all_peaksanno.gene_comparison
-        File? all_pdf_comparison = all_peaksanno.pdf_comparison
+        File? all_peak_promoters = paired_sample_analysis.all_peak_promoters
+        File? all_peak_genebody = paired_sample_analysis.all_peak_genebody
+        File? all_peak_window = paired_sample_analysis.all_peak_window
+        File? all_peak_closest = paired_sample_analysis.all_peak_closest
+        File? all_peak_comparison = paired_sample_analysis.all_peak_comparison
+        File? all_gene_comparison = paired_sample_analysis.all_gene_comparison
+        File? all_pdf_comparison = paired_sample_analysis.all_pdf_comparison
 
-        File? nomodel_peak_promoters = nomodel_peaksanno.peak_promoters
-        File? nomodel_peak_genebody = nomodel_peaksanno.peak_genebody
-        File? nomodel_peak_window = nomodel_peaksanno.peak_window
-        File? nomodel_peak_closest = nomodel_peaksanno.peak_closest
-        File? nomodel_peak_comparison = nomodel_peaksanno.peak_comparison
-        File? nomodel_gene_comparison = nomodel_peaksanno.gene_comparison
-        File? nomodel_pdf_comparison = nomodel_peaksanno.pdf_comparison
+        File? nomodel_peak_promoters = paired_sample_analysis.nomodel_peak_promoters
+        File? nomodel_peak_genebody = paired_sample_analysis.nomodel_peak_genebody
+        File? nomodel_peak_window = paired_sample_analysis.nomodel_peak_window
+        File? nomodel_peak_closest = paired_sample_analysis.nomodel_peak_closest
+        File? nomodel_peak_comparison = paired_sample_analysis.nomodel_peak_comparison
+        File? nomodel_gene_comparison = paired_sample_analysis.nomodel_gene_comparison
+        File? nomodel_pdf_comparison = paired_sample_analysis.nomodel_pdf_comparison
 
-        File? sicer_peak_promoters = sicer_peaksanno.peak_promoters
-        File? sicer_peak_genebody = sicer_peaksanno.peak_genebody
-        File? sicer_peak_window = sicer_peaksanno.peak_window
-        File? sicer_peak_closest = sicer_peaksanno.peak_closest
-        File? sicer_peak_comparison = sicer_peaksanno.peak_comparison
-        File? sicer_gene_comparison = sicer_peaksanno.gene_comparison
-        File? sicer_pdf_comparison = sicer_peaksanno.pdf_comparison
+        File? sicer_peak_promoters = paired_sample_analysis.sicer_peak_promoters
+        File? sicer_peak_genebody = paired_sample_analysis.sicer_peak_genebody
+        File? sicer_peak_window = paired_sample_analysis.sicer_peak_window
+        File? sicer_peak_closest = paired_sample_analysis.sicer_peak_closest
+        File? sicer_peak_comparison = paired_sample_analysis.sicer_peak_comparison
+        File? sicer_gene_comparison = paired_sample_analysis.sicer_gene_comparison
+        File? sicer_pdf_comparison = paired_sample_analysis.sicer_pdf_comparison
 
         #VISUALIZATION
-        File? bigwig = visualization.bigwig
-        File? norm_wig = visualization.norm_wig
-        File? tdffile = visualization.tdffile
-        File? n_bigwig = viznomodel.bigwig
-        File? n_norm_wig = viznomodel.norm_wig
-        File? n_tdffile = viznomodel.tdffile
-        File? a_bigwig = vizall.bigwig
-        File? a_norm_wig = vizall.norm_wig
-        File? a_tdffile = vizall.tdffile
+        File? bigwig = paired_sample_analysis.bigwig
+        File? norm_wig = paired_sample_analysis.norm_wig
+        File? tdffile = paired_sample_analysis.tdffile
+        File? n_bigwig = paired_sample_analysis.n_bigwig
+        File? n_norm_wig = paired_sample_analysis.n_norm_wig
+        File? n_tdffile = paired_sample_analysis.n_tdffile
+        File? a_bigwig = paired_sample_analysis.a_bigwig
+        File? a_norm_wig = paired_sample_analysis.a_norm_wig
+        File? a_tdffile = paired_sample_analysis.a_tdffile
 
-        File? c_bigwig = c_visualization.bigwig
-        File? c_norm_wig = c_visualization.norm_wig
-        File? c_tdffile = c_visualization.tdffile
-        File? c_n_bigwig = c_viznomodel.bigwig
-        File? c_n_norm_wig = c_viznomodel.norm_wig
-        File? c_n_tdffile = c_viznomodel.tdffile
-        File? c_a_bigwig = c_vizall.bigwig
-        File? c_a_norm_wig = c_vizall.norm_wig
-        File? c_a_tdffile = c_vizall.tdffile
+        File? c_bigwig = paired_sample_analysis.c_bigwig
+        File? c_norm_wig = paired_sample_analysis.c_norm_wig
+        File? c_tdffile = paired_sample_analysis.c_tdffile
+        File? c_n_bigwig = paired_sample_analysis.c_n_bigwig
+        File? c_n_norm_wig = paired_sample_analysis.c_n_norm_wig
+        File? c_n_tdffile = paired_sample_analysis.c_n_tdffile
+        File? c_a_bigwig = paired_sample_analysis.c_a_bigwig
+        File? c_a_norm_wig = paired_sample_analysis.c_a_norm_wig
+        File? c_a_tdffile = paired_sample_analysis.c_a_tdffile
 
-        File? s_bigwig = vizsicer.bigwig
-        File? s_norm_wig = vizsicer.norm_wig
-        File? s_tdffile = vizsicer.tdffile
+        File? s_bigwig = paired_sample_analysis.s_bigwig
+        File? s_norm_wig = paired_sample_analysis.s_norm_wig
+        File? s_tdffile = paired_sample_analysis.s_tdffile
 
         #QC-STATS
         Array[File?]? s_qc_statsfile = indv_s_summarystats.statsfile
