@@ -119,7 +119,7 @@ task faidx {
         cpu: ncpu
     }
     output {
-	File faidx_file = "~{sub(basename(reference),'.gz','')}.fai"
+        File faidx_file = "~{sub(basename(reference),'.gz','')}.fai"
         File chromsizes = "~{sub(basename(reference),'.gz','')}.tab"
     }
 }
@@ -177,5 +177,27 @@ task checkmapped {
     }
     output {
         File? outputfile = "~{default_location}/~{outputfile}"
+    }
+}
+
+task index {
+    input {
+	    File bam
+        String outfile = basename(bam)+".bai"
+        Int memory_gb = 5
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+        samtools index ~{bam} ~{outfile}
+    >>>
+    runtime {
+        memory: memory_gb + " GB"
+        maxRetries: max_retries
+        docker: 'abralab/samtools:v1.9'
+        cpu: ncpu
+    }
+    output {
+        File bam_index = outfile
     }
 }
