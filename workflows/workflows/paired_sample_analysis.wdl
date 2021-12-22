@@ -170,7 +170,7 @@ workflow paired_sample_analysis {
 
     call bedtools.bamtobed as c_forsicerbed {
         input :
-            bamfile=sample_bam
+            bamfile=control_bam
     }
 
     call sicer.sicer {
