@@ -297,7 +297,7 @@ workflow peaseq {
     call samtools.mergebam as SE_mergebam {
         input:
             bamfiles=indv_mapping.sorted_bam,
-            default_location = if defined(results_name) then results_name + '_SE/BAM_files' else 'AllMerge_' + length(indv_mapping.sorted_bam) + '_mapped_SE/BAM_files',
+            default_location = if defined(results_name) then results_name + '_SE/BAM_files' else 'AllMapped_' + length(indv_mapping.sorted_bam) + '_SE/BAM_files',
             outputfile = if defined(results_name) then results_name + '_SE.sorted.bam' else 'AllMapped_' + length(all_sample_fastqfiles) + '_SE.sorted.bam'
     }
 
@@ -385,6 +385,7 @@ workflow peaseq {
                 index_files=bowtie_index_,
                 blacklist=blacklist,
                 paired_end=true,
+                results_name=results_name,
                 default_location=if defined(results_name) then results_name + '_PE/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12].*\.f.*q\.gz','') + '_PE/BAM_files'
         }
 

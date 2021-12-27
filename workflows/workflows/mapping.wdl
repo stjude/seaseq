@@ -14,6 +14,7 @@ workflow mapping {
         File? blacklist
         Boolean paired_end = false
         String default_location = "BAM_files"
+        String? results_name
     }
 
     if ( defined(metricsfile) ) {
@@ -31,7 +32,8 @@ workflow mapping {
                 fastqfile=fastqfile,
                 fastqfile_R2=fastqfile_R2,
                 index_files=index_files,
-                insert_size=insert_size
+                insert_size=insert_size,
+                prefix=results_name
         }
     }   
 
