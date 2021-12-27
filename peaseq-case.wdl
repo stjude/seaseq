@@ -291,14 +291,14 @@ workflow peaseq {
             htmlfiles=indv_summarystats.xhtml,
             txtfiles=indv_summarystats.textfile,
             default_location='SAMPLE',
-            outputfile = 'AllMapped_peaseq-summary-stats.html'
+            outputfile = 'AllMapped_SEmode_peaseq-summary-stats.html'
     }
 
     call samtools.mergebam as SE_mergebam {
         input:
             bamfiles=indv_mapping.sorted_bam,
-            default_location = if defined(results_name) then results_name + '_SE/BAM_files' else 'AllMapped_' + length(indv_mapping.sorted_bam) + '_SE/BAM_files',
-            outputfile = if defined(results_name) then results_name + '_SE.sorted.bam' else 'AllMapped_' + length(all_sample_fastqfiles) + '_SE.sorted.bam'
+            default_location = if defined(results_name) then results_name + '_SE/BAM_files' else 'AllMapped_' + length(indv_mapping.sorted_bam) + 'fastqs_SE/BAM_files',
+            outputfile = if defined(results_name) then results_name + '_SE.sorted.bam' else 'AllMapped_' + length(all_sample_fastqfiles) + 'fastqs_SE.sorted.bam'
     }
 
     call fastqc.fastqc as SE_mergebamfqc {
@@ -355,7 +355,124 @@ workflow peaseq {
     Boolean multi_fastqpair = if length(sample_fastqfiles) > 1 then true else false
     Boolean one_fastqpair = if length(sample_fastqfiles) == 1 then true else false
 
-############# multi fastq
+    if ( multi_fastqpair ) {
+        scatter (fastqpair in sample_fastqfiles) {
+            # Execute analysis on each fastq file provided
+            # Analysis executed:
+            #   Reference Alignment using Bowtie (-k2 -m2)
+            #   Convert SAM to BAM
+            #   FastQC on BAM files
+            #   Remove Blacklists (if provided)
+            #   Remove read duplicates
+            #   Summary statistics on FASTQs
+            #   Combine html files into one for easy viewing
+            
+            call mapping.mapping as indv_PE_mapping {
+                input :
+                    fastqfile=fastqpair.left,
+                    fastqfile_R2=fastqpair.right,
+                    insert_size=bowtie_insert_size,
+                    index_files=bowtie_index_,
+                    blacklist=blacklist,
+                    paired_end=true,
+                    default_location='SAMPLE/' + sub(basename(fastqpair.left),'_R?[12].*\.f.*q\.gz','') + '/BAM_files'
+            }
+
+            call fastqc.fastqc as indv_PE_bamfqc {
+                input :
+                    inputfile=indv_PE_mapping.sorted_bam,
+                    default_location='SAMPLE/' + sub(basename(fastqpair.left),'_R?[12].*\.f.*q\.gz','') + '/QC/FastQC'
+            }
+
+            call runspp.runspp as indv_PE_runspp {
+                input:
+                    bamfile=select_first([indv_PE_mapping.bklist_bam, indv_PE_mapping.sorted_bam])
+            }
+
+            call bedtools.bamtobed as indv_PE_bamtobed {
+                input:
+                    bamfile=select_first([indv_PE_mapping.bklist_bam, indv_PE_mapping.sorted_bam])
+            }
+
+            call util.evalstats as indv_PE_summarystats {
+                input:
+                    fastq_type="PEAseq Sample FASTQ",
+                    bambed=indv_PE_bamtobed.bedfile,
+                    sppfile=indv_PE_runspp.spp_out,
+                    fastqczip=indv_PE_bamfqc.zipfile,
+                    bamflag=indv_PE_mapping.bam_stats,
+                    rmdupflag=indv_PE_mapping.mkdup_stats,
+                    bkflag=indv_PE_mapping.bklist_stats,
+                    default_location='SAMPLE/' + sub(basename(fastqpair.left),'_R?[12].*\.f.*q\.gz','') + '/QC/SummaryStats'
+            }
+        } # end scatter (for each sample fastq)
+
+        # MERGE BAM FILES
+        # Execute analysis on merge bam file
+        # Analysis executed:
+        #   Merge BAM (if more than 1 fastq is provided)
+        #   FastQC on Merge BAM (AllMapped_<number>_mapped)
+
+        # merge bam files and perform fasTQC if more than one is provided
+        call util.mergehtml as PE_mergehtml {
+            input:
+                htmlfiles=indv_PE_summarystats.xhtml,
+                txtfiles=indv_PE_summarystats.textfile,
+                default_location='SAMPLE',
+                outputfile = 'AllMapped_PEmode_peaseq-summary-stats.html'
+        }
+
+        call samtools.mergebam as PE_mergebam {
+            input:
+                bamfiles=indv_PE_mapping.sorted_bam,
+                default_location = if defined(results_name) then results_name + '_PE/BAM_files' else 'AllMapped_' + length(indv_PE_mapping.sorted_bam) + 'fastqpairs_PE/BAM_files',
+                outputfile = if defined(results_name) then results_name + '_PE.sorted.bam' else 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs_PE.sorted.bam'
+        }
+
+        call fastqc.fastqc as PE_mergebamfqc {
+            input:
+	        inputfile=PE_mergebam.mergebam,
+                default_location=sub(basename(PE_mergebam.mergebam),'\.sorted\.b.*$','') + '/QC/FastQC'
+        }
+
+        call samtools.indexstats as PE_mergeindexstats {
+            input:
+                bamfile=PE_mergebam.mergebam,
+                default_location=sub(basename(PE_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files'
+        }
+
+        if ( defined(blacklist) ) {
+            # remove blacklist regions
+            String string_pe_blacklist = "" #buffer to allow for blacklist optionality
+            File blacklist_pe_ = select_first([blacklist, string_pe_blacklist])
+            call bedtools.intersect as PE_merge_rmblklist {
+                input :
+                    fileA=PE_mergebam.mergebam,
+                    fileB=blacklist_pe_,
+                    default_location=sub(basename(PE_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files',
+                    nooverlap=true
+            }
+            call samtools.indexstats as PE_merge_bklist {
+                input :
+                    bamfile=PE_merge_rmblklist.intersect_out,
+                    default_location=sub(basename(PE_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files'
+            }
+        } # end if blacklist provided
+
+        File PE_mergebam_afterbklist = select_first([PE_merge_rmblklist.intersect_out, PE_mergebam.mergebam])
+
+        call samtools.markdup as PE_merge_markdup {
+            input :
+                bamfile=PE_mergebam_afterbklist,
+                default_location=sub(basename(PE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/BAM_files'
+        }
+
+        call samtools.indexstats as PE_merge_mkdup {
+            input :
+                bamfile=PE_merge_markdup.mkdupbam,
+                default_location=sub(basename(PE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/BAM_files'
+        }
+    } # end if length(fastqfiles) > 1: multi_fastqpair
 
 ### ------------------------------------------------- ###
 ### ---------------- S E C T I O N 3 ---------------- ###
@@ -427,6 +544,11 @@ workflow peaseq {
         File? s_mergebam_htmlfile = SE_mergebamfqc.htmlfile
         File? s_mergebam_zipfile = SE_mergebamfqc.zipfile
 
+        Array[File?]? indv_sp_bam_htmlfile = indv_PE_bamfqc.htmlfile
+        Array[File?]? indv_sp_bam_zipfile = indv_PE_bamfqc.zipfile
+        File? sp_mergebam_htmlfile = PE_mergebamfqc.htmlfile
+        File? sp_mergebam_zipfile = PE_mergebamfqc.zipfile
+
         File? uno_sp_bam_htmlfile = uno_PE_bamfqc.htmlfile
         File? uno_sp_bam_zipfile = uno_PE_bamfqc.zipfile
 
@@ -441,6 +563,13 @@ workflow peaseq {
         Array[File?]? indv_s_rmbam = indv_mapping.mkdup_bam
         Array[File?]? indv_s_rmindexbam = indv_mapping.mkdup_index
 
+        Array[File?]? indv_sp_sortedbam = indv_PE_mapping.sorted_bam
+        Array[File?]? indv_sp_indexbam = indv_PE_mapping.bam_index
+        Array[File?]? indv_sp_bkbam = indv_PE_mapping.bklist_bam
+        Array[File?]? indv_sp_bkindexbam = indv_PE_mapping.bklist_index
+        Array[File?]? indv_sp_rmbam = indv_PE_mapping.mkdup_bam
+        Array[File?]? indv_sp_rmindexbam = indv_PE_mapping.mkdup_index
+        
         File? uno_s_sortedbam = uno_PE_mapping.sorted_bam
         File? uno_s_indexbam = uno_PE_mapping.bam_index
         File? uno_s_bkbam = uno_PE_mapping.bklist_bam
@@ -455,11 +584,23 @@ workflow peaseq {
         File? s_rmbam = SE_merge_markdup.mkdupbam
         File? s_rmindexbam = SE_merge_mkdup.indexbam
 
+        File? sp_mergebamfile = PE_mergebam.mergebam
+        File? sp_mergebamindex = PE_mergeindexstats.indexbam
+        File? sp_bkbam = PE_merge_rmblklist.intersect_out
+        File? sp_bkindexbam = PE_merge_bklist.indexbam
+        File? sp_rmbam = PE_merge_markdup.mkdupbam
+        File? sp_rmindexbam = PE_merge_mkdup.indexbam
+
         #QC-STATS
         Array[File?]? s_qc_statsfile = indv_summarystats.statsfile
         Array[File?]? s_qc_htmlfile = indv_summarystats.htmlfile
         Array[File?]? s_qc_textfile = indv_summarystats.textfile
         File? s_qc_mergehtml = mergehtml.mergefile
+
+        Array[File?]? sp_qc_statsfile = indv_PE_summarystats.statsfile
+        Array[File?]? sp_qc_htmlfile = indv_PE_summarystats.htmlfile
+        Array[File?]? sp_qc_textfile = indv_PE_summarystats.textfile
+        File? sp_qc_mergehtml = PE_mergehtml.mergefile
 
     }
 }
