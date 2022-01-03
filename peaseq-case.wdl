@@ -284,7 +284,6 @@ workflow peaseq {
     # Execute analysis on merge bam file
     # Analysis executed:
     #   Merge BAM (SE mode : for each fastq paired-end)
-    #   FastQC on Merge BAM (AllMerge_<number>_mapped)
 
     call util.mergehtml {
         input:
@@ -526,16 +525,495 @@ workflow peaseq {
 ### ------------------------------------------------- ###
 ### ---------------- S E C T I O N 4 ---------------- ###
 ### --------------- ChIP-seq Analysis --------------- ###
+### ------------ A: analysis for SE mode  ----------- ###
 ### ------------------------------------------------- ###
 
+    # ChIP-seq and downstream analysis
+    # Execute analysis on merge bam file
+    # Analysis executed:
+    #   Peaks identification (SICER, MACS, ROSE)
+    #   Motif analysis
 
+    call macs.macs as SE_macs {
+        input :
+            bamfile=SE_mergebam_afterbklist,
+            pvalue="1e-9",
+            keep_dup="auto",
+            egs=egs.genomesize,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'\.bam') + '-p9_kd-auto'
+    }
+
+    call util.addreadme as SE_addreadme {
+        input :
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS'
+    }
+
+    call macs.macs as SE_all {
+        input :
+            bamfile=SE_mergebam_afterbklist,
+            pvalue="1e-9",
+            keep_dup="all",
+            egs=egs.genomesize,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'\.bam') + '-p9_kd-all'
+    }
+
+    call macs.macs as SE_nomodel {
+        input :
+            bamfile=SE_mergebam_afterbklist,
+            nomodel=true,
+            egs=egs.genomesize,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'\.bam') + '-nm'
+    }
+
+    call bamtogff.bamtogff as SE_bamtogff {
+        input :
+            gtffile=gtf,
+            chromsizes=samtools_faidx.chromsizes,
+            bamfile=SE_merge_markdup.mkdupbam,
+            bamindex=SE_merge_mkdup.indexbam,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/BAM_Density'
+    }
+
+    call bedtools.bamtobed as SE_forsicerbed {
+        input :
+            bamfile=SE_merge_markdup.mkdupbam
+    }
+    
+    call sicer.sicer as SE_sicer {
+        input :
+            bedfile=SE_forsicerbed.bedfile,
+            chromsizes=samtools_faidx.chromsizes,
+            genome_fraction=egs.genomefraction,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS/BROAD_peaks'
+    }
+
+    call rose.rose as SE_rose {
+        input :
+            gtffile=gtf,
+            bamfile=SE_mergebam_afterbklist,
+            bamindex=select_first([SE_merge_bklist.indexbam, SE_mergeindexstats.indexbam]),
+            bedfile_auto=SE_macs.peakbedfile,
+            bedfile_all=SE_all.peakbedfile,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS/STITCHED_peaks'
+    }
+
+    call runspp.runspp as SE_runspp {
+        input:
+            bamfile=SE_mergebam_afterbklist
+    }
+
+    call util.peaksanno as SE_peaksanno {
+        input :
+            gtffile=gtf,
+            bedfile=SE_macs.peakbedfile,
+            chromsizes=samtools_faidx.chromsizes,
+            summitfile=SE_macs.summitsfile,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'\_peaks.bed','')
+    }
+
+    call util.peaksanno as SE_all_peaksanno {
+        input :
+            gtffile=gtf,
+            bedfile=SE_all.peakbedfile,
+            chromsizes=samtools_faidx.chromsizes,
+            summitfile=SE_all.summitsfile,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'\_peaks.bed','')
+    }
+
+    call util.peaksanno as SE_nomodel_peaksanno {
+        input :
+            gtffile=gtf,
+            bedfile=SE_nomodel.peakbedfile,
+            chromsizes=samtools_faidx.chromsizes,
+            summitfile=SE_nomodel.summitsfile,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'\_peaks.bed','')
+    }
+
+    call util.peaksanno as SE_sicer_peaksanno {
+        input :
+            gtffile=gtf,
+            bedfile=SE_sicer.scoreisland,
+            chromsizes=samtools_faidx.chromsizes,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS_Annotation/BROAD_peaks'
+    }
+
+    # Motif Analysis
+    if (run_motifs) { 
+        call motifs.motifs as SE_motifs {
+            input:
+                reference=reference,
+                reference_index=samtools_faidx.faidx_file,
+                bedfile=SE_macs.peakbedfile,
+                motif_databases=motif_databases,
+                default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/MOTIFS'
+        }
+
+        call util.flankbed as SE_flankbed {
+            input :
+                bedfile=SE_macs.summitsfile,
+                default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/MOTIFS'
+        }
+
+        call motifs.motifs as SE_flank {
+            input:
+                reference=reference,
+                reference_index=samtools_faidx.faidx_file,
+                bedfile=SE_flankbed.flankbedfile,
+                motif_databases=motif_databases,
+                default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/MOTIFS'
+        }
+    }
+
+    call viz.visualization as SE_visualization {
+        input:
+            wigfile=SE_macs.wigfile,
+            chromsizes=samtools_faidx.chromsizes,
+            xlsfile=SE_macs.peakxlsfile,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'\_peaks.bed','')
+    }
+
+    call viz.visualization as SE_vizall {
+        input:
+            wigfile=SE_all.wigfile,
+            chromsizes=samtools_faidx.chromsizes,
+            xlsfile=SE_all.peakxlsfile,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'\_peaks.bed','')
+    }
+
+    call viz.visualization as SE_viznomodel {
+        input:
+            wigfile=SE_nomodel.wigfile,
+            chromsizes=samtools_faidx.chromsizes,
+            xlsfile=SE_nomodel.peakxlsfile,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'\_peaks.bed','')
+    }
+
+    call viz.visualization as SE_vizsicer {
+        input:
+            wigfile=SE_sicer.wigfile,
+            chromsizes=samtools_faidx.chromsizes,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/COVERAGE_files/BROAD_peaks'
+    }
+
+    call bedtools.bamtobed as SE_finalbed {
+        input:
+            bamfile=SE_mergebam_afterbklist
+    }
+
+    call sortbed.sortbed as SE_sortbed {
+        input:
+            bedfile=SE_finalbed.bedfile
+    }
+
+    call bedtools.intersect as SE_intersect {
+        input:
+            fileA=SE_macs.peakbedfile,
+            fileB=SE_sortbed.sortbed_out,
+            countoverlap=true,
+            sorted=true
+    }
+    
+### ------------------------------------------------- ###
+### ---------------- S E C T I O N 4 ---------------- ###
+### --------------- ChIP-seq Analysis --------------- ###
+### ------------ B: analysis for PE mode  ----------- ###
+### ------------------------------------------------- ###
+
+    # ChIP-seq and downstream analysis
+    # Execute analysis on merge bam file
+    # Analysis executed:
+    #   Peaks identification (SICER, MACS, ROSE)
+    #   Motif analysis
+ 
+    #collate correct files for downstream analysis
+    File PE_sample_bam = select_first([PE_mergebam_afterbklist, uno_PE_mapping.bklist_bam, uno_PE_mapping.sorted_bam])
+
+    call macs.macs as PE_macs {
+        input :
+            bamfile=PE_sample_bam,
+            pvalue="1e-9",
+            keep_dup="auto",
+            egs=egs.genomesize,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(PE_sample_bam,'\.bam') + '-p9_kd-auto'
+    }
+
+    call util.addreadme as PE_addreadme {
+        input :
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS'
+    }
+
+    call macs.macs as PE_all {
+        input :
+            bamfile=PE_sample_bam,
+            pvalue="1e-9",
+            keep_dup="all",
+            egs=egs.genomesize,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(PE_sample_bam,'\.bam') + '-p9_kd-all'
+    }
+
+    call macs.macs as PE_nomodel {
+        input :
+            bamfile=PE_sample_bam,
+            nomodel=true,
+            egs=egs.genomesize,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(PE_sample_bam,'\.bam') + '-nm'
+    }
+
+    call bamtogff.bamtogff as PE_bamtogff {
+        input :
+            gtffile=gtf,
+            chromsizes=samtools_faidx.chromsizes,
+            bamfile=select_first([PE_merge_markdup.mkdupbam, uno_PE_mapping.mkdup_bam]),
+            bamindex=select_first([PE_merge_mkdup.indexbam, uno_PE_mapping.mkdup_index]),
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/BAM_Density'
+    }
+
+    call bedtools.bamtobed as PE_forsicerbed {
+        input :
+            bamfile=select_first([PE_merge_markdup.mkdupbam, uno_PE_mapping.mkdup_bam])
+    }
+    
+    call sicer.sicer as PE_sicer {
+        input :
+            bedfile=PE_forsicerbed.bedfile,
+            chromsizes=samtools_faidx.chromsizes,
+            genome_fraction=egs.genomefraction,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS/BROAD_peaks'
+    }
+
+    call rose.rose as PE_rose {
+        input :
+            gtffile=gtf,
+            bamfile=PE_sample_bam,
+            bamindex=select_first([PE_merge_bklist.indexbam, PE_mergeindexstats.indexbam, uno_PE_mapping.bklist_index, uno_PE_mapping.bam_index]),
+            bedfile_auto=PE_macs.peakbedfile,
+            bedfile_all=PE_all.peakbedfile,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS/STITCHED_peaks'
+    }
+
+    call runspp.runspp as PE_runspp {
+        input:
+            bamfile=PE_sample_bam
+    }
+
+    call util.peaksanno as PE_peaksanno {
+        input :
+            gtffile=gtf,
+            bedfile=PE_macs.peakbedfile,
+            chromsizes=samtools_faidx.chromsizes,
+            summitfile=PE_macs.summitsfile,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(PE_macs.peakbedfile),'\_peaks.bed','')
+    }
+
+    call util.peaksanno as PE_all_peaksanno {
+        input :
+            gtffile=gtf,
+            bedfile=PE_all.peakbedfile,
+            chromsizes=samtools_faidx.chromsizes,
+            summitfile=PE_all.summitsfile,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(PE_all.peakbedfile),'\_peaks.bed','')
+    }
+
+    call util.peaksanno as PE_nomodel_peaksanno {
+        input :
+            gtffile=gtf,
+            bedfile=PE_nomodel.peakbedfile,
+            chromsizes=samtools_faidx.chromsizes,
+            summitfile=PE_nomodel.summitsfile,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(PE_nomodel.peakbedfile),'\_peaks.bed','')
+    }
+
+    call util.peaksanno as PE_sicer_peaksanno {
+        input :
+            gtffile=gtf,
+            bedfile=PE_sicer.scoreisland,
+            chromsizes=samtools_faidx.chromsizes,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/BROAD_peaks'
+    }
+
+    # Motif Analysis
+    if (run_motifs) { 
+        call motifs.motifs as PE_motifs {
+            input:
+                reference=reference,
+                reference_index=samtools_faidx.faidx_file,
+                bedfile=PE_macs.peakbedfile,
+                motif_databases=motif_databases,
+                default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+        }
+
+        call util.flankbed as PE_flankbed {
+            input :
+                bedfile=PE_macs.summitsfile,
+                default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+        }
+
+        call motifs.motifs as PE_flank {
+            input:
+                reference=reference,
+                reference_index=samtools_faidx.faidx_file,
+                bedfile=PE_flankbed.flankbedfile,
+                motif_databases=motif_databases,
+                default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+        }
+    }
+
+    call viz.visualization as PE_visualization {
+        input:
+            wigfile=PE_macs.wigfile,
+            chromsizes=samtools_faidx.chromsizes,
+            xlsfile=PE_macs.peakxlsfile,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(PE_macs.peakbedfile),'\_peaks.bed','')
+    }
+
+    call viz.visualization as PE_vizall {
+        input:
+            wigfile=PE_all.wigfile,
+            chromsizes=samtools_faidx.chromsizes,
+            xlsfile=PE_all.peakxlsfile,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(PE_all.peakbedfile),'\_peaks.bed','')
+    }
+
+    call viz.visualization as PE_viznomodel {
+        input:
+            wigfile=PE_nomodel.wigfile,
+            chromsizes=samtools_faidx.chromsizes,
+            xlsfile=PE_nomodel.peakxlsfile,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(PE_nomodel.peakbedfile),'\_peaks.bed','')
+    }
+
+    call viz.visualization as PE_vizsicer {
+        input:
+            wigfile=PE_sicer.wigfile,
+            chromsizes=samtools_faidx.chromsizes,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/BROAD_peaks'
+    }
+
+    call bedtools.bamtobed as PE_finalbed {
+        input:
+            bamfile=PE_sample_bam
+    }
+
+    call sortbed.sortbed as PE_sortbed {
+        input:
+            bedfile=PE_finalbed.bedfile
+    }
+
+    call bedtools.intersect as PE_intersect {
+        input:
+            fileA=PE_macs.peakbedfile,
+            fileB=PE_sortbed.sortbed_out,
+            countoverlap=true,
+            sorted=true
+    }   
 
 ### ------------------------------------------------- ###
-### ---------------- S E C T I O N 5 ---------------- ###
+### ----------------- S E C T I O N 5 --------------- ###
+### --------------- Summary Statistics -------------- ###
+### ------------ A: analysis for SE mode  ----------- ###
+### ------------------------------------------------- ###
+    String string_qual = "" #buffer to allow for optionality in if statement
+
+    call util.evalstats as SE_summarystats {
+        # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
+        input:
+            fastq_type="PEAseq Comprehensive SEmode",
+            bambed=SE_finalbed.bedfile,
+            sppfile=SE_runspp.spp_out,
+            fastqczip=SE_mergebamfqc.zipfile,
+            bamflag=SE_mergeindexstats.flagstats,
+            rmdupflag=SE_merge_mkdup.flagstats,
+            bkflag=SE_merge_bklist.flagstats,
+            countsfile=SE_intersect.intersect_out,
+            peaksxls=SE_macs.peakxlsfile,
+            enhancers=SE_rose.enhancers,
+            superenhancers=SE_rose.super_enhancers,
+            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+    }
+        
+    call util.summaryreport as SE_merge_overallsummary {
+        # Presenting all quality stats for the analysis
+        input:
+            sampleqc_html=mergehtml.xhtml,
+            overallqc_html=SE_summarystats.xhtml,
+            sampleqc_txt=mergehtml.mergetxt,
+            overallqc_txt=SE_summarystats.textfile,
+            outputfile = sub(basename(SE_summarystats.xhtml), 'stats.htmlx', 'peaseq_report.html'),
+            outputtxt = sub(basename(SE_summarystats.xhtml), 'stats.htmlx', 'peaseq_report.txt')
+    }
+
+### ------------------------------------------------- ###
+### ----------------- S E C T I O N 5 --------------- ###
+### --------------- Summary Statistics -------------- ###
+### ------------ B: analysis for PE mode  ----------- ###
+### ------------------------------------------------- ###
+
+    if ( one_fastqpair ) {
+        call util.evalstats as PE_uno_summarystats {
+            # SUMMARY STATISTICS of sample file (only 1 sample file provided)
+            input:
+                fastq_type="PEAseq Comprehensive PEmode",
+                bambed=PE_finalbed.bedfile,
+                sppfile=PE_runspp.spp_out,
+                fastqczip=select_first([uno_PE_bamfqc.zipfile, string_qual]),
+                bamflag=uno_PE_mapping.bam_stats,
+                rmdupflag=uno_PE_mapping.mkdup_stats,
+                bkflag=uno_PE_mapping.bklist_stats,
+                fastqmetrics=indv_bfs.metrics_out[0],
+                countsfile=PE_intersect.intersect_out,
+                peaksxls=PE_macs.peakxlsfile,
+                enhancers=PE_rose.enhancers,
+                superenhancers=PE_rose.super_enhancers,
+                default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+        }
+
+        call util.summaryreport as PE_uno_overallsummary {
+            # Presenting all quality stats for the analysis
+            input:
+                overallqc_html=PE_uno_summarystats.xhtml,
+                overallqc_txt=PE_uno_summarystats.textfile,
+                outputfile = sub(basename(PE_uno_summarystats.xhtml), 'stats.htmlx', 'peaseq_report.html'),
+                outputtxt = sub(basename(PE_uno_summarystats.xhtml), 'stats.htmlx', 'peaseq_report.txt')
+        }
+    } # end if one_fastqpair
+
+    if ( multi_fastqpair ) {
+        call util.evalstats as PE_merge_summarystats {
+            # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
+            input:
+                fastq_type="PEAseq Comprehensive PEmode",
+                bambed=PE_finalbed.bedfile,
+                sppfile=PE_runspp.spp_out,
+                fastqczip=select_first([PE_mergebamfqc.zipfile, string_qual]),
+                bamflag=PE_mergeindexstats.flagstats,
+                rmdupflag=PE_merge_mkdup.flagstats,
+                bkflag=PE_merge_bklist.flagstats,
+                countsfile=PE_intersect.intersect_out,
+                peaksxls=PE_macs.peakxlsfile,
+                enhancers=PE_rose.enhancers,
+                superenhancers=PE_rose.super_enhancers,
+                default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+        }
+        
+        call util.summaryreport as PE_merge_overallsummary {
+            # Presenting all quality stats for the analysis
+            input:
+                sampleqc_html=PE_mergehtml.xhtml,
+                overallqc_html=PE_merge_summarystats.xhtml,
+                sampleqc_txt=PE_mergehtml.mergetxt,
+                overallqc_txt=PE_merge_summarystats.textfile,
+                outputfile = sub(basename(PE_merge_summarystats.xhtml), 'stats.htmlx', 'peaseq_report.html'),
+                outputtxt = sub(basename(PE_merge_summarystats.xhtml), 'stats.htmlx', 'peaseq_report.txt')
+        }
+    } # end if multi_fastqpair
+
+### ------------------------------------------------- ###
+### ---------------- S E C T I O N 6 ---------------- ###
 ### ------------------ OUTPUT FILES ----------------- ###
 ### ------------------------------------------------- ###
 
     output {
+
         #FASTQC
         Array[File?]? indv_s_fastqc = indv_fastqc.htmlfile
         Array[File?]? indv_s_zipfile = indv_fastqc.zipfile
@@ -591,16 +1069,232 @@ workflow peaseq {
         File? sp_rmbam = PE_merge_markdup.mkdupbam
         File? sp_rmindexbam = PE_merge_mkdup.indexbam
 
+        #MACS
+        File? s_peakbedfile = SE_macs.peakbedfile
+        File? s_peakxlsfile = SE_macs.peakxlsfile
+        File? s_summitsfile = SE_macs.summitsfile
+        File? s_negativexlsfile = SE_macs.negativepeaks
+        File? s_wigfile = SE_macs.wigfile
+        File? s_all_peakbedfile = SE_all.peakbedfile
+        File? s_all_peakxlsfile = SE_all.peakxlsfile
+        File? s_all_summitsfile = SE_all.summitsfile
+        File? s_all_negativexlsfile = SE_all.negativepeaks
+        File? s_all_wigfile = SE_all.wigfile
+        File? s_nm_peakbedfile = SE_nomodel.peakbedfile
+        File? s_nm_peakxlsfile = SE_nomodel.peakxlsfile
+        File? s_nm_summitsfile = SE_nomodel.summitsfile
+        File? s_nm_negativexlsfile = SE_nomodel.negativepeaks
+        File? s_nm_wigfile = SE_nomodel.wigfile
+        File? s_readme_peaks = SE_addreadme.readme_peaks
+
+        File? sp_peakbedfile = PE_macs.peakbedfile
+        File? sp_peakxlsfile = PE_macs.peakxlsfile
+        File? sp_summitsfile = PE_macs.summitsfile
+        File? sp_negativexlsfile = PE_macs.negativepeaks
+        File? sp_wigfile = PE_macs.wigfile
+        File? sp_all_peakbedfile = PE_all.peakbedfile
+        File? sp_all_peakxlsfile = PE_all.peakxlsfile
+        File? sp_all_summitsfile = PE_all.summitsfile
+        File? sp_all_negativexlsfile = PE_all.negativepeaks
+        File? sp_all_wigfile = PE_all.wigfile
+        File? sp_nm_peakbedfile = PE_nomodel.peakbedfile
+        File? sp_nm_peakxlsfile = PE_nomodel.peakxlsfile
+        File? sp_nm_summitsfile = PE_nomodel.summitsfile
+        File? sp_nm_negativexlsfile = PE_nomodel.negativepeaks
+        File? sp_nm_wigfile = PE_nomodel.wigfile
+        File? sp_readme_peaks = PE_addreadme.readme_peaks
+
+        #SICER
+        File? s_scoreisland = SE_sicer.scoreisland
+        File? s_sicer_wigfile = SE_sicer.wigfile
+
+        File? sp_scoreisland = PE_sicer.scoreisland
+        File? sp_sicer_wigfile = PE_sicer.wigfile
+
+        #ROSE
+        File? s_pngfile = SE_rose.pngfile
+        File? s_mapped_union = SE_rose.mapped_union
+        File? s_mapped_stitch = SE_rose.mapped_stitch
+        File? s_enhancers = SE_rose.enhancers
+        File? s_super_enhancers = SE_rose.super_enhancers
+        File? s_gff_file = SE_rose.gff_file
+        File? s_gff_union = SE_rose.gff_union
+        File? s_union_enhancers = SE_rose.union_enhancers
+        File? s_stitch_enhancers = SE_rose.stitch_enhancers
+        File? s_e_to_g_enhancers = SE_rose.e_to_g_enhancers
+        File? s_g_to_e_enhancers = SE_rose.g_to_e_enhancers
+        File? s_e_to_g_super_enhancers = SE_rose.e_to_g_super_enhancers
+        File? s_g_to_e_super_enhancers = SE_rose.g_to_e_super_enhancers
+
+        File? sp_pngfile = PE_rose.pngfile
+        File? sp_mapped_union = PE_rose.mapped_union
+        File? sp_mapped_stitch = PE_rose.mapped_stitch
+        File? sp_enhancers = PE_rose.enhancers
+        File? sp_super_enhancers = PE_rose.super_enhancers
+        File? sp_gff_file = PE_rose.gff_file
+        File? sp_gff_union = PE_rose.gff_union
+        File? sp_union_enhancers = PE_rose.union_enhancers
+        File? sp_stitch_enhancers = PE_rose.stitch_enhancers
+        File? sp_e_to_g_enhancers = PE_rose.e_to_g_enhancers
+        File? sp_g_to_e_enhancers = PE_rose.g_to_e_enhancers
+        File? sp_e_to_g_super_enhancers = PE_rose.e_to_g_super_enhancers
+        File? sp_g_to_e_super_enhancers = PE_rose.g_to_e_super_enhancers
+
+        #MOTIFS
+        File? flankbedfile = SE_flankbed.flankbedfile
+        File? ame_tsv = SE_motifs.ame_tsv
+        File? ame_html = SE_motifs.ame_html
+        File? ame_seq = SE_motifs.ame_seq
+        File? meme = SE_motifs.meme_out
+        File? meme_summary = SE_motifs.meme_summary
+        File? summit_ame_tsv = SE_flank.ame_tsv
+        File? summit_ame_html = SE_flank.ame_html
+        File? summit_ame_seq = SE_flank.ame_seq
+        File? summit_meme = SE_flank.meme_out
+        File? summit_meme_summary = SE_flank.meme_summary
+
+        File? sp_flankbedfile = PE_flankbed.flankbedfile
+        File? sp_ame_tsv = PE_motifs.ame_tsv
+        File? sp_ame_html = PE_motifs.ame_html
+        File? sp_ame_seq = PE_motifs.ame_seq
+        File? sp_meme = PE_motifs.meme_out
+        File? sp_meme_summary = PE_motifs.meme_summary
+        File? sp_summit_ame_tsv = PE_flank.ame_tsv
+        File? sp_summit_ame_html = PE_flank.ame_html
+        File? sp_summit_ame_seq = PE_flank.ame_seq
+        File? sp_summit_meme = PE_flank.meme_out
+        File? sp_summit_meme_summary = PE_flank.meme_summary
+
+        #BAM2GFF
+        File? s_matrices = SE_bamtogff.s_matrices
+        File? densityplot = SE_bamtogff.densityplot
+        File? pdf_gene = SE_bamtogff.pdf_gene
+        File? pdf_h_gene = SE_bamtogff.pdf_h_gene
+        File? png_h_gene = SE_bamtogff.png_h_gene
+        File? pdf_promoters = SE_bamtogff.pdf_promoters
+        File? pdf_h_promoters = SE_bamtogff.pdf_h_promoters
+        File? png_h_promoters = SE_bamtogff.png_h_promoters
+
+        File? sp_s_matrices = PE_bamtogff.s_matrices
+        File? sp_densityplot = PE_bamtogff.densityplot
+        File? sp_pdf_gene = PE_bamtogff.pdf_gene
+        File? sp_pdf_h_gene = PE_bamtogff.pdf_h_gene
+        File? sp_png_h_gene = PE_bamtogff.png_h_gene
+        File? sp_pdf_promoters = PE_bamtogff.pdf_promoters
+        File? sp_pdf_h_promoters = PE_bamtogff.pdf_h_promoters
+        File? sp_png_h_promoters = PE_bamtogff.png_h_promoters
+
+        #PEAKS-ANNOTATION
+        File? peak_promoters = SE_peaksanno.peak_promoters
+        File? peak_genebody = SE_peaksanno.peak_genebody
+        File? peak_window = SE_peaksanno.peak_window
+        File? peak_closest = SE_peaksanno.peak_closest
+        File? peak_comparison = SE_peaksanno.peak_comparison
+        File? gene_comparison = SE_peaksanno.gene_comparison
+        File? pdf_comparison = SE_peaksanno.pdf_comparison
+        File? all_peak_promoters = SE_all_peaksanno.peak_promoters
+        File? all_peak_genebody = SE_all_peaksanno.peak_genebody
+        File? all_peak_window = SE_all_peaksanno.peak_window
+        File? all_peak_closest = SE_all_peaksanno.peak_closest
+        File? all_peak_comparison = SE_all_peaksanno.peak_comparison
+        File? all_gene_comparison = SE_all_peaksanno.gene_comparison
+        File? all_pdf_comparison = SE_all_peaksanno.pdf_comparison
+        File? nomodel_peak_promoters = SE_nomodel_peaksanno.peak_promoters
+        File? nomodel_peak_genebody = SE_nomodel_peaksanno.peak_genebody
+        File? nomodel_peak_window = SE_nomodel_peaksanno.peak_window
+        File? nomodel_peak_closest = SE_nomodel_peaksanno.peak_closest
+        File? nomodel_peak_comparison = SE_nomodel_peaksanno.peak_comparison
+        File? nomodel_gene_comparison = SE_nomodel_peaksanno.gene_comparison
+        File? nomodel_pdf_comparison = SE_nomodel_peaksanno.pdf_comparison
+        File? sicer_peak_promoters = SE_sicer_peaksanno.peak_promoters
+        File? sicer_peak_genebody = SE_sicer_peaksanno.peak_genebody
+        File? sicer_peak_window = SE_sicer_peaksanno.peak_window
+        File? sicer_peak_closest = SE_sicer_peaksanno.peak_closest
+        File? sicer_peak_comparison = SE_sicer_peaksanno.peak_comparison
+        File? sicer_gene_comparison = SE_sicer_peaksanno.gene_comparison
+        File? sicer_pdf_comparison = SE_sicer_peaksanno.pdf_comparison
+
+        File? sp_peak_promoters = PE_peaksanno.peak_promoters
+        File? sp_peak_genebody = PE_peaksanno.peak_genebody
+        File? sp_peak_window = PE_peaksanno.peak_window
+        File? sp_peak_closest = PE_peaksanno.peak_closest
+        File? sp_peak_comparison = PE_peaksanno.peak_comparison
+        File? sp_gene_comparison = PE_peaksanno.gene_comparison
+        File? sp_pdf_comparison = PE_peaksanno.pdf_comparison
+        File? sp_all_peak_promoters = PE_all_peaksanno.peak_promoters
+        File? sp_all_peak_genebody = PE_all_peaksanno.peak_genebody
+        File? sp_all_peak_window = PE_all_peaksanno.peak_window
+        File? sp_all_peak_closest = PE_all_peaksanno.peak_closest
+        File? sp_all_peak_comparison = PE_all_peaksanno.peak_comparison
+        File? sp_all_gene_comparison = PE_all_peaksanno.gene_comparison
+        File? sp_all_pdf_comparison = PE_all_peaksanno.pdf_comparison
+        File? sp_nomodel_peak_promoters = PE_nomodel_peaksanno.peak_promoters
+        File? sp_nomodel_peak_genebody = PE_nomodel_peaksanno.peak_genebody
+        File? sp_nomodel_peak_window = PE_nomodel_peaksanno.peak_window
+        File? sp_nomodel_peak_closest = PE_nomodel_peaksanno.peak_closest
+        File? sp_nomodel_peak_comparison = PE_nomodel_peaksanno.peak_comparison
+        File? sp_nomodel_gene_comparison = PE_nomodel_peaksanno.gene_comparison
+        File? sp_nomodel_pdf_comparison = PE_nomodel_peaksanno.pdf_comparison
+        File? sp_sicer_peak_promoters = PE_sicer_peaksanno.peak_promoters
+        File? sp_sicer_peak_genebody = PE_sicer_peaksanno.peak_genebody
+        File? sp_sicer_peak_window = PE_sicer_peaksanno.peak_window
+        File? sp_sicer_peak_closest = PE_sicer_peaksanno.peak_closest
+        File? sp_sicer_peak_comparison = PE_sicer_peaksanno.peak_comparison
+        File? sp_sicer_gene_comparison = PE_sicer_peaksanno.gene_comparison
+        File? sp_sicer_pdf_comparison = PE_sicer_peaksanno.pdf_comparison
+
+        #VISUALIZATION
+        File? bigwig = SE_visualization.bigwig
+        File? norm_wig = SE_visualization.norm_wig
+        File? tdffile = SE_visualization.tdffile
+        File? n_bigwig = SE_viznomodel.bigwig
+        File? n_norm_wig = SE_viznomodel.norm_wig
+        File? n_tdffile = SE_viznomodel.tdffile
+        File? a_bigwig = SE_vizall.bigwig
+        File? a_norm_wig = SE_vizall.norm_wig
+        File? a_tdffile = SE_vizall.tdffile
+        File? s_bigwig = SE_vizsicer.bigwig
+        File? s_norm_wig = SE_vizsicer.norm_wig
+        File? s_tdffile = SE_vizsicer.tdffile
+
+        File? sp_bigwig = PE_visualization.bigwig
+        File? sp_norm_wig = PE_visualization.norm_wig
+        File? sp_tdffile = PE_visualization.tdffile
+        File? sp_n_bigwig = PE_viznomodel.bigwig
+        File? sp_n_norm_wig = PE_viznomodel.norm_wig
+        File? sp_n_tdffile = PE_viznomodel.tdffile
+        File? sp_a_bigwig = PE_vizall.bigwig
+        File? sp_a_norm_wig = PE_vizall.norm_wig
+        File? sp_a_tdffile = PE_vizall.tdffile
+        File? sp_s_bigwig = PE_vizsicer.bigwig
+        File? sp_s_norm_wig = PE_vizsicer.norm_wig
+        File? sp_s_tdffile = PE_vizsicer.tdffile
+
         #QC-STATS
         Array[File?]? s_qc_statsfile = indv_summarystats.statsfile
         Array[File?]? s_qc_htmlfile = indv_summarystats.htmlfile
         Array[File?]? s_qc_textfile = indv_summarystats.textfile
         File? s_qc_mergehtml = mergehtml.mergefile
+        File? s_statsfile = SE_summarystats.statsfile
+        File? s_htmlfile = SE_summarystats.htmlfile
+        File? s_textfile = SE_summarystats.textfile
+        File? s_m_summaryhtml = SE_merge_overallsummary.summaryhtml
+        File? s_m_summarytxt = SE_merge_overallsummary.summarytxt
+        
 
         Array[File?]? sp_qc_statsfile = indv_PE_summarystats.statsfile
         Array[File?]? sp_qc_htmlfile = indv_PE_summarystats.htmlfile
         Array[File?]? sp_qc_textfile = indv_PE_summarystats.textfile
         File? sp_qc_mergehtml = PE_mergehtml.mergefile
-
+        File? sp_s_uno_statsfile = PE_uno_summarystats.statsfile
+        File? sp_s_uno_htmlfile = PE_uno_summarystats.htmlfile
+        File? sp_s_uno_textfile = PE_uno_summarystats.textfile
+        File? sp_statsfile = PE_merge_summarystats.statsfile
+        File? sp_htmlfile = PE_merge_summarystats.htmlfile
+        File? sp_textfile = PE_merge_summarystats.textfile
+        File? sp_summaryhtml = PE_uno_overallsummary.summaryhtml
+        File? sp_summarytxt = PE_uno_overallsummary.summarytxt
+        File? sp_m_summaryhtml = PE_merge_overallsummary.summaryhtml
+        File? sp_m_summarytxt = PE_merge_overallsummary.summarytxt
     }
 }
