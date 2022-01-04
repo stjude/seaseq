@@ -14,6 +14,7 @@ import "workflows/workflows/mapping.wdl"
 import "workflows/tasks/runspp.wdl"
 import "workflows/tasks/sortbed.wdl"
 import "workflows/tasks/sratoolkit.wdl" as sra
+import "workflows/tasks/frag_graph.wdl"
 
 workflow peaseq {
     String pipeline_ver = 'v2.0.0'
@@ -728,6 +729,12 @@ workflow peaseq {
     #collate correct files for downstream analysis
     File PE_sample_bam = select_first([PE_mergebam_afterbklist, uno_PE_mapping.bklist_bam, uno_PE_mapping.sorted_bam])
 
+    call frag_graph.fraggraph {
+        input :
+            bamfile=PE_sample_bam,
+            chromsizes=samtools_faidx.chromsizes,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/BAM_Fragments'
+    }
     call macs.macs as PE_macs {
         input :
             bamfile=PE_sample_bam,
@@ -912,10 +919,7 @@ workflow peaseq {
 ### --------------- Summary Statistics -------------- ###
 ### ------------ A: analysis for SE mode  ----------- ###
 ### ------------------------------------------------- ###
-    String string_qual = "" #buffer to allow for optionality in if statement
-
     call util.evalstats as SE_summarystats {
-        # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
         input:
             fastq_type="PEAseq Comprehensive SEmode",
             bambed=SE_finalbed.bedfile,
@@ -947,6 +951,8 @@ workflow peaseq {
 ### --------------- Summary Statistics -------------- ###
 ### ------------ B: analysis for PE mode  ----------- ###
 ### ------------------------------------------------- ###
+
+    String string_qual = "" #buffer to allow for optionality in if statement
 
     if ( one_fastqpair ) {
         call util.evalstats as PE_uno_summarystats {
@@ -1269,6 +1275,10 @@ workflow peaseq {
         File? sp_s_bigwig = PE_vizsicer.bigwig
         File? sp_s_norm_wig = PE_vizsicer.norm_wig
         File? sp_s_tdffile = PE_vizsicer.tdffile
+
+        File? p_bigwigfile = fraggraph.bigwigfile
+        File? p_tdffile = fraggraph.tdffile
+        File? p_wigfile = fraggraph.wigfile
 
         #QC-STATS
         Array[File?]? s_qc_statsfile = indv_summarystats.statsfile
