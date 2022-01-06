@@ -1,17 +1,17 @@
 version 1.0
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/fastqc.wdl"
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/bedtools.wdl"
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/bowtie.wdl"
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/samtools.wdl"
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/macs.wdl"
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/workflows/bamtogff.wdl"
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/sicer.wdl"
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/workflows/motifs.wdl"
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/rose.wdl"
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/util.wdl"
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/workflows/visualization.wdl" as viz
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/runspp.wdl"
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/sortbed.wdl"
+import "../tasks/fastqc.wdl"
+import "../tasks/bedtools.wdl"
+import "../tasks/bowtie.wdl"
+import "../tasks/samtools.wdl"
+import "../tasks/macs.wdl"
+import "bamtogff.wdl"
+import "../tasks/sicer.wdl"
+import "motifs.wdl"
+import "../tasks/rose.wdl"
+import "../tasks/util.wdl"
+import "visualization.wdl" as viz
+import "../runspp.wdl"
+import "../tasks/sortbed.wdl"
 
 workflow paired_sample_analysis {
     String pipeline_ver = 'v2.0.0'
