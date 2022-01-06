@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/adthrasher/seaseq/refactor/workflows/tasks/util.wdl"
+import "../tasks/util.wdl"
 
 workflow visualization {
     input {
