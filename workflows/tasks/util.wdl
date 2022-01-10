@@ -146,7 +146,7 @@ task summaryreport {
         echo '</table>' >> ~{outputfile}
         echo -e 'Overall Quality Evaluation and Statistics Results' >> ~{outputtxt}
         cat ~{overallqc_txt} >> ~{outputtxt}
-        if [ -f "~{sampleqc_html}" ]; then
+        if [ -f "~{controlqc_html}" ]; then
             echo "<p><b>*</b> Peaks identified after Input/Control correction.</p>" >> ~{outputfile}
         fi
         echo '</div>' >> ~{outputfile}
@@ -695,5 +695,113 @@ task effective_genome_size {
     output {
         Float genomefraction = read_float('genomefraction')
         String genomesize = read_string('genomesize')
+    }
+}
+
+task pairedend_summaryreport {
+    input {
+        File? controlqc_se_txt
+        File? controlqc_se_html
+        File? sampleqc_se_txt
+        File? sampleqc_se_html
+        File overallqc_se_txt
+        File overallqc_se_html
+        File? controlqc_pe_txt
+        File? controlqc_pe_html
+        File? sampleqc_pe_txt
+        File? sampleqc_pe_html
+        File overallqc_pe_txt
+        File overallqc_pe_html
+    
+        String outputfile
+        String outputtxt = sub(outputfile, '.html', '.txt')
+        
+        Int memory_gb = 5
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+
+        # Printing header
+        head -n 121 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}
+        if [ -f "~{sampleqc_se_html}" ]; then
+            # Printing Sample Quality Reports
+            echo '<h2>Sample FASTQs Quality Results</h2>' >> ~{outputfile}
+            echo '<h3>Individual FASTQs</h3>' >> ~{outputfile}
+            cat ~{sampleqc_se_html} >> ~{outputfile}
+            echo -e '</table>' >> ~{outputfile}
+
+            echo -e 'SEAseq Report\nSEAseq Quality Statistics and Evaluation Report\n\nSample FASTQs Quality Results\nIndividual FASTQs' > ~{outputtxt}
+            cat ~{sampleqc_se_txt} >> ~{outputtxt}
+
+            if [ -f "~{sampleqc_pe_html}" ]; then
+                echo '<br><h3>After Paired End Reference Mapping</h3>' >> ~{outputfile}
+                cat ~{sampleqc_pe_html} >> ~{outputfile}
+                echo -e '</table></div>\n<div class="body">' >> ~{outputfile}
+                echo -e '\nAfter Paired End Reference Mapping' > ~{outputtxt}
+                cat ~{sampleqc_pe_txt} >> ~{outputtxt}
+                echo -e '\n' >> ~{outputtxt}
+            else
+                echo -e '</div>\n<div class="body">' >> ~{outputfile}
+                echo -e '\n' >> ~{outputtxt}
+            fi
+
+        fi
+
+        if [ -f "~{controlqc_se_html}" ]; then
+            # Printing Control Quality Reports
+            echo '<h2>Control FASTQs Quality Results</h2>' >> ~{outputfile}
+            echo '<h3>Individual FASTQs</h3>' >> ~{outputfile}
+            cat ~{controlqc_se_html} >> ~{outputfile}
+            echo -e '</table>' >> ~{outputfile}
+
+            echo 'Control FASTQs Quality Results\nIndividual FASTQs' >> ~{outputtxt}
+            cat ~{controlqc_se_txt} >> ~{outputtxt}
+
+            if [ -f "~{controlqc_pe_html}" ]; then
+                echo '<br><h3>After Paired End Reference Mapping</h3>' >> ~{outputfile}
+                cat ~{controlqc_pe_html} >> ~{outputfile}
+                echo -e '</table></div>\n<div class="body">' >> ~{outputfile}
+                echo -e '\nAfter Paired End Reference Mapping' > ~{outputtxt}
+                cat ~{controlqc_pe_txt} >> ~{outputtxt}
+                echo -e '\n' >> ~{outputtxt}
+            else
+                echo -e '</div>\n<div class="body">' >> ~{outputfile}
+                echo -e '\n' >> ~{outputtxt}
+            fi
+
+        fi
+        
+        # Printing Overall Quality Reports
+        echo '<h2>Overall Quality Evaluation and Statistics Results</h2><p>' >> ~{outputfile}
+        echo '<h3>Single End Mode</h3>' >> ~{outputfile}
+        cat ~{overallqc_se_html} >> ~{outputfile}
+        echo '</table>' >> ~{outputfile}
+        echo '<br><h3>Paired End Mode</h3>' >> ~{outputfile}
+        cat ~{overallqc_pe_html} >> ~{outputfile}
+        echo '</table>' >> ~{outputfile}
+
+        echo -e 'Overall Quality Evaluation and Statistics Results\nSingle End mode' >> ~{outputtxt}
+        cat ~{overallqc_se_txt} >> ~{outputtxt}
+        echo -e '\nPaired End mode' >> ~{outputtxt}
+        cat ~{overallqc_pe_txt} >> ~{outputtxt}
+        
+        if [ -f "~{controlqc_se_html}" ]; then
+            echo "<p><b>*</b> Peaks identified after Input/Control correction.</p>" >> ~{outputfile}
+        fi
+        echo '</div>' >> ~{outputfile}
+        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}
+        echo -e '\n' >> ~{outputtxt}
+
+    >>>
+    runtime {
+        memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'abralab/seaseq:v2.0.0'
+        cpu: ncpu
+    }
+    output {
+        File summaryhtml = "~{outputfile}"
+        File summarytxt = "~{outputtxt}"
     }
 }

@@ -14,7 +14,7 @@ import "workflows/workflows/mapping.wdl"
 import "workflows/tasks/runspp.wdl"
 import "workflows/tasks/sortbed.wdl"
 import "workflows/tasks/sratoolkit.wdl" as sra
-import "workflows/tasks/frag_graph.wdl"
+import "workflows/tasks/peaseq_util.wdl"
 
 workflow peaseq {
     String pipeline_ver = 'v2.0.0'
@@ -389,7 +389,7 @@ workflow peaseq {
                     bamfile=select_first([indv_PE_mapping.bklist_bam, indv_PE_mapping.sorted_bam])
             }
 
-            call bedtools.bamtobed as indv_PE_bamtobed {
+            call peaseq_util.pe_bamtobed as indv_PE_bamtobed {
                 input:
                     bamfile=select_first([indv_PE_mapping.bklist_bam, indv_PE_mapping.sorted_bam])
             }
@@ -517,7 +517,7 @@ workflow peaseq {
                 bamfile=select_first([uno_PE_mapping.bklist_bam, uno_PE_mapping.sorted_bam])
         }
 
-        call bedtools.bamtobed as uno_PE_bamtobed {
+        call peaseq_util.pe_bamtobed as uno_PE_bamtobed {
             input:
                 bamfile=select_first([uno_PE_mapping.bklist_bam, uno_PE_mapping.sorted_bam])
         }
@@ -729,7 +729,7 @@ workflow peaseq {
     #collate correct files for downstream analysis
     File PE_sample_bam = select_first([PE_mergebam_afterbklist, uno_PE_mapping.bklist_bam, uno_PE_mapping.sorted_bam])
 
-    call frag_graph.fraggraph {
+    call peaseq_util.fraggraph {
         input :
             bamfile=PE_sample_bam,
             chromsizes=samtools_faidx.chromsizes,
@@ -775,7 +775,7 @@ workflow peaseq {
             default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/BAM_Density'
     }
 
-    call bedtools.bamtobed as PE_forsicerbed {
+    call peaseq_util.pe_bamtobed as PE_forsicerbed {
         input :
             bamfile=select_first([PE_merge_markdup.mkdupbam, uno_PE_mapping.mkdup_bam])
     }
@@ -896,7 +896,7 @@ workflow peaseq {
             default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/BROAD_peaks'
     }
 
-    call bedtools.bamtobed as PE_finalbed {
+    call peaseq_util.pe_bamtobed as PE_finalbed {
         input:
             bamfile=PE_sample_bam
     }
@@ -934,17 +934,6 @@ workflow peaseq {
             superenhancers=SE_rose.super_enhancers,
             default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/QC/SummaryStats'
     }
-        
-    call util.summaryreport as SE_merge_overallsummary {
-        # Presenting all quality stats for the analysis
-        input:
-            sampleqc_html=mergehtml.xhtml,
-            overallqc_html=SE_summarystats.xhtml,
-            sampleqc_txt=mergehtml.mergetxt,
-            overallqc_txt=SE_summarystats.textfile,
-            outputfile = sub(basename(SE_summarystats.xhtml), 'stats.htmlx', 'peaseq_report.html'),
-            outputtxt = sub(basename(SE_summarystats.xhtml), 'stats.htmlx', 'peaseq_report.txt')
-    }
 
 ### ------------------------------------------------- ###
 ### ----------------- S E C T I O N 5 --------------- ###
@@ -973,13 +962,16 @@ workflow peaseq {
                 default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
         }
 
-        call util.summaryreport as PE_uno_overallsummary {
+        call util.pairedend_summaryreport as PE_uno_overallsummary {
             # Presenting all quality stats for the analysis
             input:
-                overallqc_html=PE_uno_summarystats.xhtml,
-                overallqc_txt=PE_uno_summarystats.textfile,
-                outputfile = sub(basename(PE_uno_summarystats.xhtml), 'stats.htmlx', 'peaseq_report.html'),
-                outputtxt = sub(basename(PE_uno_summarystats.xhtml), 'stats.htmlx', 'peaseq_report.txt')
+                sampleqc_se_html=mergehtml.xhtml,
+                overallqc_se_html=SE_summarystats.xhtml,
+                sampleqc_se_txt=mergehtml.mergetxt,
+                overallqc_se_txt=SE_summarystats.textfile,
+                overallqc_pe_html=PE_uno_summarystats.xhtml,
+                overallqc_pe_txt=PE_uno_summarystats.textfile,
+                outputfile = if defined(results_name) then results_name + '.peaseq_report.html' else sub(basename(sample_fastqfiles[0].left),'_R?[12].*\.f.*q\.gz','') + '.peaseq_report.html'
         }
     } # end if one_fastqpair
 
@@ -1001,17 +993,21 @@ workflow peaseq {
                 default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
         }
         
-        call util.summaryreport as PE_merge_overallsummary {
+        call util.pairedend_summaryreport as PE_merge_overallsummary {
             # Presenting all quality stats for the analysis
             input:
-                sampleqc_html=PE_mergehtml.xhtml,
-                overallqc_html=PE_merge_summarystats.xhtml,
-                sampleqc_txt=PE_mergehtml.mergetxt,
-                overallqc_txt=PE_merge_summarystats.textfile,
-                outputfile = sub(basename(PE_merge_summarystats.xhtml), 'stats.htmlx', 'peaseq_report.html'),
-                outputtxt = sub(basename(PE_merge_summarystats.xhtml), 'stats.htmlx', 'peaseq_report.txt')
+                sampleqc_se_html=mergehtml.xhtml,
+                overallqc_se_html=SE_summarystats.xhtml,
+                sampleqc_se_txt=mergehtml.mergetxt,
+                overallqc_se_txt=SE_summarystats.textfile,
+                sampleqc_pe_html=PE_mergehtml.xhtml,
+                overallqc_pe_html=PE_merge_summarystats.xhtml,
+                sampleqc_pe_txt=PE_mergehtml.mergetxt,
+                overallqc_pe_txt=PE_merge_summarystats.textfile,
+                outputfile = if defined(results_name) then results_name + '.peaseq_report.html' else 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs.peaseq_report.html'
         }
     } # end if multi_fastqpair
+
 
 ### ------------------------------------------------- ###
 ### ---------------- S E C T I O N 6 ---------------- ###
@@ -1288,8 +1284,6 @@ workflow peaseq {
         File? s_statsfile = SE_summarystats.statsfile
         File? s_htmlfile = SE_summarystats.htmlfile
         File? s_textfile = SE_summarystats.textfile
-        File? s_m_summaryhtml = SE_merge_overallsummary.summaryhtml
-        File? s_m_summarytxt = SE_merge_overallsummary.summarytxt
         
 
         Array[File?]? sp_qc_statsfile = indv_PE_summarystats.statsfile
@@ -1304,7 +1298,7 @@ workflow peaseq {
         File? sp_textfile = PE_merge_summarystats.textfile
         File? sp_summaryhtml = PE_uno_overallsummary.summaryhtml
         File? sp_summarytxt = PE_uno_overallsummary.summarytxt
-        File? sp_m_summaryhtml = PE_merge_overallsummary.summaryhtml
-        File? sp_m_summarytxt = PE_merge_overallsummary.summarytxt
+        File? m_summaryhtml = PE_merge_overallsummary.summaryhtml
+        File? m_summarytxt = PE_merge_overallsummary.summarytxt
     }
 }
