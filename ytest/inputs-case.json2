@@ -1,0 +1,23 @@
+{
+    "peaseq.sample_R1_fastq" : 
+    [
+        "./fastqfiles/SRR9736844-1_1.selected.fastq.gz",
+     	"./fastqfiles/SRR9736844-8_1.selected.fastq.gz",
+     	"./fastqfiles/SRR9736844-4_1.selected.fastq.gz"
+    ],
+    "peaseq.sample_R2_fastq" :
+    [
+     	"./fastqfiles/SRR9736844-1_2.selected.fastq.gz",
+     	"./fastqfiles/SRR9736844-8_2.selected.fastq.gz",
+     	"./fastqfiles/SRR9736844-4_2.selected.fastq.gz"
+
+    ],
+    "peaseq.reference" : "./hg19/hg19_chr21.fa.gz",
+    "peaseq.blacklist" : "./hg19/hg19-blacklist.v2_chr21.bed.gz",
+    "peaseq.gtf" : "./hg19/GRCh37_latest_genomic_chr21.gtf.gz",
+    "peaseq.motif_databases" : 
+    [
+        "./hg19/motifs/JASPAR2018_CORE_vertebrates_redundant.meme",
+        "./hg19/motifs/CIS-BP.Homo_sapiens.meme"
+    ]
+}
