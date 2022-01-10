@@ -182,7 +182,7 @@ task checkmapped {
 
 task index {
     input {
-	    File bam
+        File bam
         String outfile = basename(bam)+".bai"
         Int memory_gb = 5
         Int max_retries = 1
