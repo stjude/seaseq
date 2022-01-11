@@ -775,6 +775,20 @@ workflow peaseq {
             default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/BAM_Density'
     }
 
+    call samtools.indexstats as frag_index {
+        input :
+            bamfile=fraggraph.fragbamfile
+    }
+
+    call bamtogff.bamtogff as PE_frag_bamtogff {
+        input :
+            gtffile=gtf,
+            chromsizes=samtools_faidx.chromsizes,
+            bamfile=fraggraph.fragbamfile,
+            bamindex=frag_index.indexbam,
+            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/BAMFragments_Density'
+    }
+
     call peaseq_util.pe_bamtobed as PE_forsicerbed {
         input :
             bamfile=select_first([PE_merge_markdup.mkdupbam, uno_PE_mapping.mkdup_bam])
@@ -1185,6 +1199,15 @@ workflow peaseq {
         File? sp_pdf_promoters = PE_bamtogff.pdf_promoters
         File? sp_pdf_h_promoters = PE_bamtogff.pdf_h_promoters
         File? sp_png_h_promoters = PE_bamtogff.png_h_promoters
+
+        File? sf_s_matrices = PE_frag_bamtogff.s_matrices
+        File? sf_densityplot = PE_frag_bamtogff.densityplot
+        File? sf_pdf_gene = PE_frag_bamtogff.pdf_gene
+        File? sf_pdf_h_gene = PE_frag_bamtogff.pdf_h_gene
+        File? sf_png_h_gene = PE_frag_bamtogff.png_h_gene
+        File? sf_pdf_promoters = PE_frag_bamtogff.pdf_promoters
+        File? sf_pdf_h_promoters = PE_frag_bamtogff.pdf_h_promoters
+        File? sf_png_h_promoters = PE_frag_bamtogff.png_h_promoters
 
         #PEAKS-ANNOTATION
         File? peak_promoters = SE_peaksanno.peak_promoters

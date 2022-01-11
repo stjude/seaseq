@@ -9,6 +9,7 @@ task fraggraph {
         String bigwig = sub(basename(bamfile),"\.bam$", "\.w50\.FPM\.bw")
         String wig = sub(basename(bamfile),"\.bam$", "\.w50\.FPM\.wig")
         String tdf = sub(basename(bamfile),"\.bam$", "\.w50\.FPM\.tdf")
+        String fragbam = sub(basename(bamfile),"\.bam$", "\.w50\.frag\.bam")
         String default_location = "BAM_files"
 
         Int memory_gb = 200
@@ -50,15 +51,15 @@ task fraggraph {
         #position sort
         samtools sort \
             ~{sub(basename(bamfile),"\.bam$", "\.w50\.bam")} \
-            -o ~{sub(basename(bamfile),"\.bam$", "\.w50\.sorted\.bam")}
+            -o ~{fragbam}
 
         #view fragments
-        export mappedPE=$(samtools view -c -F 4 ~{sub(basename(bamfile),"\.bam$", "\.w50\.sorted\.bam")})
+        export mappedPE=$(samtools view -c -F 4 ~{fragbam})
 
         #create bedgraph
         intersectBed -c \
             -a ~{sub(basename(chromsizes),"\.tab", "-50bpwindows\.bed")} \
-            -b ~{sub(basename(bamfile),"\.bam$", "\.w50\.sorted\.bam")} \
+            -b ~{fragbam} \
             | awk -F'[\t]' -v mapped=$mappedPE '{print $1 "\t" $2 "\t" $3 "\t" $4*1000000/mapped} ' > ~{sub(basename(bamfile),"\.bam$", "\.w50\.FPM\.graph")}
  
         #create bigwig and tdf
@@ -87,6 +88,7 @@ task fraggraph {
         File bigwigfile = "~{default_location}/~{bigwig}"
         File tdffile = "~{default_location}/~{tdf}"
         File wigfile = "~{default_location}/~{wig}"
+        File fragbamfile = "~{default_location}/~{fragbam}"
     }
 }
 
