@@ -10,7 +10,7 @@ import "motifs.wdl"
 import "../tasks/rose.wdl"
 import "../tasks/util.wdl"
 import "visualization.wdl" as viz
-import "../runspp.wdl"
+import "../tasks/runspp.wdl"
 import "../tasks/sortbed.wdl"
 
 workflow paired_sample_analysis {
