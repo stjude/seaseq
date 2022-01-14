@@ -180,7 +180,7 @@ task checkmapped {
     }
 }
 
-task index {
+task index_bam {
     input {
         File bam
         String outfile = basename(bam)+".bai"

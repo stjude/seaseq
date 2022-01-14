@@ -358,7 +358,7 @@ workflow seaseq {
 
         File s_mergebam_afterbklist = select_first([s_merge_rmblklist.intersect_out, s_mergebam.mergebam])
 
-        call samtools.index as s_mergebam_afterbklist_index_ { input: bam=s_mergebam_afterbklist }
+        call samtools.index_bam as s_mergebam_afterbklist_index_ { input: bam=s_mergebam_afterbklist }
         File s_mergebam_afterbklist_index = s_mergebam_afterbklist_index_.bam_index
 
         call samtools.markdup as s_merge_markdup {
