@@ -13,12 +13,12 @@ workflow visualization {
     
     if ( defined(xlsfile) ) {
         String string_xlsfile = "" #buffer to allow optionality
-        File xlsfile_ = select_first([xlsfile, string_xlsfile])
+        File xlsfile_m = select_first([xlsfile, string_xlsfile])
         call util.normalize {
             input:
                 wigfile=wigfile,
                 control=control,
-                xlsfile=xlsfile_,
+                xlsfile=xlsfile_m,
                 default_location=default_location
         }
     }
