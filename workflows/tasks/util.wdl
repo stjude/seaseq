@@ -55,10 +55,9 @@ task basicfastqstats {
 task flankbed {
     input {
         File bedfile
+        Int flank = 50
         String outputfile = basename(bedfile, '.bed') + '-flank' + flank + '.bed'
         String default_location = "."
-
-        Int flank = 50
 
         Int memory_gb = 5
         Int max_retries = 1
