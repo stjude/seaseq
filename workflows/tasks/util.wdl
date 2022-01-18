@@ -3,7 +3,7 @@ version 1.0
 task basicfastqstats {
     input {
         File fastqfile
-        String outputfile = sub(basename(fastqfile),'\.fastq\.gz|\.fq\.gz', '-fastq.readlength_dist.txt')
+        String outputfile = sub(basename(fastqfile),'.fastq.gz|.fq.gz', '-fastq.readlength_dist.txt')
         String default_location = "QC_files/STATS"
 
         Int max_retries = 1
@@ -241,7 +241,7 @@ task normalize {
         Boolean control = false
         String default_location = "Coverage_files"
 
-        String outputfile = sub(basename(wigfile),'\.wig\.gz', '.RPM.wig')
+        String outputfile = sub(basename(wigfile),'.wig.gz', '.RPM.wig')
 
         Int memory_gb = 5
         Int max_retries = 1
@@ -605,7 +605,7 @@ task mergefastqs {
     # Concat paired-end FASTQ files
     input {
         Array[File] fastqfiles
-        String output_file = sub(basename(fastqfiles[0]),'_R?1.*\.f.*q\.gz','')
+        String output_file = sub(basename(fastqfiles[0]),'_R?1.*.f.*q.gz','')
         Int memory_gb = 2
         Int max_retries = 1
         Int ncpu = 1

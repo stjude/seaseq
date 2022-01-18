@@ -123,13 +123,13 @@ workflow paired_sample_analysis {
             control=control_bam,
             pvalue = "1e-9",
             keep_dup="auto",
-            output_name = if defined(results_name) then results_name + '-p9_kd-auto' else basename(sample_bam,'\.bam') + '+control-p9_kd-auto',
-            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-auto' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '+control-p9_kd-auto'
+            output_name = if defined(results_name) then results_name + '-p9_kd-auto' else basename(sample_bam,'.bam') + '+control-p9_kd-auto',
+            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-auto' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-p9_kd-auto'
     }
 
     call util.addreadme {
         input :
-            default_location = if defined(results_name) then results_name + '/PEAKS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS'
+            default_location = if defined(results_name) then results_name + '/PEAKS' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS'
     }
     
     call macs.macs as all {
@@ -138,8 +138,8 @@ workflow paired_sample_analysis {
             control=control_bam,
             pvalue = "1e-9",
             keep_dup="all",
-            output_name = if defined(results_name) then results_name + '-p9_kd-all' else basename(sample_bam,'\.bam') + '+control-p9_kd-all',
-            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-all' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '+control-p9_kd-all'
+            output_name = if defined(results_name) then results_name + '-p9_kd-all' else basename(sample_bam,'.bam') + '+control-p9_kd-all',
+            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-all' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-p9_kd-all'
     }
 
     call macs.macs as nomodel {
@@ -147,8 +147,8 @@ workflow paired_sample_analysis {
             bamfile=sample_bam,
             control=control_bam,
             nomodel=true,
-            output_name = if defined(results_name) then results_name + '-nm' else basename(sample_bam,'\.bam') + '+control-nm',
-            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-nm' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'\.bam') + '+control-nm'
+            output_name = if defined(results_name) then results_name + '-nm' else basename(sample_bam,'.bam') + '+control-nm',
+            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-nm' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-nm'
     }
 
     call bamtogff.bamtogff {
@@ -159,8 +159,8 @@ workflow paired_sample_analysis {
             bamindex=sample_bai,
             control_bamfile=control_bam,
             control_bamindex=control_bai,
-            samplename=if defined(results_name) then results_name else basename(sample_bam,'\.bam') + '+control',
-            default_location=if defined(results_name) then results_name + '/BAM_Density' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/BAM_Density'
+            samplename=if defined(results_name) then results_name else basename(sample_bam,'.bam') + '+control',
+            default_location=if defined(results_name) then results_name + '/BAM_Density' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/BAM_Density'
     }
 
     call bedtools.bamtobed as s_forsicerbed {
@@ -178,8 +178,8 @@ workflow paired_sample_analysis {
             bedfile=s_forsicerbed.bedfile,
             control_bed=c_forsicerbed.bedfile,
             chromsizes=chromsizes,
-            outputname=if defined(results_name) then results_name else basename(s_forsicerbed.bedfile,'\.bed') + '+control',
-            default_location=if defined(results_name) then results_name + '/PEAKS/BROAD_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/BROAD_peaks'
+            outputname=if defined(results_name) then results_name else basename(s_forsicerbed.bedfile,'.bed') + '+control',
+            default_location=if defined(results_name) then results_name + '/PEAKS/BROAD_peaks' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/BROAD_peaks'
     }
 
     call rose.rose {
@@ -191,7 +191,7 @@ workflow paired_sample_analysis {
             controlindex=control_bai,
             bedfile_auto=macs.peakbedfile,
             bedfile_all=all.peakbedfile,
-            default_location=if defined(results_name) then results_name + '/PEAKS/STITCHED_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS/STITCHED_peaks'
+            default_location=if defined(results_name) then results_name + '/PEAKS/STITCHED_peaks' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/STITCHED_peaks'
     }
 
     call runspp.runspp {
@@ -217,7 +217,7 @@ workflow paired_sample_analysis {
             chromsizes=chromsizes,
             control=true,
             xlsfile=macs.peakxlsfile,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') + '/control' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') + '/control'
+            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'_peaks.bed','') + '/control' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'_peaks.bed','') + '/control'
     }
 
     call viz.visualization as c_vizall {
@@ -226,7 +226,7 @@ workflow paired_sample_analysis {
             chromsizes=chromsizes,
             control=true,
             xlsfile=all.peakxlsfile,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') + '/control' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') + '/control'
+            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'_peaks.bed','') + '/control' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'_peaks.bed','') + '/control'
     }
     call viz.visualization as c_viznomodel {
         input:
@@ -234,7 +234,7 @@ workflow paired_sample_analysis {
             chromsizes=chromsizes,
             control=true,
             xlsfile=nomodel.peakxlsfile,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') + '/control' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') + '/control'
+            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'_peaks.bed','') + '/control' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'_peaks.bed','') + '/control'
     }
 
     call util.peaksanno {
@@ -243,7 +243,7 @@ workflow paired_sample_analysis {
             bedfile=macs.peakbedfile,
             chromsizes=chromsizes,
             summitfile=macs.summitsfile,
-            default_location=if defined(results_name) then results_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS_Annotation/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','')
+            default_location=if defined(results_name) then results_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(macs.peakbedfile),'_peaks.bed','') else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS_Annotation/NARROW_peaks/' + sub(basename(macs.peakbedfile),'_peaks.bed','')
     }
 
     call util.peaksanno as all_peaksanno {
@@ -252,7 +252,7 @@ workflow paired_sample_analysis {
             bedfile=all.peakbedfile,
             chromsizes=chromsizes,
             summitfile=all.summitsfile,
-            default_location=if defined(results_name) then results_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS_Annotation/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','')
+            default_location=if defined(results_name) then results_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(all.peakbedfile),'_peaks.bed','') else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS_Annotation/NARROW_peaks/' + sub(basename(all.peakbedfile),'_peaks.bed','')
     }
 
     call util.peaksanno as nomodel_peaksanno {
@@ -261,7 +261,7 @@ workflow paired_sample_analysis {
             bedfile=nomodel.peakbedfile,
             chromsizes=chromsizes,
             summitfile=nomodel.summitsfile,
-            default_location=if defined(results_name) then results_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS_Annotation/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','')
+            default_location=if defined(results_name) then results_name + '/PEAKS_Annotation/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'_peaks.bed','') else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS_Annotation/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'_peaks.bed','')
     }
 
     call util.peaksanno as sicer_peaksanno {
@@ -269,7 +269,7 @@ workflow paired_sample_analysis {
             gtffile=gtf,
             bedfile=select_first([sicer.fdrisland, string_ctrlwig]),
             chromsizes=chromsizes,
-            default_location=if defined(results_name) then results_name + '/PEAKS_Annotation/BROAD_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/PEAKS_Annotation/BROAD_peaks'
+            default_location=if defined(results_name) then results_name + '/PEAKS_Annotation/BROAD_peaks' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS_Annotation/BROAD_peaks'
     }
 
     # Motif Analysis
@@ -280,13 +280,13 @@ workflow paired_sample_analysis {
                 reference_index=faidx,
                 bedfile=macs.peakbedfile,
                 motif_databases=motif_databases,
-                default_location=if defined(results_name) then results_name + '/MOTIFS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/MOTIFS'
+                default_location=if defined(results_name) then results_name + '/MOTIFS' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/MOTIFS'
         }
 
         call util.flankbed {
             input :
                 bedfile=macs.summitsfile,
-                default_location=if defined(results_name) then results_name + '/MOTIFS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/MOTIFS'
+                default_location=if defined(results_name) then results_name + '/MOTIFS' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/MOTIFS'
         }
 
         call motifs.motifs as flank {
@@ -295,7 +295,7 @@ workflow paired_sample_analysis {
                 reference_index=faidx,
                 bedfile=flankbed.flankbedfile,
                 motif_databases=motif_databases,
-                default_location=if defined(results_name) then results_name + '/MOTIFS' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/MOTIFS'
+                default_location=if defined(results_name) then results_name + '/MOTIFS' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/MOTIFS'
         }
     }
 
@@ -304,7 +304,7 @@ workflow paired_sample_analysis {
             wigfile=macs.wigfile,
             chromsizes=chromsizes,
             xlsfile=macs.peakxlsfile,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'\_peaks.bed','')
+            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'_peaks.bed','') else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(macs.peakbedfile),'_peaks.bed','')
     }
 
     call viz.visualization as vizall {
@@ -312,7 +312,7 @@ workflow paired_sample_analysis {
             wigfile=all.wigfile,
             chromsizes=chromsizes,
             xlsfile=all.peakxlsfile,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'\_peaks.bed','')
+            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'_peaks.bed','') else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(all.peakbedfile),'_peaks.bed','')
     }
 
     call viz.visualization as viznomodel {
@@ -320,14 +320,14 @@ workflow paired_sample_analysis {
             wigfile=nomodel.wigfile,
             chromsizes=chromsizes,
             xlsfile=nomodel.peakxlsfile,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','') else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'\_peaks.bed','')
+            default_location=if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'_peaks.bed','') else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + sub(basename(nomodel.peakbedfile),'_peaks.bed','')
     }
 
     call viz.visualization as vizsicer {
         input:
             wigfile=sicer.wigfile,
             chromsizes=chromsizes,
-            default_location=if defined(results_name) then results_name + '/COVERAGE_files/BROAD_peaks' else sub(basename(sample_bam),'\.sorted\.b.*$','') + '+control/COVERAGE_files/BROAD_peaks'
+            default_location=if defined(results_name) then results_name + '/COVERAGE_files/BROAD_peaks' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/BROAD_peaks'
     }
 
     #Peak Calling for Sample BAM only
@@ -336,7 +336,7 @@ workflow paired_sample_analysis {
             bamfile=sample_bam,
             pvalue = "1e-9",
             keep_dup="auto",
-            default_location='SAMPLE/' + sub(basename(sample_bam),'\.sorted\.b.*$','') + '/PEAKS_forQC/' + basename(sample_bam,'\.bam') + '-p9_kd-auto'
+            default_location='SAMPLE/' + sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(sample_bam,'.bam') + '-p9_kd-auto'
     }
 
     #Peak Calling for Control BAM only
@@ -345,7 +345,7 @@ workflow paired_sample_analysis {
             bamfile=control_bam,
             pvalue = "1e-9",
             keep_dup="auto",
-            default_location='CONTROL/' + sub(basename(control_bam),'\.sorted\.b.*$','') + '/PEAKS_forQC/' + basename(control_bam,'\.bam') + '-p9_kd-auto'
+            default_location='CONTROL/' + sub(basename(control_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(control_bam,'.bam') + '-p9_kd-auto'
     }
 
     call bedtools.bamtobed as only_c_finalbed {

@@ -6,7 +6,7 @@ task runspp {
         File? control
         Boolean crosscorr = true
 
-        String outputfile = basename(bamfile,'\.bam')+ '-spp.out'
+        String outputfile = basename(bamfile,'.bam')+ '-spp.out'
 
         Int memory_gb = 10
         Int max_retries = 1

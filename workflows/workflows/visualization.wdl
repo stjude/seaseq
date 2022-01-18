@@ -51,7 +51,7 @@ task wigtobigwig {
         File chromsizes
         String default_location = "Coverage_files"
 
-        String outputfile = sub(basename(wigfile),'\.wig\.gz', '.bw')
+        String outputfile = sub(basename(wigfile),'.wig.gz', '.bw')
 
         Int memory_gb = 5
         Int max_retries = 1
@@ -83,7 +83,7 @@ task igvtdf {
         File chromsizes
         String default_location = "Coverage_files"
 
-        String outputfile = sub(basename(wigfile),'\.wig\.gz', '.tdf')
+        String outputfile = sub(basename(wigfile),'.wig.gz', '.tdf')
 
         Int memory_gb = 5
         Int max_retries = 1
