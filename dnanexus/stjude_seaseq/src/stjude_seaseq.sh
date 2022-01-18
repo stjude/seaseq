@@ -94,6 +94,10 @@ main() {
     sed -i "s/import \"..\/tasks\/util\.wdl/import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\/util\.wdl/" workflows/workflows/visualization.wdl
     sed -i "s/import \"..\/tasks\/bedtools\.wdl/import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\/bedtools\.wdl/" workflows/workflows/motifs.wdl
     sed -i "s/import \"..\/tasks\//import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\//" workflows/workflows/mapping.wdl
+    sed -i "s#import \"../tasks#import \"/home/dnanexus/seaseq/workflows/tasks#" workflows/workflows/paired_sample_analysis.wdl
+    sed -i "s#motifs.wdl#/home/dnanexus/seaseq/workflows//workflows/motifs.wdl#" workflows/workflows/paired_sample_analysis.wdl
+    sed -i "s#bamtogff.wdl#/home/dnanexus/seaseq/workflows//workflows/bamtogff.wdl#" workflows/workflows/paired_sample_analysis.wdl
+    sed -i "s#visualization.wdl#/home/dnanexus/seaseq/workflows//workflows/visualization.wdl#" workflows/workflows/paired_sample_analysis.wdl
 
     # compile SEAseq to dxwdl
     dx mkdir -p "${DX_PROJECT_CONTEXT_ID}":/app-$timestamp/
