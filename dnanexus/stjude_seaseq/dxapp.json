@@ -37,6 +37,13 @@
       "help": "Select from built-in list of genomes. Otherwise, select Custom Genome and provide 'Genome Reference' and 'Gene Annotation'."
     },
     {
+      "name": "run_motifs",
+      "label": "Run Motifs",
+      "class": "boolean",
+      "default": true,
+      "help": "Run MEME motif analysis"
+    },
+    {
       "name": "reference",
       "label": "Genome Reference",
       "class": "file",
