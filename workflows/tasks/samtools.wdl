@@ -166,7 +166,7 @@ task checkmapped {
         mappedreads=$(samtools view -F 0x0204 ~{bamfile} | wc -l)
 
         if [ $mappedreads -gt 0 ]; then
-            echo $mappedreads > ~{outputfile}
+            echo $mappedreads > ~{outputfile_name}
         fi
     }
     runtime {
@@ -176,7 +176,7 @@ task checkmapped {
         cpu: ncpu
     }
     output {
-        File? outputfile = "~{default_location}/~{outputfile}"
+        File? outputfile = "~{default_location}/~{outputfile_name}"
     }
 }
 
