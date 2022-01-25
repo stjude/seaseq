@@ -704,13 +704,13 @@ workflow seaseq {
         File? all_peakbedfile = all.peakbedfile
         File? all_peakxlsfile = all.peakxlsfile
         File? all_summitsfile = all.summitsfile
-        File? all_negativexlsfile = all.negativepeaks
         File? all_wigfile = all.wigfile
+        File? all_negativexlsfile = all.negativepeaks
         File? nm_peakbedfile = nomodel.peakbedfile
         File? nm_peakxlsfile = nomodel.peakxlsfile
         File? nm_summitsfile = nomodel.summitsfile
-        File? nm_negativexlsfile = nomodel.negativepeaks
         File? nm_wigfile = nomodel.wigfile
+        File? nm_negativexlsfile = nomodel.negativepeaks
         File? readme_peaks = addreadme.readme_peaks
 
         #SICER

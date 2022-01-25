@@ -527,7 +527,7 @@ task concatstats {
                 sampletextvalues += "\t" + SQCvalue[stats[key]]
                 controltextvalues += "\t" + CQCvalue[stats[key]]
                 writestatsfile.write("Sample : " + convertheader + "," + SQCvalue[stats[key]] + "\n")
-                writestatsfile.write("Control : " + convertheader + "," + SQCvalue[stats[key]] + "\n")
+                writestatsfile.write("Control : " + convertheader + "," + CQCvalue[stats[key]] + "\n")
 
         htmlheader += "</th></tr>"
         samplehtmlvalues += "</tr>"
