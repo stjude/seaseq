@@ -357,9 +357,7 @@ workflow seaseq {
         } # end if blacklist provided
 
         File s_mergebam_afterbklist = select_first([s_merge_rmblklist.intersect_out, s_mergebam.mergebam])
-
-        call samtools.index_bam as s_mergebam_afterbklist_index_m { input: bam=s_mergebam_afterbklist }
-        File s_mergebam_afterbklist_index = s_mergebam_afterbklist_index_m.bam_index
+        File s_mergebam_afterbklist_index = select_first([s_merge_bklist.indexbam, s_mergeindexstats.indexbam])
 
         call samtools.markdup as s_merge_markdup {
             input :
@@ -494,9 +492,7 @@ workflow seaseq {
         } # end if blacklist provided
 
         File c_mergebam_afterbklist = select_first([c_merge_rmblklist.intersect_out, c_mergebam.mergebam])
-
-        call samtools.index_bam as c_mergebam_afterbklist_index_m { input: bam=c_mergebam_afterbklist }
-        File c_mergebam_afterbklist_index = c_mergebam_afterbklist_index_m.bam_index
+        File c_mergebam_afterbklist_index = select_first([c_merge_bklist.indexbam, c_mergeindexstats.indexbam])
 
         call samtools.markdup as c_merge_markdup {
             input :
