@@ -68,10 +68,15 @@ workflow paired_sample_analysis {
         File control_bam
         File control_bai
 
+        # Files for BAMtoGFF
+        File sample_bam_dedup
+        File sample_bai_dedup
+        File control_bam_dedup
+        File control_bai_dedup
+
         # group: analysis_parameter
         String? results_name
         Boolean run_motifs=true
-
     }
 
     parameter_meta {
@@ -155,22 +160,22 @@ workflow paired_sample_analysis {
         input :
             gtffile=gtf,
             chromsizes=chromsizes,
-            bamfile=sample_bam,
-            bamindex=sample_bai,
-            control_bamfile=control_bam,
-            control_bamindex=control_bai,
+            bamfile=sample_bam_dedup,
+            bamindex=sample_bai_dedup,
+            control_bamfile=control_bam_dedup,
+            control_bamindex=control_bai_dedup,
             samplename=if defined(results_name) then results_name else basename(sample_bam,'.bam') + '+control',
             default_location=if defined(results_name) then results_name + '/BAM_Density' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/BAM_Density'
     }
 
     call bedtools.bamtobed as s_forsicerbed {
         input :
-            bamfile=sample_bam
+            bamfile=sample_bam_dedup
     }
 
     call bedtools.bamtobed as c_forsicerbed {
         input :
-            bamfile=control_bam
+            bamfile=control_bam_dedup
     }
 
     call sicer.sicer {

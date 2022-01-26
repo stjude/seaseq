@@ -665,7 +665,30 @@ workflow seaseq {
     File control_bam = select_first([c_mergebam_afterbklist, c_mapping.bklist_bam, c_mapping.sorted_bam])
     File control_bai = select_first([c_mergebam_afterbklist_index, c_mapping.bklist_index, c_mapping.bam_index])
 
-    call paired.paired_sample_analysis { input: reference=reference, blacklist=blacklist, gtf=gtf, motif_databases=motif_databases, chromsizes=samtools_faidx.chromsizes, faidx=samtools_faidx.faidx_file, sample_bam=sample_bam, sample_bai=sample_bai, control_bam=control_bam, control_bai=control_bai, results_name=results_name, run_motifs=run_motifs}
+    File sample_bam_dedup = select_first([s_merge_markdup.mkdupbam, s_mapping.mkdup_bam])
+    File sample_bai_dedup = select_first([s_merge_mkdup.indexbam, s_mapping.mkdup_index])
+    File control_bam_dedup = select_first([c_merge_markdup.mkdupbam, c_mapping.mkdup_bam])
+    File control_bai_dedup = select_first([c_merge_mkdup.indexbam, c_mapping.mkdup_index])
+
+    call paired.paired_sample_analysis {
+        input:
+            reference=reference,
+            blacklist=blacklist,
+            gtf=gtf,
+            motif_databases=motif_databases,
+            chromsizes=samtools_faidx.chromsizes,
+            faidx=samtools_faidx.faidx_file,
+            sample_bam=sample_bam,
+            sample_bai=sample_bai,
+            control_bam=control_bam,
+            control_bai=control_bai,
+            results_name=results_name,
+            run_motifs=run_motifs,
+            sample_bam_dedup=sample_bam_dedup,
+            sample_bai_dedup=sample_bai_dedup,
+            control_bam_dedup=control_bam_dedup,
+            control_bai_dedup=control_bai_dedup
+        }
 
 ### ---------------------------------------- ###
 ### ------------ S E C T I O N 4 ----------- ###
