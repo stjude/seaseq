@@ -146,7 +146,7 @@ task summaryreport {
         echo '</table>' >> ~{outputfile}
         echo -e 'Overall Quality Evaluation and Statistics Results' >> ~{outputtxt}
         cat ~{overallqc_txt} >> ~{outputtxt}
-        if [ -f "~{sampleqc_html}" ]; then
+        if [ -f "~{controlqc_html}" ]; then
             echo "<p><b>*</b> Peaks identified after Input/Control correction.</p>" >> ~{outputfile}
         fi
         echo '</div>' >> ~{outputfile}
@@ -527,7 +527,7 @@ task concatstats {
                 sampletextvalues += "\t" + SQCvalue[stats[key]]
                 controltextvalues += "\t" + CQCvalue[stats[key]]
                 writestatsfile.write("Sample : " + convertheader + "," + SQCvalue[stats[key]] + "\n")
-                writestatsfile.write("Control : " + convertheader + "," + SQCvalue[stats[key]] + "\n")
+                writestatsfile.write("Control : " + convertheader + "," + CQCvalue[stats[key]] + "\n")
 
         htmlheader += "</th></tr>"
         samplehtmlvalues += "</tr>"
