@@ -5,7 +5,7 @@ task indexstats {
     input {
         File bamfile
         String outputfile = basename(bamfile) + ".bai"
-        String flagstat = sub(basename(bamfile),"\.bam$", "-flagstat.txt")
+        String flagstat = sub(basename(bamfile),".bam$", "-flagstat.txt")
         String default_location = "BAM_files"
 
         Int memory_gb = 5
@@ -36,7 +36,7 @@ task indexstats {
 task markdup {
     input {
         File bamfile
-        String outputfile = sub(basename(bamfile),"\.bam$", ".rmdup.bam")
+        String outputfile = sub(basename(bamfile),".bam$", ".rmdup.bam")
         String default_location = "BAM_files"
 
         Int memory_gb = 5
@@ -65,7 +65,7 @@ task markdup {
 task viewsort {
     input {
         File samfile
-        String outputfile = basename(sub(samfile,'\.sam$','\.sorted.bam'))
+        String outputfile = basename(sub(samfile,'.sam$','.sorted.bam'))
         String default_location = "BAM_files"
 
         Int memory_gb = 5
@@ -77,10 +77,10 @@ task viewsort {
 
         samtools view -b \
             ~{samfile} \
-            > ~{sub(samfile,'\.sam$','\.bam')}
+            > ~{sub(samfile,'.sam$','.bam')}
 
         samtools sort \
-           ~{sub(samfile,'\.sam$','\.bam')} \
+           ~{sub(samfile,'.sam$','.bam')} \
            -o ~{outputfile}
     }
     runtime {
@@ -154,7 +154,7 @@ task checkmapped {
     input {
         File bamfile
         String default_location = "BAM_files"
-        String outputfile = basename(sub(bamfile,"\.bam$", "-mappedcount.txt"))
+        String outputfile_name = basename(sub(bamfile,".bam$", "-mappedcount.txt"))
 
         Int memory_gb = 5
 	Int max_retries = 1
@@ -166,7 +166,7 @@ task checkmapped {
         mappedreads=$(samtools view -F 0x0204 ~{bamfile} | wc -l)
 
         if [ $mappedreads -gt 0 ]; then
-            echo $mappedreads > ~{outputfile}
+            echo $mappedreads > ~{outputfile_name}
         fi
     }
     runtime {
@@ -176,6 +176,6 @@ task checkmapped {
         cpu: ncpu
     }
     output {
-        File? outputfile = "~{default_location}/~{outputfile}"
+        File? outputfile = "~{default_location}/~{outputfile_name}"
     }
 }
