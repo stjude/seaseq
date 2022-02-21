@@ -8,7 +8,7 @@ workflow mapping {
     input {
         File fastqfile
         Array[File] index_files
-        File metricsfile
+        File? metricsfile
         File? blacklist
         Int? read_length = 75
         String default_location = "BAM_files"
