@@ -10,6 +10,7 @@ workflow mapping {
         Array[File] index_files
         File metricsfile
         File? blacklist
+        Int? read_length = 75
         String default_location = "BAM_files"
     }
 
@@ -17,7 +18,8 @@ workflow mapping {
         input :
             fastqfile=fastqfile,
             index_files=index_files,
-            metricsfile=metricsfile
+            metricsfile=metricsfile,
+            read_length=read_length
     }   
 
     call samtools.viewsort {
