@@ -1225,9 +1225,11 @@ workflow seaseq {
         File? pdf_gene = bamtogff.pdf_gene
         File? pdf_h_gene = bamtogff.pdf_h_gene
         File? png_h_gene = bamtogff.png_h_gene
+	File? jpg_h_gene = bamtogff.jpg_h_gene
         File? pdf_promoters = bamtogff.pdf_promoters
         File? pdf_h_promoters = bamtogff.pdf_h_promoters
         File? png_h_promoters = bamtogff.png_h_promoters
+	File? jpg_h_promoters = bamtogff.jpg_h_promoters
 
         #PEAKS-ANNOTATION
         File? peak_promoters = peaksanno.peak_promoters
