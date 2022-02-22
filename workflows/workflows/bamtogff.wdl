@@ -60,13 +60,13 @@ workflow bamtogff {
 
     if (defined(control_bamfile)) {
         String string_controlbam = ""
-        File control_bamfile_ = select_first([control_bamfile,string_controlbam])
-        File control_bamindex_ = select_first([control_bamindex,string_controlbam])
+        File control_bamfile_m = select_first([control_bamfile,string_controlbam])
+        File control_bamindex_m = select_first([control_bamindex,string_controlbam])
 
         call bamtogff_main as c_promoters {
             input :
-                bamfile=control_bamfile_,
-                bamindex=control_bamindex_,
+                bamfile=control_bamfile_m,
+                bamindex=control_bamindex_m,
                 matrix_bins=100,
                 annotation=bamtogff_gtftogenes.promoters,
                 matrix_name="inputmatrix-promoters.txt"
@@ -74,8 +74,8 @@ workflow bamtogff {
 
         call bamtogff_main as c_genebody {
             input :
-                bamfile=control_bamfile_,
-                bamindex=control_bamindex_,
+                bamfile=control_bamfile_m,
+                bamindex=control_bamindex_m,
                 matrix_bins=100,
                 annotation=bamtogff_gtftogenes.genes,
                 matrix_name="inputmatrix-genebody.txt"
@@ -83,8 +83,8 @@ workflow bamtogff {
 
         call bamtogff_main as c_upstream {
             input :
-                bamfile=control_bamfile_,
-                bamindex=control_bamindex_,
+                bamfile=control_bamfile_m,
+                bamindex=control_bamindex_m,
                 matrix_bins=50,
                 annotation=bamtogff_gtftogenes.upstream,
                 matrix_name="inputmatrix-upstream.txt"
@@ -92,8 +92,8 @@ workflow bamtogff {
 
         call bamtogff_main as c_downstream {
             input :
-                bamfile=control_bamfile_,
-                bamindex=control_bamindex_,
+                bamfile=control_bamfile_m,
+                bamindex=control_bamindex_m,
                 matrix_bins=50,
                 annotation=bamtogff_gtftogenes.downstream,
                 matrix_name="inputmatrix-downstream.txt"
@@ -175,7 +175,7 @@ task bamtogff_main {
         File annotation
         Int matrix_bins
 
-        String matrix_name = sub(basename(annotation),'\.gff', '.txt')
+        String matrix_name = sub(basename(annotation),'.gff', '.txt')
 
         Int memory_gb = 5
         Int max_retries = 1
@@ -231,7 +231,7 @@ task bamtogff_plot {
         echo '#=========================================' >> $RSCRIPT
         echo '' >> $RSCRIPT
         echo 'folder = "'sample_matrixfiles.zip'"' >> $RSCRIPT
-        ~{if defined(control_bamfile) then "echo \'opt <- list(z=TRUE, c=\"input_matrixfiles.zip\")\' \>\> $RSCRIPT" else "echo \'opt <- list(z=TRUE, c=NA)\' \>\> $RSCRIPT"}
+        ~{if defined(control_bamfile) then "echo \'opt <- list(z=TRUE, c=\"input_matrixfiles.zip\")\' >> $RSCRIPT" else "echo \'opt <- list(z=TRUE, c=NA)\' >> $RSCRIPT"}
         echo 'samplename = "'~{samplename}'"' >> $RSCRIPT
         echo 'unzipped_folder = "UNZIPPED"' >> $RSCRIPT
         echo 'distance = round(~{distance}/1000,1)' >> $RSCRIPT

@@ -4,7 +4,7 @@ task sortbed {
     input {
         File bedfile
 
-        String outputfile = basename(bedfile,'\.bed')+ '.sorted.bed'
+        String outputfile = basename(bedfile,'.bed')+ '.sorted.bed'
 
         Int memory_gb = 10
         Int max_retries = 1

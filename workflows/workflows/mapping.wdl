@@ -37,11 +37,11 @@ workflow mapping {
     if ( defined(blacklist) ) {
         # remove blacklist regions
         String string_blacklist = "" #buffer to allow for blacklist optionality
-        File blacklist_ = select_first([blacklist, string_blacklist])
+        File blacklist_file = select_first([blacklist, string_blacklist])
         call bedtools.intersect as rmblklist {
             input :
                 fileA=viewsort.sortedbam,
-                fileB=blacklist_,
+                fileB=blacklist_file,
                 default_location=default_location,
                 nooverlap=true
         }

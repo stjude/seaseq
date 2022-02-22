@@ -3,7 +3,7 @@ version 1.0
 task basicfastqstats {
     input {
         File fastqfile
-        String outputfile = sub(basename(fastqfile),'\.fastq\.gz|\.fq\.gz', '-fastq.readlength_dist.txt')
+        String outputfile = sub(basename(fastqfile),'.fastq.gz|.fq.gz', '-fastq.readlength_dist.txt')
         String default_location = "QC_files/STATS"
 
         Int max_retries = 1
@@ -55,10 +55,9 @@ task basicfastqstats {
 task flankbed {
     input {
         File bedfile
+        Int flank = 50
         String outputfile = basename(bedfile, '.bed') + '-flank' + flank + '.bed'
         String default_location = "."
-
-        Int flank = 50
 
         Int memory_gb = 5
         Int max_retries = 1
@@ -241,7 +240,7 @@ task normalize {
         Boolean control = false
         String default_location = "Coverage_files"
 
-        String outputfile = sub(basename(wigfile),'\.wig\.gz', '.RPM.wig')
+        String outputfile = sub(basename(wigfile),'.wig.gz', '.RPM.wig')
 
         Int memory_gb = 5
         Int max_retries = 1
@@ -599,75 +598,3 @@ task addreadme {
 	File readme_peaks = "~{default_location}/~{output_file}"
     }
 }
-
-
-task mergefastqs {
-    # Concat paired-end FASTQ files
-    input {
-        Array[File] fastqfiles
-        String output_file = sub(basename(fastqfiles[0]),'_R?1.*\.f.*q\.gz','')
-        Int memory_gb = 2
-        Int max_retries = 1
-        Int ncpu = 1
-    }
-    command <<<
-        zcat -f ~{sep=' ' fastqfiles} | gzip -nc > ~{output_file}.merged.fastq.gz
-    >>>
-    runtime {
-        memory: ceil(memory_gb * ncpu) + " GB"
-        maxRetries: max_retries
-        cpu: ncpu
-    }
-    output {
-	    File mergepaired = "~{output_file}.merged.fastq.gz"
-    }
-
-}
-
-
-task checkinputs {
-    # Sort FASTQ files provided, to make sure files are specified in alphanumeric order
-    input {
-        Array[File] inputfiles
-
-        Int memory_gb = 5
-        Int max_retries = 1
-        Int ncpu = 1
-    }
-    command <<<
-        echo -e "~{sep='\n' inputfiles}" > listoffiles.txt
-        mkdir -p R1 R2
-        touch paired_file
-
-python <<CODE
-import os
-import sys
-import re
-
-all = open("listoffiles.txt", 'r')
-for each in all:
-    each = each.rstrip('\n')
-    eachall = each.split('/')[-1]
-    if re.search("_R?1.*\.f.*q\.gz",eachall) :
-        bashCommand = "ln -s " + each + " R1/" + eachall
-    elif re.search("_R?2.*\.f.*q\.gz",eachall) :
-        bashCommand = "ln -s " + each + " R2/" + eachall + ';echo true > paired_file'
-    else :
-        bashCommand = "ln -s " + each + " R1/" + eachall
-    os.system(bashCommand)
-
-CODE
-    cat paired_file
-    >>>
-    runtime {
-        memory: ceil(memory_gb * ncpu) + " GB"
-        maxRetries: max_retries
-        cpu: ncpu
-    }
-    output {
-        Array[File] S1 = glob("R1/*")
-        Array[File]? S2 = glob("R2/*")
-        String paired_end = read_string('paired_file')
-    }
-}
-

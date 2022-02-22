@@ -13,12 +13,12 @@ workflow visualization {
     
     if ( defined(xlsfile) ) {
         String string_xlsfile = "" #buffer to allow optionality
-        File xlsfile_ = select_first([xlsfile, string_xlsfile])
+        File xls_file = select_first([xlsfile, string_xlsfile])
         call util.normalize {
             input:
                 wigfile=wigfile,
                 control=control,
-                xlsfile=xlsfile_,
+                xlsfile=xls_file,
                 default_location=default_location
         }
     }
@@ -51,7 +51,7 @@ task wigtobigwig {
         File chromsizes
         String default_location = "Coverage_files"
 
-        String outputfile = sub(basename(wigfile),'\.wig\.gz', '.bw')
+        String outputfile = sub(basename(wigfile),'.wig.gz', '.bw')
 
         Int memory_gb = 5
         Int max_retries = 1
@@ -83,7 +83,7 @@ task igvtdf {
         File chromsizes
         String default_location = "Coverage_files"
 
-        String outputfile = sub(basename(wigfile),'\.wig\.gz', '.tdf')
+        String outputfile = sub(basename(wigfile),'.wig.gz', '.tdf')
 
         Int memory_gb = 5
         Int max_retries = 1
