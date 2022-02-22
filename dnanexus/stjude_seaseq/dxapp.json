@@ -3,7 +3,7 @@
   "title": "SEAseq (St. Jude)",
   "summary": "Single-End Antibody sequencing workflow",
   "dxapi": "1.0.1",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "openSource" : true,
   "inputSpec": [
     {
@@ -709,6 +709,11 @@
       "optional": true
     },
     {
+      "name": "jpg_h_gene",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "pdf_promoters",
       "class": "file",
       "optional": true
@@ -720,6 +725,11 @@
     },
     {
       "name": "png_h_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "jpg_h_promoters",
       "class": "file",
       "optional": true
     },

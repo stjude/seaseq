@@ -211,23 +211,23 @@ The metrics are color flagged for easy visualization of overall performance in H
 
 SEAseq metrics calculated to infer quality are (in alphabetical order):
 | Quality Metric	                                 | Definition	                                                                                                                                                            |
-|--------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Aligned Percent                                  | Percentage of mapped reads.                                                                                                                                            |
-| Base Quality	                                   | Per-base sequence quality.                                                                                                                                             |
-| Estimated Fragment Width                         | Average fragment size of the peak distribution.	                                                                                                                      |
-| Estimated Tag Length	                           | Sequencing read length.                                                                                                                                                |
-| FRiP	                                           | The fraction of reads within peaks regions.                                                                                                                            |
-| Linear Stitched Peaks (Enhancers)                | Total number of clustered enriched regions.                                                                                                                            |
-| Non-Redundant Fraction (NRF)                     | Fraction of uniquely mapped reads.                                                                                                                                     |
-| *Normalized Peaks*                               | Peaks identified with Input/Control correction *(applicable when Control is provided)*.                                                                                |
-| Normalized Strand-correlation Coefficient (NSC)	 | To determine signal-to-noise ratio using strand cross-correlation. The ratio of the maximum cross-correlation value divided by the background cross-correction.        |
-| Sequence Diversity	                             | Sequence overrepresentation.  If reads/sequences are overrepresented in the library.                                                                                   |
-| PCR Bottleneck Coefficient (PBC)	               | It is a measure of library complexity determined by the fraction of genomic locations with exactly one unique read versus those covered by at least one unique reads.	|
-| Peaks                                            | Total number of enriched regions.                                                                                                                                      |
-| Raw Reads	                                       | Total number of sequencing reads.                                                                                                                                      |
-| *Read Length*                                    | Average FASTQ read length *(applicable when multiple FASTQs are provided)*.                                                                                            |
-| Relative Strand-correlation Coefficient (RSC)	   | A strand cross-correlation ratio between the fragment-length cross-correlation and the read-length peak.                                                               |
-| SE-like enriched regions (Super Enhancers)	     | Total number of SE-like clustered enriched regions.                                                                                                                    |
+|--------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Aligned Percent                                        | Percentage of mapped reads.                                                                                                                                            |
+| Base Quality	                                         | Per-base sequence quality.                                                                                                                                             |
+| Estimated Fragment Width                               | Average fragment size of the peak distribution.	                                                                                                                      |
+| Estimated Tag Length	                                 | Sequencing read length.                                                                                                                                                |
+| [FRiP]	                                         | The fraction of reads within peaks regions.                                                                                                                            |
+| Linear Stitched Peaks (Enhancers)                      | Total number of clustered enriched regions.                                                                                                                            |
+| Non-Redundant Fraction ([NRF])                         | Fraction of uniquely mapped reads.                                                                                                                                     |
+| *Normalized Peaks*                                     | Peaks identified with Input/Control correction *(applicable when Control is provided)*.                                                                                |
+| Normalized Strand-correlation Coefficient ([NSC])	 | To determine signal-to-noise ratio using strand cross-correlation. The ratio of the maximum cross-correlation value divided by the background cross-correction.        |
+| Sequence Diversity	                                 | Sequence overrepresentation.  If reads/sequences are overrepresented in the library.                                                                                   |
+| PCR Bottleneck Coefficient ([PBC])	                 | It is a measure of library complexity determined by the fraction of genomic locations with exactly one unique read versus those covered by at least one unique reads.	|
+| Peaks                                                  | Total number of enriched regions.                                                                                                                                      |
+| Raw Reads	                                         | Total number of sequencing reads.                                                                                                                                      |
+| *Read Length*                                          | Average FASTQ read length *(applicable when multiple FASTQs are provided)*.                                                                                            |
+| Relative Strand-correlation Coefficient ([RSC])        | A strand cross-correlation ratio between the fragment-length cross-correlation and the read-length peak.                                                               |
+| SE-like enriched regions (Super Enhancers)	         | Total number of SE-like clustered enriched regions.                                                                                                                    |
 | Overall Quality	                                 | Cross-metric average score.                                                                                                                                            |
 
 ## Frequently asked questions
@@ -265,3 +265,9 @@ None yet!
 [AME]: https://meme-suite.org/meme/tools/ame
 [MEME-ChIP]: https://meme-suite.org/meme/tools/meme-chip
 [seaseq]: https://github.com/stjude/seaseq
+[FRiP]: https://github.com/stjude/seaseq/definitions.md#fraction-of-reads-in-peaks-frip
+[NRF]: https://github.com/stjude/seaseq/definitions.md#non-redundant-fraction-nrf
+[NSC]: https://github.com/stjude/seaseq/definitions.md#normalized-strand-correlation-coefficient-nsc
+[RSC]: https://github.com/stjude/seaseq/definitions.md#relative-strand-correlation-coefficient-rsc
+[PBC]: https://github.com/stjude/seaseq/definitions.md#pcr-bottleneck-coefficient-pbc
+
