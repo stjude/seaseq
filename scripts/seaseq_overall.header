@@ -248,11 +248,11 @@
 <div class="abbreviations">
     <b>Abbreviations</b> (adopted from <a href="https://doi.org/10.1101/gr.136184.111" target="_blank">Landt et al, Genome Res. 2012</a>)
    <ul>
-       <li><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3431496/#:~:text=A%20useful%20complexity%20metric%20is%20the%20fraction%20of%20nonredundant%20mapped%20reads%20in%20a%20data%20set%20(nonredundant%20fraction%20or%20NRF)%2C" target="_blank">NRF</a> : Non-Redundant Fraction.</li>
-       <li><a href="https://genome.ucsc.edu/ENCODE/qualityMetrics.html#:~:text=PCR%20Bottleneck%20Coefficient%20(PBC)" target="_blank">PBC</a> : PCR BottleNeck Coefficient.</li>
-       <li><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3431496/#:~:text=(normalized%20strand%20coefficient%2C%20NSC)" target="_blank">NSC</a> : Normalized Strand Cross-correlation coefficient.</li>
-       <li><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3431496/#:~:text=(relative%20strand%20correlation%2C%20RSC)" target="_blank">RSC</a> : Relative Strand Cross-correlation coefficient.</li>
-       <li><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3431496/#:~:text=FRiP%20(fraction%20of%20reads%20in%20peaks)." target="_blank">FRiP</a> : Fraction of Reads in Peaks.</li>
+       <li><a href="https://github.com/stjude/seaseq/blob/master/definitions.md#non-redundant-fraction-nrf" target="_blank">NRF</a> : Non-Redundant Fraction.</li>
+       <li><a href="https://github.com/stjude/seaseq/blob/master/definitions.md#pcr-bottleneck-coefficient-pbc" target="_blank">PBC</a> : PCR BottleNeck Coefficient.</li>
+       <li><a href="https://github.com/stjude/seaseq/blob/master/definitions.md#normalized-strand-correlation-coefficient-nsc" target="_blank">NSC</a> : Normalized Strand Cross-correlation coefficient.</li>
+       <li><a href="https://github.com/stjude/seaseq/blob/master/definitions.md#relative-strand-correlation-coefficient-rsc" target="_blank">RSC</a> : Relative Strand Cross-correlation coefficient.</li>
+       <li><a href="https://github.com/stjude/seaseq/blob/master/definitions.md#fraction-of-reads-in-peaks-frip" target="_blank">FRiP</a> : Fraction of Reads in Peaks.</li>
     </ul>
     <br>
     Definitions for all metrics can be found on the <a href="https://github.com/stjude/seaseq/#qc-metrics" target="_blank">SEAseq website</a>.
