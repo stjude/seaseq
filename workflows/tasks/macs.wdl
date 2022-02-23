@@ -65,6 +65,7 @@ task macs {
         File peakbedfile = "~{default_location}/~{output_name}_peaks.bed"
         File peakxlsfile = "~{default_location}/~{output_name}_peaks.xls"
         File summitsfile = "~{default_location}/~{output_name}_summits.bed"
+        File? negativepeaks = "~{default_location}/~{output_name}_negative_peaks.xls"
         File wigfile = "~{default_location}/~{output_name}_MACS_wiggle/treat/~{output_name}_treat_afterfiting_all.wig.gz"
         File? ctrlwigfile = "~{default_location}/~{output_name}_MACS_wiggle/control/~{output_name}_control_afterfiting_all.wig.gz"
     }
