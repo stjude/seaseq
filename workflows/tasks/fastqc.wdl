@@ -3,7 +3,7 @@ version 1.0
 task fastqc {
     input {
         File inputfile
-        String prefix = sub(basename(inputfile),'\.fastq\.gz|\.fq\.gz','')
+        String prefix = sub(basename(inputfile),'.fastq.gz|.fq.gz','')
         String default_location="QC_files/FASTQC"
 
         Int memory_gb = 5
@@ -11,14 +11,14 @@ task fastqc {
         Int ncpu = 1
     }
     command {
-        ln -s ~{inputfile} ~{sub(basename(inputfile),'\.bam$','.bam.bam')}
+        ln -s ~{inputfile} ~{sub(basename(inputfile),'.bam$','.bam.bam')}
 
         echo ~{prefix}
         mkdir -p ~{default_location}
 
         fastqc \
             -o ~{default_location} \
-            ~{sub(basename(inputfile),'\.bam$','.bam.bam')}
+            ~{sub(basename(inputfile),'.bam$','.bam.bam')}
     }
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"

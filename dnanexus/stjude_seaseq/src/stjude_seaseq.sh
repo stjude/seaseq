@@ -70,16 +70,16 @@ main() {
     # git clone and configure SEAseq
     git clone https://github.com/stjude/seaseq.git seaseq
     cd seaseq
-    git checkout 2.1
+    git checkout 2.2
     cd dnanexus
     reorg_id=$(dx build -f /seaseq-reorg | jq -r '.id')
     echo "Reorg applet ID: ${reorg_id}"
     sed -ibak "s/applet-Fx40j6091FfQp1P99p6b5k2x/${reorg_id}/" extras.json
     cd ..
     timestamp=$(date +%s)
-    wget -nv https://github.com/dnanexus/dxWDL/releases/download/v1.50/dxWDL-v1.50.jar
-    echo '476621564b3b310b17598ee1f02a1865 dxWDL-v1.50.jar' > dxWDL-v1.50.jar.md5
-    md5sum -c dxWDL-v1.50.jar.md5
+    wget -nv https://github.com/dnanexus/dxCompiler/releases/download/2.9.0/dxCompiler-2.9.0.jar
+    echo '434b515609123f1092453eac87984027  dxCompiler-2.9.0.jar' > dxCompiler-2.9.0.jar.md5
+    md5sum -c dxCompiler-2.9.0.jar.md5
 
     if grep -F "control_fastq" /home/dnanexus/job_input.json; then
         SEASEQ="seaseq-control.wdl"
@@ -95,9 +95,9 @@ main() {
     sed -i "s/import \"..\/tasks\/bedtools\.wdl/import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\/bedtools\.wdl/" workflows/workflows/motifs.wdl
     sed -i "s/import \"..\/tasks\//import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\//" workflows/workflows/mapping.wdl
 
-    # compile SEAseq to dxwdl
+    # compile SEAseq to dxCompiler-2.9.0
     dx mkdir -p "${DX_PROJECT_CONTEXT_ID}":/app-$timestamp/
-    wf_id=$(java -jar dxWDL-v1.50.jar compile $SEASEQ -project "${DX_PROJECT_CONTEXT_ID}" -folder /app-$timestamp -force -extras dnanexus/extras.json)
+    wf_id=$(java -jar dxCompiler-2.9.0.jar compile $SEASEQ -project "${DX_PROJECT_CONTEXT_ID}" -folder /app-$timestamp -force -extras dnanexus/extras.json)
     echo "Workflow ID: ${wf_id}"
 
     # specify output folder and input json

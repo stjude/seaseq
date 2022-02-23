@@ -9,7 +9,7 @@ task intersect {
         Boolean countoverlap = false
         Boolean sorted = false
 
-        String outputfile = sub(basename(fileA), '\.b..$', '')
+        String outputfile = sub(basename(fileA), '.bam$', '')
         String suffixname = if (nooverlap) then '.bklist.bam' else '.sorted.bed'
         String default_location = "."
         

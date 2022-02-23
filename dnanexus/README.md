@@ -25,6 +25,12 @@
         -project project-id \
         -extras extras.json \
         -folder /apps
+
+    #using dxCompiler-2.9.0
+    java -jar dxCompiler-2.9.0.jar compile seaseq.wdl \
+        -project project-id \
+        -extras extras.json \
+        -folder /apps
     ```
 
 1. Upload test data
