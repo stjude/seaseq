@@ -181,6 +181,12 @@ workflow seaseq {
             reference=reference
     }
 
+    call util.effective_genome_size as egs {
+        # effective genome size for FASTA
+        input :
+            reference=reference
+    }
+
     # Process FASTQs
     if ( defined(sample_fastq) ) {
 
@@ -409,9 +415,11 @@ workflow seaseq {
     call macs.macs {
         input :
             bamfile=sample_bam,
-            pvalue = "1e-9",
+            pvalue="1e-9",
             keep_dup="auto",
+            egs=egs.genomesize,
             default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(sample_bam,'.bam') + '-p9_kd-auto'
+
     }
 
     call util.addreadme {
@@ -422,8 +430,9 @@ workflow seaseq {
     call macs.macs as all {
         input :
             bamfile=sample_bam,
-            pvalue = "1e-9",
+            pvalue="1e-9",
             keep_dup="all",
+            egs=egs.genomesize,
             default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(sample_bam,'.bam') + '-p9_kd-all'
     }
 
@@ -431,7 +440,9 @@ workflow seaseq {
         input :
             bamfile=sample_bam,
             nomodel=true,
+            egs=egs.genomesize,
             default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(sample_bam,'.bam') + '-nm'
+
     }
 
     call bamtogff.bamtogff {
@@ -452,7 +463,9 @@ workflow seaseq {
         input :
             bedfile=forsicerbed.bedfile,
             chromsizes=samtools_faidx.chromsizes,
+            genome_fraction=egs.genomefraction,
             default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/BROAD_peaks'
+
     }
 
     call rose.rose {
@@ -743,11 +756,11 @@ workflow seaseq {
         File? pdf_gene = bamtogff.pdf_gene
         File? pdf_h_gene = bamtogff.pdf_h_gene
         File? png_h_gene = bamtogff.png_h_gene
-	File? jpg_h_gene = bamtogff.jpg_h_gene
+        File? jpg_h_gene = bamtogff.jpg_h_gene
         File? pdf_promoters = bamtogff.pdf_promoters
         File? pdf_h_promoters = bamtogff.pdf_h_promoters
         File? png_h_promoters = bamtogff.png_h_promoters
-	File? jpg_h_promoters = bamtogff.jpg_h_promoters
+        File? jpg_h_promoters = bamtogff.jpg_h_promoters
 
         #PEAKS-ANNOTATION
         File? peak_promoters = peaksanno.peak_promoters

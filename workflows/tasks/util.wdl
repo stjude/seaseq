@@ -44,6 +44,7 @@ task basicfastqstats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
+        docker: 'abralab/seaseq:v2.2.0'
         cpu: ncpu
     }
     output {
@@ -88,6 +89,7 @@ task flankbed {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
+        docker: 'abralab/seaseq:v2.2.0'
         cpu: ncpu
     }
     output {
@@ -115,7 +117,7 @@ task summaryreport {
     command <<<
 
         # Printing header
-        head -n 121 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}
+        head -n 121 /usr/local/bin/seaseq_overall.header > ~{outputfile}
         if [ -f "~{sampleqc_html}" ]; then
             # Printing Sample Quality Reports
             echo '<h2>Sample FASTQs Quality Results</h2>' >> ~{outputfile}
@@ -148,7 +150,7 @@ task summaryreport {
             echo "<p><b>*</b> Peaks identified after Input/Control correction.</p>" >> ~{outputfile}
         fi
         echo '</div>' >> ~{outputfile}
-        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}
+        tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputfile}
         echo -e '\n' >> ~{outputtxt}
 
     >>>
@@ -209,11 +211,11 @@ task evalstats {
             ~{if defined(superenhancers) then "-rs " + superenhancers else ""} \
             -outfile ~{outputfile}
 
-        head -n 245 /usr/local/bin/scripts/seaseq_overall.header  | tail -n 123 > ~{outputhtml}
+        head -n 245 /usr/local/bin/seaseq_overall.header  | tail -n 123 > ~{outputhtml}
         cat ~{outputhtml}x >> ~{outputhtml}
         sed -i "s/SEAseq Sample FASTQ Report/SEAseq ~{fastq_type} Report/" ~{outputhtml}
         echo '</table></div>' >> ~{outputhtml}
-        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputhtml}
+        tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputhtml}
 
 
     >>> 
@@ -370,13 +372,13 @@ task mergehtml {
         mkdir -p ~{default_location} && cd ~{default_location}
 
         #extract header information
-        head -n 245 /usr/local/bin/scripts/seaseq_overall.header  | tail -n 123 > ~{outputfile}
+        head -n 245 /usr/local/bin/seaseq_overall.header  | tail -n 123 > ~{outputfile}
 
         mergeoutput=$(cat ~{sep='; tail -n 1 ' htmlfiles})
         echo $mergeoutput >> ~{outputfile}
         sed -i "s/SEAseq Sample FASTQ Report/SEAseq ~{fastq_type} Report/" ~{outputfile}
         echo '</table></div>' >> ~{outputfile}
-        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}
+        tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputfile}
 
         echo $mergeoutput > ~{outputfile}x
 
@@ -398,30 +400,6 @@ task mergehtml {
         File xhtml = "~{default_location}/~{outputfile}x"
     }
 }
-
-task linkname {
-    input {
-        String prefix
-        File in_fastq
-
-        Int memory_gb = 10
-        Int max_retries = 1
-        Int ncpu = 1
-    }
-    command <<<
-        mv ~{in_fastq} ~{prefix}.fastq.gz
-        
-    >>>
-    runtime {
-        memory: ceil(memory_gb * ncpu) + " GB"
-        maxRetries: max_retries
-        cpu: ncpu
-    }
-    output {
-        File out_fastq = "~{prefix}.fastq.gz"
-    }
-}
-
 
 task concatstats {
     input {
@@ -541,16 +519,17 @@ task concatstats {
 
         CODE
 
-        head -n 245 /usr/local/bin/scripts/seaseq_overall.header | tail -n 123 > ~{outputfile}-stats.html
+        head -n 245 /usr/local/bin/seaseq_overall.header | tail -n 123 > ~{outputfile}-stats.html
         cat ~{outputfile}-stats.htmlx >> ~{outputfile}-stats.html
         echo "</table><p><b>*</b> Peaks identified after Input/Control correction.</p></div>" >> ~{outputfile}-stats.html
-        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}-stats.html
+        tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputfile}-stats.html
         sed -i "s/SEAseq Sample FASTQ Report/SEAseq Comprehensive Report/" ~{outputfile}-stats.html
 
     >>> 
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
+        docker: 'abralab/seaseq:v2.2.0'
         cpu: ncpu
     }
     output {
@@ -590,9 +569,39 @@ task addreadme {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
+        docker: 'abralab/seaseq:v2.2.0'
         cpu: ncpu
     }
     output {
 	File readme_peaks = "~{default_location}/~{output_file}"
     }
 }
+
+
+task effective_genome_size {
+    # Calculate effective genome size and fraction
+    input {
+        File reference
+
+        Int memory_gb = 5
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+        faCount -summary ~{reference} | cut -f3,4,5,6 | tail -n 2 > genomeinformation.txt
+        
+        head -n 1 genomeinformation.txt | awk -F'[\t ]' '{print $1 + $2 + $3 + $4}' > genomesize
+        tail -n 1 genomeinformation.txt | awk -F'[\t ]' '{print $1 + $2 + $3 + $4}' > genomefraction
+    >>>
+    runtime {
+        memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'abralab/kentutils:latest'
+        cpu: ncpu
+    }
+    output {
+        Float genomefraction = read_float('genomefraction')
+        String genomesize = read_string('genomesize')
+    }
+}
+
