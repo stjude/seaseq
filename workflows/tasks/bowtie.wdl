@@ -18,7 +18,7 @@ task bowtie {
         Int ncpu = 20
     }
 
-    Int memory_gb = ceil(size(fastqfile)) + ceil(size(index_files)) + additional_memory_gb
+    Int memory_gb = ceil(size(fastqfile, "GiB")) + ceil(size(index_files, "GiB")) + additional_memory_gb
 
     command <<<
         if [ -f "~{metricsfile}" ]; then
