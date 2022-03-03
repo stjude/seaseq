@@ -17,7 +17,7 @@ import "workflows/tasks/sratoolkit.wdl" as sra
 import "workflows/tasks/peaseq_util.wdl"
 
 workflow peaseq {
-    String pipeline_ver = 'v2.0.0'
+    String pipeline_ver = 'v1.0.0'
 
     meta {
         title: 'PEAseq Analysis'
@@ -25,7 +25,7 @@ workflow peaseq {
         description: 'A comprehensive automated computational pipeline for all ChIP-Seq/CUT&RUN data analysis.'
         version: '1.0.0'
         details: {
-            citation: 'pending',
+            citation: 'https://doi.org/10.1186/s12859-022-04588-z',
             contactEmail: 'modupeore.adetunji@stjude.org',
             contactOrg: "St Jude Children's Research Hospital",
             contactUrl: "",
@@ -70,7 +70,11 @@ workflow peaseq {
         Array[File]? sample_R2_fastq
 
         # group: analysis_parameter
-        Int? bowtie_insert_size = 600
+        # Read Mapping parameters for bowtie
+        Int? insertsize = 600
+        String? strandedness = "fr"
+
+        # Additional options
         String? results_name
         Boolean run_motifs=true
 
@@ -136,11 +140,17 @@ workflow peaseq {
             help: 'Setting this means Motif Discovery and Enrichment analysis will be performed.',
             example: true
         }
-        bowtie_insert_size: {
+        insertsize: {
             description: 'Bowtie v1 maximum insert size (-X/--maxins <int>).',
             group: 'analysis_parameter',
             help: 'Specify maximum insert size for paired-end alignment (default: 600).',
             example: 600
+        }
+	    strandedness: {
+            description: 'Bowtie v1 mate orientation (--fr/--rf/--ff).',
+            group: 'analysis_parameter',
+            help: 'The upstream/downstream mate orientation for paired-end alignment (default: --fr).',
+            example: 'fr'
         }
     }
 
@@ -167,8 +177,8 @@ workflow peaseq {
             File R2end = select_first([fastqdump.R2end, string_sra[0]])
         } # end scatter each sra
 
-        Array[File] sample_R1_srafile_ = R1end 
-        Array[File] sample_R2_srafile_ = R2end 
+        Array[File] sample_R1_srafile_ = R1end
+        Array[File] sample_R2_srafile_ = R2end
     } # end if sample_sraid
 
     # Generating INDEX files
@@ -214,7 +224,7 @@ workflow peaseq {
         Array[File] sample_R1_fastqfile_ = s_R1_fastq
         Array[File] s_R2_fastq = select_first([sample_R2_fastq, string_fastq])
         Array[File] sample_R2_fastqfile_ = s_R2_fastq
-    } 
+    }
 
     # collate all fastqfiles
     Array[File] sample_R1 = flatten(select_all([sample_R1_srafile_, sample_R1_fastqfile_]))
@@ -233,13 +243,13 @@ workflow peaseq {
         call fastqc.fastqc as indv_fastqc {
             input :
                 inputfile=eachfastq,
-                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*\.f.*q\.gz','') + '/QC/FastQC'
+                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/FastQC'
         }
 
         call util.basicfastqstats as indv_bfs {
             input :
                 fastqfile=eachfastq,
-                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*\.f.*q\.gz','') + '/QC/SummaryStats'
+                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/SummaryStats'
         }
 
         call mapping.mapping as indv_mapping {
@@ -248,13 +258,13 @@ workflow peaseq {
                 index_files=bowtie_index_,
                 metricsfile=indv_bfs.metrics_out,
                 blacklist=blacklist,
-                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*\.f.*q\.gz','') + '/BAM_files'
+                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/BAM_files'
         }
 
         call fastqc.fastqc as indv_bamfqc {
             input :
                 inputfile=indv_mapping.sorted_bam,
-                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*\.f.*q\.gz','') + '/QC/FastQC'
+                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/FastQC'
         }
 
         call runspp.runspp as indv_runspp {
@@ -277,7 +287,7 @@ workflow peaseq {
                 rmdupflag=indv_mapping.mkdup_stats,
                 bkflag=indv_mapping.bklist_stats,
                 fastqmetrics=indv_bfs.metrics_out,
-                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*\.f.*q\.gz','') + '/QC/SummaryStats'
+                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/SummaryStats'
         }
     } # end scatter (for eachfastq)
 
@@ -291,7 +301,7 @@ workflow peaseq {
             htmlfiles=indv_summarystats.xhtml,
             txtfiles=indv_summarystats.textfile,
             default_location='SAMPLE',
-            outputfile = 'AllMapped_SEmode_peaseq-summary-stats.html'
+            outputfile = 'AllSamples-summary-stats.html'
     }
 
     call samtools.mergebam as SE_mergebam {
@@ -304,13 +314,13 @@ workflow peaseq {
     call fastqc.fastqc as SE_mergebamfqc {
         input:
             inputfile=SE_mergebam.mergebam,
-            default_location=sub(basename(SE_mergebam.mergebam),'\.sorted\.b.*$','') + '/QC/FastQC'
+            default_location=sub(basename(SE_mergebam.mergebam),'.sorted.b.*$','') + '/QC/FastQC'
     }
 
     call samtools.indexstats as SE_mergeindexstats {
         input:
             bamfile=SE_mergebam.mergebam,
-            default_location=sub(basename(SE_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files'
+            default_location=sub(basename(SE_mergebam.mergebam),'.sorted.b.*$','') + '/BAM_files'
     }
 
     if ( defined(blacklist) ) {
@@ -321,13 +331,13 @@ workflow peaseq {
             input :
                 fileA=SE_mergebam.mergebam,
                 fileB=blacklist_,
-                default_location=sub(basename(SE_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files',
-                        nooverlap=true
+                default_location=sub(basename(SE_mergebam.mergebam),'.sorted.b.*$','') + '/BAM_files',
+                nooverlap=true
         }
         call samtools.indexstats as SE_merge_bklist {
             input :
                 bamfile=SE_merge_rmblklist.intersect_out,
-                default_location=sub(basename(SE_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files'
+                default_location=sub(basename(SE_mergebam.mergebam),'.sorted.b.*$','') + '/BAM_files'
         }
     } # end if blacklist provided
 
@@ -336,13 +346,13 @@ workflow peaseq {
     call samtools.markdup as SE_merge_markdup {
         input :
             bamfile=SE_mergebam_afterbklist,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/BAM_files'
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/BAM_files'
         }
 
     call samtools.indexstats as SE_merge_mkdup {
         input :
             bamfile=SE_merge_markdup.mkdupbam,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/BAM_files'
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/BAM_files'
     }
 
 ### ------------------------------------------------- ###
@@ -366,22 +376,23 @@ workflow peaseq {
             #   Remove read duplicates
             #   Summary statistics on FASTQs
             #   Combine html files into one for easy viewing
-            
+
             call mapping.mapping as indv_PE_mapping {
                 input :
                     fastqfile=fastqpair.left,
                     fastqfile_R2=fastqpair.right,
-                    insert_size=bowtie_insert_size,
+                    insert_size=insertsize,
+                    strandedness=strandedness,
                     index_files=bowtie_index_,
                     blacklist=blacklist,
                     paired_end=true,
-                    default_location='SAMPLE/' + sub(basename(fastqpair.left),'_R?[12].*\.f.*q\.gz','') + '/BAM_files'
+                    default_location='SAMPLE/' + sub(basename(fastqpair.left),'_R?[12].*.f.*q.gz','') + '/BAM_files'
             }
 
             call fastqc.fastqc as indv_PE_bamfqc {
                 input :
                     inputfile=indv_PE_mapping.sorted_bam,
-                    default_location='SAMPLE/' + sub(basename(fastqpair.left),'_R?[12].*\.f.*q\.gz','') + '/QC/FastQC'
+                    default_location='SAMPLE/' + sub(basename(fastqpair.left),'_R?[12].*.f.*q.gz','') + '/QC/FastQC'
             }
 
             call runspp.runspp as indv_PE_runspp {
@@ -403,7 +414,7 @@ workflow peaseq {
                     bamflag=indv_PE_mapping.bam_stats,
                     rmdupflag=indv_PE_mapping.mkdup_stats,
                     bkflag=indv_PE_mapping.bklist_stats,
-                    default_location='SAMPLE/' + sub(basename(fastqpair.left),'_R?[12].*\.f.*q\.gz','') + '/QC/SummaryStats'
+                    default_location='SAMPLE/' + sub(basename(fastqpair.left),'_R?[12].*.f.*q.gz','') + '/QC/SummaryStats'
             }
         } # end scatter (for each sample fastq)
 
@@ -421,56 +432,69 @@ workflow peaseq {
                 default_location='SAMPLE',
                 outputfile = 'AllMapped_PEmode_peaseq-summary-stats.html'
         }
+        
+        call peaseq_util.pe_mergehtml as final_mergehtml {
+            input:
+                pe_htmlfiles=indv_PE_summarystats.xhtml,
+                pe_txtfiles=indv_PE_summarystats.textfile,
+                se_htmlfiles=indv_summarystats.xhtml,
+                se_txtfiles=indv_summarystats.textfile,
+                default_location='SAMPLE',
+                outputfile = 'AllSamples-summary-stats.html'
+        }
 
         call samtools.mergebam as PE_mergebam {
             input:
-                bamfiles=indv_PE_mapping.sorted_bam,
+                bamfiles=indv_PE_mapping.as_sortedbam,
+                paired_end=true,
                 default_location = if defined(results_name) then results_name + '_PE/BAM_files' else 'AllMapped_' + length(indv_PE_mapping.sorted_bam) + 'fastqpairs_PE/BAM_files',
-                outputfile = if defined(results_name) then results_name + '_PE.sorted.bam' else 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs_PE.sorted.bam'
+                outputfile = if defined(results_name) then results_name + '_PE.sorted.bam' else 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs_PE.sorted.bam',
+                fixmatefile = if defined(results_name) then results_name + '_PE.fixmate.bam' else 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs_PE.fixmate.bam'
         }
 
         call fastqc.fastqc as PE_mergebamfqc {
             input:
 	        inputfile=PE_mergebam.mergebam,
-                default_location=sub(basename(PE_mergebam.mergebam),'\.sorted\.b.*$','') + '/QC/FastQC'
+                default_location=sub(basename(PE_mergebam.mergebam),'.sorted.b.*$','') + '/QC/FastQC'
         }
 
         call samtools.indexstats as PE_mergeindexstats {
             input:
                 bamfile=PE_mergebam.mergebam,
-                default_location=sub(basename(PE_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files'
+                default_location=sub(basename(PE_mergebam.mergebam),'.sorted.b.*$','') + '/BAM_files'
         }
 
         if ( defined(blacklist) ) {
             # remove blacklist regions
             String string_pe_blacklist = "" #buffer to allow for blacklist optionality
             File blacklist_pe_ = select_first([blacklist, string_pe_blacklist])
-            call bedtools.intersect as PE_merge_rmblklist {
+            String string_pe_fixmate = "" #buffer to allow for blacklist optionality
+            File fixmate_pe_ = select_first([PE_mergebam.fixmatemergebam, string_pe_fixmate])
+            call bedtools.pairtobed as PE_merge_rmblklist {
                 input :
-                    fileA=PE_mergebam.mergebam,
+                    fileA=fixmate_pe_,
                     fileB=blacklist_pe_,
-                    default_location=sub(basename(PE_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files',
-                    nooverlap=true
+                    default_location=sub(basename(PE_mergebam.mergebam),'.sorted.b.*$','') + '/BAM_files'
             }
             call samtools.indexstats as PE_merge_bklist {
                 input :
-                    bamfile=PE_merge_rmblklist.intersect_out,
-                    default_location=sub(basename(PE_mergebam.mergebam),'\.sorted\.b.*$','') + '/BAM_files'
+                    bamfile=PE_merge_rmblklist.pairtobed_out,
+                    default_location=sub(basename(PE_mergebam.mergebam),'.sorted.b.*$','') + '/BAM_files'
             }
         } # end if blacklist provided
 
-        File PE_mergebam_afterbklist = select_first([PE_merge_rmblklist.intersect_out, PE_mergebam.mergebam])
+        File PE_mergebam_afterbklist = select_first([PE_merge_rmblklist.pairtobed_out, PE_mergebam.mergebam])
 
         call samtools.markdup as PE_merge_markdup {
             input :
                 bamfile=PE_mergebam_afterbklist,
-                default_location=sub(basename(PE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/BAM_files'
+                default_location=sub(basename(PE_mergebam.mergebam),'.sorted.b.*$','') + '/BAM_files'
         }
 
         call samtools.indexstats as PE_merge_mkdup {
             input :
                 bamfile=PE_merge_markdup.mkdupbam,
-                default_location=sub(basename(PE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/BAM_files'
+                default_location=sub(basename(PE_mergebam.mergebam),'.sorted.b.*$','') + '/BAM_files'
         }
     } # end if length(fastqfiles) > 1: multi_fastqpair
 
@@ -498,18 +522,19 @@ workflow peaseq {
             input :
                 fastqfile=sample_fastqfiles[0].left,
                 fastqfile_R2=sample_fastqfiles[0].right,
-                insert_size=bowtie_insert_size,
+                insert_size=insertsize,
+                strandedness=strandedness,
                 index_files=bowtie_index_,
                 blacklist=blacklist,
                 paired_end=true,
                 results_name=results_name,
-                default_location=if defined(results_name) then results_name + '_PE/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12].*\.f.*q\.gz','') + '_PE/BAM_files'
+                default_location=if defined(results_name) then results_name + '_PE/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12].*.f.*q.gz','') + '_PE/BAM_files'
         }
 
         call fastqc.fastqc as uno_PE_bamfqc {
             input :
                 inputfile=uno_PE_mapping.sorted_bam,
-                default_location=sub(basename(uno_PE_mapping.sorted_bam),'\.sorted\.bam','') + '/QC/FastQC'
+                default_location=sub(basename(uno_PE_mapping.sorted_bam),'.sorted.bam','') + '/QC/FastQC'
         }
 
         call runspp.runspp as uno_PE_runspp {
@@ -541,12 +566,13 @@ workflow peaseq {
             pvalue="1e-9",
             keep_dup="auto",
             egs=egs.genomesize,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'\.bam') + '-p9_kd-auto'
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-auto',
+            coverage_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-auto'
     }
 
     call util.addreadme as SE_addreadme {
         input :
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS'
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/PEAKS'
     }
 
     call macs.macs as SE_all {
@@ -555,7 +581,8 @@ workflow peaseq {
             pvalue="1e-9",
             keep_dup="all",
             egs=egs.genomesize,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'\.bam') + '-p9_kd-all'
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-all',
+            coverage_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-all'
     }
 
     call macs.macs as SE_nomodel {
@@ -563,7 +590,8 @@ workflow peaseq {
             bamfile=SE_mergebam_afterbklist,
             nomodel=true,
             egs=egs.genomesize,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'\.bam') + '-nm'
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-nm',
+            coverage_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_nm'
     }
 
     call bamtogff.bamtogff as SE_bamtogff {
@@ -572,20 +600,21 @@ workflow peaseq {
             chromsizes=samtools_faidx.chromsizes,
             bamfile=SE_merge_markdup.mkdupbam,
             bamindex=SE_merge_mkdup.indexbam,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/BAM_Density'
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/BAM_Density'
     }
 
     call bedtools.bamtobed as SE_forsicerbed {
         input :
             bamfile=SE_merge_markdup.mkdupbam
     }
-    
+
     call sicer.sicer as SE_sicer {
         input :
             bedfile=SE_forsicerbed.bedfile,
             chromsizes=samtools_faidx.chromsizes,
             genome_fraction=egs.genomefraction,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS/BROAD_peaks'
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/PEAKS/BROAD_peaks',
+            coverage_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/COVERAGE_files/BROAD_peaks'
     }
 
     call rose.rose as SE_rose {
@@ -595,7 +624,7 @@ workflow peaseq {
             bamindex=select_first([SE_merge_bklist.indexbam, SE_mergeindexstats.indexbam]),
             bedfile_auto=SE_macs.peakbedfile,
             bedfile_all=SE_all.peakbedfile,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS/STITCHED_peaks'
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/PEAKS/STITCHED_peaks'
     }
 
     call runspp.runspp as SE_runspp {
@@ -609,7 +638,7 @@ workflow peaseq {
             bedfile=SE_macs.peakbedfile,
             chromsizes=samtools_faidx.chromsizes,
             summitfile=SE_macs.summitsfile,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'\_peaks.bed','')
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','')
     }
 
     call util.peaksanno as SE_all_peaksanno {
@@ -618,7 +647,7 @@ workflow peaseq {
             bedfile=SE_all.peakbedfile,
             chromsizes=samtools_faidx.chromsizes,
             summitfile=SE_all.summitsfile,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'\_peaks.bed','')
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','')
     }
 
     call util.peaksanno as SE_nomodel_peaksanno {
@@ -627,7 +656,7 @@ workflow peaseq {
             bedfile=SE_nomodel.peakbedfile,
             chromsizes=samtools_faidx.chromsizes,
             summitfile=SE_nomodel.summitsfile,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'\_peaks.bed','')
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','')
     }
 
     call util.peaksanno as SE_sicer_peaksanno {
@@ -635,24 +664,24 @@ workflow peaseq {
             gtffile=gtf,
             bedfile=SE_sicer.scoreisland,
             chromsizes=samtools_faidx.chromsizes,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/PEAKS_Annotation/BROAD_peaks'
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/PEAKS_Annotation/BROAD_peaks'
     }
 
     # Motif Analysis
-    if (run_motifs) { 
+    if (run_motifs) {
         call motifs.motifs as SE_motifs {
             input:
                 reference=reference,
                 reference_index=samtools_faidx.faidx_file,
                 bedfile=SE_macs.peakbedfile,
                 motif_databases=motif_databases,
-                default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/MOTIFS'
+                default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/MOTIFS'
         }
 
         call util.flankbed as SE_flankbed {
             input :
                 bedfile=SE_macs.summitsfile,
-                default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/MOTIFS'
+                default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/MOTIFS'
         }
 
         call motifs.motifs as SE_flank {
@@ -661,7 +690,7 @@ workflow peaseq {
                 reference_index=samtools_faidx.faidx_file,
                 bedfile=SE_flankbed.flankbedfile,
                 motif_databases=motif_databases,
-                default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/MOTIFS'
+                default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/MOTIFS'
         }
     }
 
@@ -670,7 +699,7 @@ workflow peaseq {
             wigfile=SE_macs.wigfile,
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=SE_macs.peakxlsfile,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'\_peaks.bed','')
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','')
     }
 
     call viz.visualization as SE_vizall {
@@ -678,7 +707,7 @@ workflow peaseq {
             wigfile=SE_all.wigfile,
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=SE_all.peakxlsfile,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'\_peaks.bed','')
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','')
     }
 
     call viz.visualization as SE_viznomodel {
@@ -686,14 +715,14 @@ workflow peaseq {
             wigfile=SE_nomodel.wigfile,
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=SE_nomodel.peakxlsfile,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'\_peaks.bed','')
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','')
     }
 
     call viz.visualization as SE_vizsicer {
         input:
             wigfile=SE_sicer.wigfile,
             chromsizes=samtools_faidx.chromsizes,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/COVERAGE_files/BROAD_peaks'
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/COVERAGE_files/BROAD_peaks'
     }
 
     call bedtools.bamtobed as SE_finalbed {
@@ -713,7 +742,7 @@ workflow peaseq {
             countoverlap=true,
             sorted=true
     }
-    
+
 ### ------------------------------------------------- ###
 ### ---------------- S E C T I O N 4 ---------------- ###
 ### --------------- ChIP-seq Analysis --------------- ###
@@ -725,28 +754,23 @@ workflow peaseq {
     # Analysis executed:
     #   Peaks identification (SICER, MACS, ROSE)
     #   Motif analysis
- 
+
     #collate correct files for downstream analysis
     File PE_sample_bam = select_first([PE_mergebam_afterbklist, uno_PE_mapping.bklist_bam, uno_PE_mapping.sorted_bam])
 
-    call peaseq_util.fraggraph {
-        input :
-            bamfile=PE_sample_bam,
-            chromsizes=samtools_faidx.chromsizes,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/BAM_Fragments'
-    }
     call macs.macs as PE_macs {
         input :
             bamfile=PE_sample_bam,
             pvalue="1e-9",
             keep_dup="auto",
             egs=egs.genomesize,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(PE_sample_bam,'\.bam') + '-p9_kd-auto'
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(PE_sample_bam,'.bam') + '-p9_kd-auto',
+            coverage_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + basename(PE_sample_bam,'.bam') + '_p9_kd-auto'
     }
 
     call util.addreadme as PE_addreadme {
         input :
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS'
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/PEAKS'
     }
 
     call macs.macs as PE_all {
@@ -755,7 +779,8 @@ workflow peaseq {
             pvalue="1e-9",
             keep_dup="all",
             egs=egs.genomesize,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(PE_sample_bam,'\.bam') + '-p9_kd-all'
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(PE_sample_bam,'.bam') + '-p9_kd-all',
+            coverage_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + basename(PE_sample_bam,'.bam') + '_p9_kd-all'
     }
 
     call macs.macs as PE_nomodel {
@@ -763,7 +788,8 @@ workflow peaseq {
             bamfile=PE_sample_bam,
             nomodel=true,
             egs=egs.genomesize,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(PE_sample_bam,'\.bam') + '-nm'
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(PE_sample_bam,'.bam') + '-nm',
+            coverage_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + basename(PE_sample_bam,'.bam') + '_nm'
     }
 
     call bamtogff.bamtogff as PE_bamtogff {
@@ -772,12 +798,22 @@ workflow peaseq {
             chromsizes=samtools_faidx.chromsizes,
             bamfile=select_first([PE_merge_markdup.mkdupbam, uno_PE_mapping.mkdup_bam]),
             bamindex=select_first([PE_merge_mkdup.indexbam, uno_PE_mapping.mkdup_index]),
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/BAM_Density'
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/BAM_Density'
+    }
+
+    call peaseq_util.fraggraph {
+        input :
+            bamfile=select_first([PE_merge_markdup.mkdupbam, uno_PE_mapping.mkdup_bam]),
+            chromsizes=samtools_faidx.chromsizes,
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/BAM_Fragments',
+            bam_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/BAM_files',
+            annotation_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/QC/Fragments'
     }
 
     call samtools.indexstats as frag_index {
         input :
-            bamfile=fraggraph.fragbamfile
+            bamfile=fraggraph.fragbamfile,
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/BAM_files'
     }
 
     call bamtogff.bamtogff as PE_frag_bamtogff {
@@ -786,20 +822,21 @@ workflow peaseq {
             chromsizes=samtools_faidx.chromsizes,
             bamfile=fraggraph.fragbamfile,
             bamindex=frag_index.indexbam,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/BAMFragments_Density'
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/BAMFragments_Density'
     }
 
     call peaseq_util.pe_bamtobed as PE_forsicerbed {
         input :
             bamfile=select_first([PE_merge_markdup.mkdupbam, uno_PE_mapping.mkdup_bam])
     }
-    
+
     call sicer.sicer as PE_sicer {
         input :
             bedfile=PE_forsicerbed.bedfile,
             chromsizes=samtools_faidx.chromsizes,
             genome_fraction=egs.genomefraction,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS/BROAD_peaks'
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/PEAKS/BROAD_peaks',
+            coverage_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/BROAD_peaks'
     }
 
     call rose.rose as PE_rose {
@@ -809,7 +846,7 @@ workflow peaseq {
             bamindex=select_first([PE_merge_bklist.indexbam, PE_mergeindexstats.indexbam, uno_PE_mapping.bklist_index, uno_PE_mapping.bam_index]),
             bedfile_auto=PE_macs.peakbedfile,
             bedfile_all=PE_all.peakbedfile,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS/STITCHED_peaks'
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/PEAKS/STITCHED_peaks'
     }
 
     call runspp.runspp as PE_runspp {
@@ -823,7 +860,7 @@ workflow peaseq {
             bedfile=PE_macs.peakbedfile,
             chromsizes=samtools_faidx.chromsizes,
             summitfile=PE_macs.summitsfile,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(PE_macs.peakbedfile),'\_peaks.bed','')
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(PE_macs.peakbedfile),'_peaks.bed','')
     }
 
     call util.peaksanno as PE_all_peaksanno {
@@ -832,7 +869,7 @@ workflow peaseq {
             bedfile=PE_all.peakbedfile,
             chromsizes=samtools_faidx.chromsizes,
             summitfile=PE_all.summitsfile,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(PE_all.peakbedfile),'\_peaks.bed','')
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(PE_all.peakbedfile),'_peaks.bed','')
     }
 
     call util.peaksanno as PE_nomodel_peaksanno {
@@ -841,7 +878,7 @@ workflow peaseq {
             bedfile=PE_nomodel.peakbedfile,
             chromsizes=samtools_faidx.chromsizes,
             summitfile=PE_nomodel.summitsfile,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(PE_nomodel.peakbedfile),'\_peaks.bed','')
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(PE_nomodel.peakbedfile),'_peaks.bed','')
     }
 
     call util.peaksanno as PE_sicer_peaksanno {
@@ -849,24 +886,24 @@ workflow peaseq {
             gtffile=gtf,
             bedfile=PE_sicer.scoreisland,
             chromsizes=samtools_faidx.chromsizes,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/PEAKS_Annotation/BROAD_peaks'
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/PEAKS_Annotation/BROAD_peaks'
     }
 
     # Motif Analysis
-    if (run_motifs) { 
+    if (run_motifs) {
         call motifs.motifs as PE_motifs {
             input:
                 reference=reference,
                 reference_index=samtools_faidx.faidx_file,
                 bedfile=PE_macs.peakbedfile,
                 motif_databases=motif_databases,
-                default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+                default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/MOTIFS'
         }
 
         call util.flankbed as PE_flankbed {
             input :
                 bedfile=PE_macs.summitsfile,
-                default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+                default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/MOTIFS'
         }
 
         call motifs.motifs as PE_flank {
@@ -875,7 +912,7 @@ workflow peaseq {
                 reference_index=samtools_faidx.faidx_file,
                 bedfile=PE_flankbed.flankbedfile,
                 motif_databases=motif_databases,
-                default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/MOTIFS'
+                default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/MOTIFS'
         }
     }
 
@@ -884,7 +921,7 @@ workflow peaseq {
             wigfile=PE_macs.wigfile,
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=PE_macs.peakxlsfile,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(PE_macs.peakbedfile),'\_peaks.bed','')
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(PE_macs.peakbedfile),'_peaks.bed','')
     }
 
     call viz.visualization as PE_vizall {
@@ -892,7 +929,7 @@ workflow peaseq {
             wigfile=PE_all.wigfile,
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=PE_all.peakxlsfile,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(PE_all.peakbedfile),'\_peaks.bed','')
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(PE_all.peakbedfile),'_peaks.bed','')
     }
 
     call viz.visualization as PE_viznomodel {
@@ -900,14 +937,14 @@ workflow peaseq {
             wigfile=PE_nomodel.wigfile,
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=PE_nomodel.peakxlsfile,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(PE_nomodel.peakbedfile),'\_peaks.bed','')
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(PE_nomodel.peakbedfile),'_peaks.bed','')
     }
 
     call viz.visualization as PE_vizsicer {
         input:
             wigfile=PE_sicer.wigfile,
             chromsizes=samtools_faidx.chromsizes,
-            default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/COVERAGE_files/BROAD_peaks'
+            default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/BROAD_peaks'
     }
 
     call peaseq_util.pe_bamtobed as PE_finalbed {
@@ -926,8 +963,11 @@ workflow peaseq {
             fileB=PE_sortbed.sortbed_out,
             countoverlap=true,
             sorted=true
-    }   
+    }
 
+    # Final MERGE output file
+    File mergehtmlfile =  select_first([final_mergehtml.mergefile, mergehtml.mergefile])
+    
 ### ------------------------------------------------- ###
 ### ----------------- S E C T I O N 5 --------------- ###
 ### --------------- Summary Statistics -------------- ###
@@ -946,7 +986,7 @@ workflow peaseq {
             peaksxls=SE_macs.peakxlsfile,
             enhancers=SE_rose.enhancers,
             superenhancers=SE_rose.super_enhancers,
-            default_location=sub(basename(SE_mergebam_afterbklist),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+            default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/QC/SummaryStats'
     }
 
 ### ------------------------------------------------- ###
@@ -973,10 +1013,10 @@ workflow peaseq {
                 peaksxls=PE_macs.peakxlsfile,
                 enhancers=PE_rose.enhancers,
                 superenhancers=PE_rose.super_enhancers,
-                default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+                default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/QC/SummaryStats'
         }
 
-        call util.pairedend_summaryreport as PE_uno_overallsummary {
+        call peaseq_util.pairedend_summaryreport as PE_uno_overallsummary {
             # Presenting all quality stats for the analysis
             input:
                 sampleqc_se_html=mergehtml.xhtml,
@@ -985,7 +1025,7 @@ workflow peaseq {
                 overallqc_se_txt=SE_summarystats.textfile,
                 overallqc_pe_html=PE_uno_summarystats.xhtml,
                 overallqc_pe_txt=PE_uno_summarystats.textfile,
-                outputfile = if defined(results_name) then results_name + '.peaseq_report.html' else sub(basename(sample_fastqfiles[0].left),'_R?[12].*\.f.*q\.gz','') + '.peaseq_report.html'
+                outputfile = if defined(results_name) then results_name + '.peaseq_report.html' else sub(basename(sample_fastqfiles[0].left),'_R?[12].*.f.*q.gz','') + '.peaseq_report.html'
         }
     } # end if one_fastqpair
 
@@ -1004,10 +1044,10 @@ workflow peaseq {
                 peaksxls=PE_macs.peakxlsfile,
                 enhancers=PE_rose.enhancers,
                 superenhancers=PE_rose.super_enhancers,
-                default_location=sub(basename(PE_sample_bam),'\.sorted\.b.*$','') + '/QC/SummaryStats'
+                default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/QC/SummaryStats'
         }
-        
-        call util.pairedend_summaryreport as PE_merge_overallsummary {
+
+        call peaseq_util.pairedend_summaryreport as PE_merge_overallsummary {
             # Presenting all quality stats for the analysis
             input:
                 sampleqc_se_html=mergehtml.xhtml,
@@ -1063,7 +1103,7 @@ workflow peaseq {
         Array[File?]? indv_sp_bkindexbam = indv_PE_mapping.bklist_index
         Array[File?]? indv_sp_rmbam = indv_PE_mapping.mkdup_bam
         Array[File?]? indv_sp_rmindexbam = indv_PE_mapping.mkdup_index
-        
+
         File? uno_s_sortedbam = uno_PE_mapping.sorted_bam
         File? uno_s_indexbam = uno_PE_mapping.bam_index
         File? uno_s_bkbam = uno_PE_mapping.bklist_bam
@@ -1080,10 +1120,13 @@ workflow peaseq {
 
         File? sp_mergebamfile = PE_mergebam.mergebam
         File? sp_mergebamindex = PE_mergeindexstats.indexbam
-        File? sp_bkbam = PE_merge_rmblklist.intersect_out
+        File? sp_bkbam = PE_merge_rmblklist.pairtobed_out
         File? sp_bkindexbam = PE_merge_bklist.indexbam
         File? sp_rmbam = PE_merge_markdup.mkdupbam
         File? sp_rmindexbam = PE_merge_mkdup.indexbam
+
+        File? fragments_bam = fraggraph.fragbamfile
+        File? fragments_indexbam = frag_index.indexbam
 
         #MACS
         File? s_peakbedfile = SE_macs.peakbedfile
@@ -1187,27 +1230,33 @@ workflow peaseq {
         File? pdf_gene = SE_bamtogff.pdf_gene
         File? pdf_h_gene = SE_bamtogff.pdf_h_gene
         File? png_h_gene = SE_bamtogff.png_h_gene
+        File? jpg_h_gene = SE_bamtogff.jpg_h_gene
         File? pdf_promoters = SE_bamtogff.pdf_promoters
         File? pdf_h_promoters = SE_bamtogff.pdf_h_promoters
         File? png_h_promoters = SE_bamtogff.png_h_promoters
+        File? jpg_h_promoters = SE_bamtogff.jpg_h_promoters
 
         File? sp_s_matrices = PE_bamtogff.s_matrices
         File? sp_densityplot = PE_bamtogff.densityplot
         File? sp_pdf_gene = PE_bamtogff.pdf_gene
         File? sp_pdf_h_gene = PE_bamtogff.pdf_h_gene
         File? sp_png_h_gene = PE_bamtogff.png_h_gene
+        File? sp_jpg_h_gene = PE_bamtogff.jpg_h_gene
         File? sp_pdf_promoters = PE_bamtogff.pdf_promoters
         File? sp_pdf_h_promoters = PE_bamtogff.pdf_h_promoters
         File? sp_png_h_promoters = PE_bamtogff.png_h_promoters
+        File? sp_jpg_h_promoters = PE_bamtogff.jpg_h_promoters
 
         File? sf_s_matrices = PE_frag_bamtogff.s_matrices
         File? sf_densityplot = PE_frag_bamtogff.densityplot
         File? sf_pdf_gene = PE_frag_bamtogff.pdf_gene
         File? sf_pdf_h_gene = PE_frag_bamtogff.pdf_h_gene
         File? sf_png_h_gene = PE_frag_bamtogff.png_h_gene
+        File? sf_jpg_h_gene = PE_frag_bamtogff.jpg_h_gene
         File? sf_pdf_promoters = PE_frag_bamtogff.pdf_promoters
         File? sf_pdf_h_promoters = PE_frag_bamtogff.pdf_h_promoters
         File? sf_png_h_promoters = PE_frag_bamtogff.png_h_promoters
+        File? sf_jpg_h_promoters = PE_frag_bamtogff.jpg_h_promoters
 
         #PEAKS-ANNOTATION
         File? peak_promoters = SE_peaksanno.peak_promoters
@@ -1303,16 +1352,15 @@ workflow peaseq {
         Array[File?]? s_qc_statsfile = indv_summarystats.statsfile
         Array[File?]? s_qc_htmlfile = indv_summarystats.htmlfile
         Array[File?]? s_qc_textfile = indv_summarystats.textfile
-        File? s_qc_mergehtml = mergehtml.mergefile
         File? s_statsfile = SE_summarystats.statsfile
         File? s_htmlfile = SE_summarystats.htmlfile
         File? s_textfile = SE_summarystats.textfile
-        
 
+        File? qc_mergehtml = mergehtmlfile
+        
         Array[File?]? sp_qc_statsfile = indv_PE_summarystats.statsfile
         Array[File?]? sp_qc_htmlfile = indv_PE_summarystats.htmlfile
         Array[File?]? sp_qc_textfile = indv_PE_summarystats.textfile
-        File? sp_qc_mergehtml = PE_mergehtml.mergefile
         File? sp_s_uno_statsfile = PE_uno_summarystats.statsfile
         File? sp_s_uno_htmlfile = PE_uno_summarystats.htmlfile
         File? sp_s_uno_textfile = PE_uno_summarystats.textfile
@@ -1323,5 +1371,7 @@ workflow peaseq {
         File? sp_summarytxt = PE_uno_overallsummary.summarytxt
         File? m_summaryhtml = PE_merge_overallsummary.summaryhtml
         File? m_summarytxt = PE_merge_overallsummary.summarytxt
+
+        File? s_fragsize = fraggraph.fragsizepng
     }
 }

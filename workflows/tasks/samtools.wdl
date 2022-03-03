@@ -66,6 +66,7 @@ task viewsort {
     input {
         File samfile
         String outputfile = basename(sub(samfile,'\.sam$','\.sorted.bam'))
+        String fixmatefile = basename(sub(samfile,'\.sam$','\.fixmate.bam'))
         String default_location = "BAM_files"
         Boolean paired_end = false
 
@@ -73,27 +74,29 @@ task viewsort {
         Int max_retries = 1
         Int ncpu = 1
     }
-    command {
+    command <<<
         mkdir -p ~{default_location} && cd ~{default_location}
 
-        samtools view -b \
-            ~{samfile} \
-            > ~{sub(samfile,'\.sam$','\.bam')}
-
         if [ "~{paired_end}" == 'true' ]; then
+            awk -F\\t 'BEGIN{j=0}{j++}{if(NF>5 && j%2==0){ \
+                printf "%s_%.0f\t", $1, j-1 } else if(NF>5 && j%2==1){ \
+                printf "%s_%.0f\t", $1, j } else { printf $1 "\t";j=0 } \
+                for(i=2;i<=NF;i++){ printf "%s\t", $i}; printf "\n" }' \
+                ~{samfile} > ~{basename(sub(samfile,'.sam','.renamed.sam'))}
+
             samtools fixmate -m \
-                ~{sub(samfile,'\.sam$','\.bam')} \
-                ~{sub(samfile,'\.sam$','\.fixmate\.bam')}
+                ~{basename(sub(samfile,'.sam','.renamed.sam'))} \
+                ~{fixmatefile}
             samtools sort \
-                ~{sub(samfile,'\.sam$','\.fixmate\.bam')} \
+                ~{fixmatefile} \
                 -o ~{outputfile}
         else
             samtools sort \
-                ~{sub(samfile,'\.sam$','\.bam')} \
+                ~{samfile} \
                 -o ~{outputfile}
         fi
 
-    }
+    >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
@@ -102,6 +105,7 @@ task viewsort {
     }
     output {
         File sortedbam = "~{default_location}/~{outputfile}"
+        File? fixmatebam = "~{default_location}/~{fixmatefile}"
     }
 }
 
@@ -130,7 +134,7 @@ task faidx {
         cpu: ncpu
     }
     output {
-	File faidx_file = "~{sub(basename(reference),'.gz','')}.fai"
+        File faidx_file = "~{sub(basename(reference),'.gz','')}.fai"
         File chromsizes = "~{sub(basename(reference),'.gz','')}.tab"
     }
 }
@@ -139,7 +143,9 @@ task mergebam {
     input {
         Array[File] bamfiles
         String outputfile = 'AllMapped.' + length(bamfiles) + '_merge.bam'
+        String fixmatefile = 'AllMapped.' + length(bamfiles) + '_merge.fixmate.bam'
         String default_location = "BAM_files"
+        Boolean paired_end = false
 
         Int memory_gb = 5
         Int max_retries = 1
@@ -148,7 +154,20 @@ task mergebam {
     command {
         mkdir -p ~{default_location} && cd ~{default_location}
 
-        samtools merge --threads ~{ncpu} ~{outputfile} ~{sep=' ' bamfiles}
+        if [ "~{paired_end}" == 'true' ]; then
+            samtools merge \
+                --threads ~{ncpu} \
+                ~{fixmatefile} \
+                ~{sep=' ' bamfiles}
+            samtools sort \
+                ~{fixmatefile} \
+                -o ~{outputfile}
+        else
+            samtools merge \
+                --threads ~{ncpu} \
+                ~{outputfile} \
+                ~{sep=' ' bamfiles}
+        fi
     }
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
@@ -158,6 +177,7 @@ task mergebam {
     }
     output {
         File mergebam = "~{default_location}/~{outputfile}"
+        File? fixmatemergebam = "~{default_location}/~{fixmatefile}"
     }
 }
 

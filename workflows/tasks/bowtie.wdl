@@ -15,6 +15,11 @@ task bowtie {
         Int limit_alignments = 2
         Int good_alignments = 2
         Boolean best_alignments = true
+        String? strandedness = 'fr'
+        String stranded_ = if strandedness=='fr' then '--fr'
+                        else if strandedness=='rf' then '--rf'
+                        else if strandedness=='ff' then '--ff'
+                        else '--fr'
 
         Int memory_gb = 10
         Int max_retries = 1
@@ -35,6 +40,7 @@ task bowtie {
                 -k ~{good_alignments} \
                 -m ~{limit_alignments} \
                 -X ~{insert_size} \
+                ~{stranded_} \
                 ~{true="--best" false="" best_alignments} \
                 -S \
                 ~{sub(index_files[0], "(\.rev)?\.[0-9]\.ebwt$", "")} \

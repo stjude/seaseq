@@ -118,6 +118,7 @@ task summaryreport {
 
         # Printing header
         head -n 121 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}
+
         if [ -f "~{sampleqc_html}" ]; then
             # Printing Sample Quality Reports
             echo '<h2>Sample FASTQs Quality Results</h2>' >> ~{outputfile}
@@ -183,6 +184,7 @@ task evalstats {
 
         String fastq_type = "Sample FASTQs"
         String default_location = "QC_files/STATS"
+        Boolean peaseq = false
         String outputfile = sub(basename(fastqczip),'_fastqc.zip', '-stats.csv')
         String outputhtml = sub(basename(fastqczip),'_fastqc.zip', '-stats.html')
         String outputtext = sub(basename(fastqczip),'_fastqc.zip', '-stats.txt')
@@ -212,6 +214,11 @@ task evalstats {
             -outfile ~{outputfile}
 
         head -n 245 /usr/local/bin/scripts/seaseq_overall.header  | tail -n 123 > ~{outputhtml}
+        if [[ "~{peaseq}" == "true" ]]; then
+            sed -i "s/SEAseq Report/PEAseq Report/" ~{outputhtml}
+            sed -i "s/SEAseq Quality/PEAseq Quality/" ~{outputhtml}
+        fi
+
         cat ~{outputhtml}x >> ~{outputhtml}
         sed -i "s/SEAseq Sample FASTQ Report/~{fastq_type} Report/" ~{outputhtml}
         echo '</table></div>' >> ~{outputhtml}
@@ -363,6 +370,7 @@ task mergehtml {
         String fastq_type = "Sample FASTQs"
         String default_location = "QC_files"
         String outputfile 
+        Boolean peaseq = false
 
         Int memory_gb = 10
         Int max_retries = 1
@@ -373,6 +381,10 @@ task mergehtml {
 
         #extract header information
         head -n 245 /usr/local/bin/scripts/seaseq_overall.header  | tail -n 123 > ~{outputfile}
+        if [[ "~{peaseq}" == "true" ]]; then
+            sed -i "s/SEAseq Report/PEAseq Report/" ~{outputfile}
+            sed -i "s/SEAseq Quality/PEAseq Quality/" ~{outputfile}
+        fi
 
         mergeoutput=$(cat ~{sep='; tail -n 1 ' htmlfiles})
         echo $mergeoutput >> ~{outputfile}
@@ -433,6 +445,7 @@ task concatstats {
         String outputfile = sub(basename(overall_config),'-config.ml','')
         String default_location = "QC_files"
         String fastq_type = "Sample FASTQs"
+        Boolean peaseq = false
 
         Int memory_gb = 10
         Int max_retries = 1
@@ -544,6 +557,11 @@ task concatstats {
         CODE
 
         head -n 245 /usr/local/bin/scripts/seaseq_overall.header | tail -n 123 > ~{outputfile}-stats.html
+        if [[ "~{peaseq}" == "true" ]]; then
+            sed -i "s/SEAseq Report/PEAseq Report/" ~{outputfile}-stats.html
+            sed -i "s/SEAseq Quality/PEAseq Quality/" ~{outputfile}-stats.html
+        fi
+
         cat ~{outputfile}-stats.htmlx >> ~{outputfile}-stats.html
         echo "</table><p><b>*</b> Peaks identified after Input/Control correction.</p></div>" >> ~{outputfile}-stats.html
         tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}-stats.html
@@ -695,113 +713,5 @@ task effective_genome_size {
     output {
         Float genomefraction = read_float('genomefraction')
         String genomesize = read_string('genomesize')
-    }
-}
-
-task pairedend_summaryreport {
-    input {
-        File? controlqc_se_txt
-        File? controlqc_se_html
-        File? sampleqc_se_txt
-        File? sampleqc_se_html
-        File overallqc_se_txt
-        File overallqc_se_html
-        File? controlqc_pe_txt
-        File? controlqc_pe_html
-        File? sampleqc_pe_txt
-        File? sampleqc_pe_html
-        File overallqc_pe_txt
-        File overallqc_pe_html
-    
-        String outputfile
-        String outputtxt = sub(outputfile, '.html', '.txt')
-        
-        Int memory_gb = 5
-        Int max_retries = 1
-        Int ncpu = 1
-    }
-    command <<<
-
-        # Printing header
-        head -n 121 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}
-        if [ -f "~{sampleqc_se_html}" ]; then
-            # Printing Sample Quality Reports
-            echo '<h2>Sample FASTQs Quality Results</h2>' >> ~{outputfile}
-            echo '<h3>Individual FASTQs</h3>' >> ~{outputfile}
-            cat ~{sampleqc_se_html} >> ~{outputfile}
-            echo -e '</table>' >> ~{outputfile}
-
-            echo -e 'SEAseq Report\nSEAseq Quality Statistics and Evaluation Report\n\nSample FASTQs Quality Results\nIndividual FASTQs' > ~{outputtxt}
-            cat ~{sampleqc_se_txt} >> ~{outputtxt}
-
-            if [ -f "~{sampleqc_pe_html}" ]; then
-                echo '<br><h3>After Paired End Reference Mapping</h3>' >> ~{outputfile}
-                cat ~{sampleqc_pe_html} >> ~{outputfile}
-                echo -e '</table></div>\n<div class="body">' >> ~{outputfile}
-                echo -e '\nAfter Paired End Reference Mapping' > ~{outputtxt}
-                cat ~{sampleqc_pe_txt} >> ~{outputtxt}
-                echo -e '\n' >> ~{outputtxt}
-            else
-                echo -e '</div>\n<div class="body">' >> ~{outputfile}
-                echo -e '\n' >> ~{outputtxt}
-            fi
-
-        fi
-
-        if [ -f "~{controlqc_se_html}" ]; then
-            # Printing Control Quality Reports
-            echo '<h2>Control FASTQs Quality Results</h2>' >> ~{outputfile}
-            echo '<h3>Individual FASTQs</h3>' >> ~{outputfile}
-            cat ~{controlqc_se_html} >> ~{outputfile}
-            echo -e '</table>' >> ~{outputfile}
-
-            echo 'Control FASTQs Quality Results\nIndividual FASTQs' >> ~{outputtxt}
-            cat ~{controlqc_se_txt} >> ~{outputtxt}
-
-            if [ -f "~{controlqc_pe_html}" ]; then
-                echo '<br><h3>After Paired End Reference Mapping</h3>' >> ~{outputfile}
-                cat ~{controlqc_pe_html} >> ~{outputfile}
-                echo -e '</table></div>\n<div class="body">' >> ~{outputfile}
-                echo -e '\nAfter Paired End Reference Mapping' > ~{outputtxt}
-                cat ~{controlqc_pe_txt} >> ~{outputtxt}
-                echo -e '\n' >> ~{outputtxt}
-            else
-                echo -e '</div>\n<div class="body">' >> ~{outputfile}
-                echo -e '\n' >> ~{outputtxt}
-            fi
-
-        fi
-        
-        # Printing Overall Quality Reports
-        echo '<h2>Overall Quality Evaluation and Statistics Results</h2><p>' >> ~{outputfile}
-        echo '<h3>Single End Mode</h3>' >> ~{outputfile}
-        cat ~{overallqc_se_html} >> ~{outputfile}
-        echo '</table>' >> ~{outputfile}
-        echo '<br><h3>Paired End Mode</h3>' >> ~{outputfile}
-        cat ~{overallqc_pe_html} >> ~{outputfile}
-        echo '</table>' >> ~{outputfile}
-
-        echo -e 'Overall Quality Evaluation and Statistics Results\nSingle End mode' >> ~{outputtxt}
-        cat ~{overallqc_se_txt} >> ~{outputtxt}
-        echo -e '\nPaired End mode' >> ~{outputtxt}
-        cat ~{overallqc_pe_txt} >> ~{outputtxt}
-        
-        if [ -f "~{controlqc_se_html}" ]; then
-            echo "<p><b>*</b> Peaks identified after Input/Control correction.</p>" >> ~{outputfile}
-        fi
-        echo '</div>' >> ~{outputfile}
-        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}
-        echo -e '\n' >> ~{outputtxt}
-
-    >>>
-    runtime {
-        memory: ceil(memory_gb * ncpu) + " GB"
-        maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
-        cpu: ncpu
-    }
-    output {
-        File summaryhtml = "~{outputfile}"
-        File summarytxt = "~{outputtxt}"
     }
 }

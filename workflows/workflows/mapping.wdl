@@ -12,7 +12,9 @@ workflow mapping {
         Array[File] index_files
         File? metricsfile
         File? blacklist
+        Int? read_length = 75
         Boolean paired_end = false
+        String? strandedness = 'fr'
         String default_location = "BAM_files"
         String? results_name
     }
@@ -22,7 +24,8 @@ workflow mapping {
             input :
                 fastqfile=fastqfile,
                 index_files=index_files,
-                metricsfile=metricsfile
+                metricsfile=metricsfile,
+                read_length=read_length
         }
     }
 
@@ -33,6 +36,7 @@ workflow mapping {
                 fastqfile_R2=fastqfile_R2,
                 index_files=index_files,
                 insert_size=insert_size,
+                strandedness=strandedness,
                 prefix=results_name
         }
     }   
@@ -54,23 +58,39 @@ workflow mapping {
         # remove blacklist regions
         String string_blacklist = "" #buffer to allow for blacklist optionality
         File blacklist_ = select_first([blacklist, string_blacklist])
-        call bedtools.intersect as rmblklist {
-            input :
-                fileA=viewsort.sortedbam,
-                fileB=blacklist_,
-                default_location=default_location,
-                nooverlap=true
+        if ( defined(metricsfile) ) {
+            call bedtools.intersect as rmblklist {
+                input :
+                    fileA=viewsort.sortedbam,
+                    fileB=blacklist_,
+                    default_location=default_location,
+                    nooverlap=true
+            }
         }
+
+        if ( defined(fastqfile_R2) ) {
+            String string_fixmate = "" #buffer to allow for blacklist optionality
+            File fixmate_ = select_first([viewsort.fixmatebam, string_fixmate])
+            call bedtools.pairtobed as pairtobed {
+                input :
+                    fileA=fixmate_,
+                    fileB=blacklist_,
+                    default_location=default_location
+            }
+        }
+
+        File bklist_bamfile = select_first([rmblklist.intersect_out, pairtobed.pairtobed_out])
+
         call samtools.indexstats as bklist {
             input :
-                bamfile=rmblklist.intersect_out,
+                bamfile=bklist_bamfile,
                 default_location=default_location
-        }
+        }          
     } # end if (blacklist provided)
 
     call samtools.markdup {
         input :
-            bamfile=select_first([rmblklist.intersect_out, viewsort.sortedbam]),
+            bamfile=select_first([bklist_bamfile, viewsort.sortedbam]),
             default_location=default_location
     }
 
@@ -80,11 +100,14 @@ workflow mapping {
             default_location=default_location
     }
 
+    File parse_sorted_bam = select_first([viewsort.fixmatebam, viewsort.sortedbam])
+    
     output {
         File sorted_bam = viewsort.sortedbam
+        File as_sortedbam = parse_sorted_bam
         File bam_index = indexstats.indexbam
         File bam_stats = indexstats.flagstats
-        File? bklist_bam = rmblklist.intersect_out
+        File? bklist_bam = bklist_bamfile
         File? bklist_index = bklist.indexbam
         File? bklist_stats = bklist.flagstats
         File mkdup_bam = markdup.mkdupbam

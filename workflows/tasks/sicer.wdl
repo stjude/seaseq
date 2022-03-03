@@ -7,6 +7,7 @@ task sicer {
         File? control_bed
         File chromsizes
         String default_location = "PEAKS_files/BROAD_peaks"
+        String coverage_location = "COVERAGE_files/NARROW_peaks"
 
         Int redundancy = 1
         Int window = 200
@@ -23,7 +24,7 @@ task sicer {
     }
 
     command <<<
-        mkdir -p ~{default_location}
+        mkdir -p ~{default_location} ~{coverage_location}
 
         sicer \
             -cpu ~{ncpu} \
@@ -44,6 +45,7 @@ task sicer {
             mv ~{basename(bedfile,'.bed')}-W~{window}-G~{gap_size}-FDR0.01-island.bed ~{outputname}-W~{window}-G~{gap_size}-FDR0.01-island.bed
         fi
         gzip *wig
+        mv ~{outputname}-W~{window}-normalized.wig.gz ~{coverage_location}
         mv ~{outputname}-* ~{default_location}
     >>>
     runtime {
@@ -54,7 +56,7 @@ task sicer {
     }
     output {
         File scoreisland = "~{default_location}/~{outputname}-W~{window}-G~{gap_size}.scoreisland"
-        File wigfile = "~{default_location}/~{outputname}-W~{window}-normalized.wig.gz"
+        File wigfile = "~{coverage_location}/~{outputname}-W~{window}-normalized.wig.gz"
         File? summary = "~{default_location}/~{outputname}-W~{window}-G~{gap_size}-islands-summary"
         File? fdrisland = "~{default_location}/~{outputname}-W~{window}-G~{gap_size}-FDR0.01-island.bed"
     }
