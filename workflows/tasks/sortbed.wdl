@@ -18,7 +18,7 @@ task sortbed {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/bedops:v2.4.37'
+        docker: 'ghcr.io/stjude/abralab/bedops:v2.4.37'
         cpu: ncpu
     }
     output {

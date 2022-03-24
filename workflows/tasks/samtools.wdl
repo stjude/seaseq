@@ -24,7 +24,7 @@ task indexstats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/samtools:v1.9'
+        docker: 'ghcr.io/stjude/abralab/samtools:v1.9'
         cpu: ncpu
     }
     output {
@@ -54,7 +54,7 @@ task markdup {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/samtools:v1.9'
+        docker: 'ghcr.io/stjude/abralab/samtools:v1.9'
         cpu: ncpu
     }
     output {
@@ -86,7 +86,7 @@ task viewsort {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/samtools:v1.9'
+        docker: 'ghcr.io/stjude/abralab/samtools:v1.9'
         cpu: ncpu
     }
     output {
@@ -115,7 +115,7 @@ task faidx {
     runtime {
         memory: memory_gb + " GB"
         maxRetries: max_retries
-        docker: 'abralab/samtools:v1.9'
+        docker: 'ghcr.io/stjude/abralab/samtools:v1.9'
         cpu: ncpu
     }
     output {
@@ -142,7 +142,7 @@ task mergebam {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/samtools:v1.9'
+        docker: 'ghcr.io/stjude/abralab/samtools:v1.9'
         cpu: ncpu
     }
     output {

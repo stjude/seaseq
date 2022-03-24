@@ -69,7 +69,7 @@ task wigtobigwig {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/wigtobigwig:v4'
+        docker: 'ghcr.io/stjude/abralab/wigtobigwig:v4'
         cpu: ncpu
     }
     output {
@@ -102,7 +102,7 @@ task igvtdf {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/igvtools:v2.8.2'
+        docker: 'ghcr.io/stjude/abralab/igvtools:v2.8.2'
         cpu: ncpu
     }
     output {

@@ -23,7 +23,7 @@ task fastqc {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/fastqc:v0.11.9'
+        docker: 'ghcr.io/stjude/abralab/fastqc:v0.11.9'
         cpu: ncpu
     }
     output {
