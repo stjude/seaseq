@@ -8,7 +8,6 @@ task intersect {
         Boolean nooverlap = false
         Boolean countoverlap = false
         Boolean sorted = false
-
         String outputfile = sub(basename(fileA), '.bam$', '')
         String suffixname = if (nooverlap) then '.bklist.bam' else '.sorted.bed'
         String default_location = "."

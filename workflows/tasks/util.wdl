@@ -577,7 +577,6 @@ task addreadme {
     }
 }
 
-
 task effective_genome_size {
     # Calculate effective genome size and fraction
     input {
