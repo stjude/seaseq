@@ -42,7 +42,7 @@ task bowtie {
     runtime {
         memory: memory_gb + " GB"
         maxRetries: max_retries
-        docker: 'abralab/bowtie:v1.2.3'
+        docker: 'ghcr.io/stjude/abralab/bowtie:v1.2.3'
         cpu: ncpu
     }
     output {
@@ -71,7 +71,7 @@ task index {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/bowtie:v1.2.3'
+        docker: 'ghcr.io/stjude/abralab/bowtie:v1.2.3'
         cpu: ncpu
     }
     output {

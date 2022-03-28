@@ -52,7 +52,7 @@ task fastqdump {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/sratoolkit:v2.9.6'
+        docker: 'ghcr.io/stjude/abralab/sratoolkit:v2.9.6'
         cpu: ncpu
     }
     output {

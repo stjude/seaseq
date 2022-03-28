@@ -155,7 +155,7 @@ task bamtogff_gtftogenes {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/bamtogff:v1.2.1'
+        docker: 'ghcr.io/stjude/abralab/bamtogff:v1.2.1'
         cpu: ncpu
     }
     output {
@@ -190,7 +190,7 @@ task bamtogff_main {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/bamtogff:v1.2.1'
+        docker: 'ghcr.io/stjude/abralab/bamtogff:v1.2.1'
         cpu: ncpu
     }
     output {
@@ -279,7 +279,7 @@ task bamtogff_plot {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/bamtogff:v1.2.1'
+        docker: 'ghcr.io/stjude/abralab/bamtogff:v1.2.1'
         cpu: ncpu
     }
     output {

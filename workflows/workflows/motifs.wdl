@@ -84,7 +84,7 @@ task meme {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/memesuite:v5.3.3'
+        docker: 'ghcr.io/stjude/abralab/memesuite:v5.3.3'
         cpu: ncpu
     }
     output {
@@ -121,7 +121,7 @@ task ame {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/memesuite:v5.3.3'
+        docker: 'ghcr.io/stjude/abralab/memesuite:v5.3.3'
         cpu: ncpu
     }
     output {
