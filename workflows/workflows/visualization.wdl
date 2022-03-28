@@ -69,7 +69,7 @@ task wigtobigwig {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/abralab/wigtobigwig:v4'
+        docker: 'ghcr.io/stjude/abralab/kentutils:latest'
         cpu: ncpu
     }
     output {
