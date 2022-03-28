@@ -158,6 +158,7 @@ workflow seaseq {
         } # end scatter each sra
 
         Array[File] sample_srafile = flatten(fastqdump.fastqfile)
+
     } # end if sample_sraid
 
     if ( defined(control_sraid) ) {
