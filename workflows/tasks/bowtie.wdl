@@ -13,10 +13,13 @@ task bowtie {
         Int good_alignments = 2
         Boolean best_alignments = true
 
-        Int memory_gb = 10
+        Int additional_memory_gb = 10
         Int max_retries = 1
         Int ncpu = 20
     }
+
+    Int memory_gb = ceil(size(fastqfile, "GiB")) + ceil(size(index_files, "GiB")) + additional_memory_gb
+
     command <<<
         if [ -f "~{metricsfile}" ]; then
             readlength=$(tail -n 1 ~{metricsfile} | awk '{print $4}');
@@ -37,7 +40,7 @@ task bowtie {
             > ~{outputfile}
     >>>
     runtime {
-        memory: ceil(memory_gb * ncpu) + " GB"
+        memory: memory_gb + " GB"
         maxRetries: max_retries
         docker: 'abralab/bowtie:v1.2.3'
         cpu: ncpu

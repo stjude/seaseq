@@ -25,11 +25,11 @@ workflow motifs {
 
     if (defined(motif_databases)) {
         Array[String] string_motif_databases = [1]
-        Array[File] motif_databases_m = select_first([motif_databases, string_motif_databases])
+        Array[File] motif_database_files = select_first([motif_databases, string_motif_databases])
             
         call ame {
             input :
-                motif_databases=motif_databases_m,
+                motif_databases=motif_database_files,
                 fastafile=bedfasta.fastafile,
                 folder_output = select_first(process_motif_folder.placeholder_output),
                 default_location=default_location + '/' + basename(select_first(process_motif_folder.placeholder_output)) + '-ame_out',
