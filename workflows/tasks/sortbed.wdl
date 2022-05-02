@@ -4,7 +4,7 @@ task sortbed {
     input {
         File bedfile
 
-        String outputfile = basename(bedfile,'\.bed')+ '.sorted.bed'
+        String outputfile = basename(bedfile,'.bed')+ '.sorted.bed'
 
         Int memory_gb = 10
         Int max_retries = 1
@@ -18,7 +18,7 @@ task sortbed {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/bedops:v2.4.37'
+        docker: 'ghcr.io/stjude/abralab/bedops:v2.4.37'
         cpu: ncpu
     }
     output {

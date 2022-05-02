@@ -6,12 +6,12 @@ task fraggraph {
     input {
         File bamfile
         File chromsizes
-        String bigwig = sub(basename(bamfile),"\.bam$", "\.w50\.FPM\.bw")
-        String wig = sub(basename(bamfile),"\.bam$", "\.w50\.FPM\.wig")
-        String tdf = sub(basename(bamfile),"\.bam$", "\.w50\.FPM\.tdf")
-        String fragbam = sub(basename(bamfile),"\.bam$", "\.w50\.frag\.bam")
-        String bampebed = sub(basename(bamfile),"\.bam$", "\.bam2bedpe.bed")
-        String fragsizes = sub(basename(bamfile),".bam$", "\.fragments.png")
+        String bigwig = sub(basename(bamfile),".bam$", ".w50.FPM.bw")
+        String wig = sub(basename(bamfile),".bam$", ".w50.FPM.wig")
+        String tdf = sub(basename(bamfile),".bam$", ".w50.FPM.tdf")
+        String fragbam = sub(basename(bamfile),".bam$", ".frag.bam")
+        String bampebed = sub(basename(bamfile),".bam$", ".bam2bedpe.bed")
+        String fragsizes = sub(basename(bamfile),".bam$", ".fragments.png")
         String default_location = "BAM_files"
         String bam_location = "BAM_files"
         String annotation_location = "Annotation"
@@ -29,18 +29,18 @@ task fraggraph {
         #namesort
         samtools sort -n \
             ~{bamfile} \
-            -o ~{sub(basename(bamfile),"\.bam$", "\.ns\.bam")}
+            -o ~{sub(basename(bamfile),".bam$", ".ns.bam")}
 
         #bamtobed
         bamToBed -bedpe \
-            -i ~{sub(basename(bamfile),"\.bam$", "\.ns\.bam")} \
-            > ~{sub(basename(bamfile),"\.bam$", "\.ns2bedpe\.bed")}
+            -i ~{sub(basename(bamfile),".bam$", ".ns.bam")} \
+            > ~{sub(basename(bamfile),".bam$", ".ns2bedpe.bedpe")}
 
         #filterbedpe
         awk -F\\t '{
-            if($1==$4 && $1~"chr" && $6-$2<1000)
+            if($1==$4 && $1~"chr")
             { print $1 "\t" $2 "\t" $6 "\t" $7 }
-            }' ~{sub(basename(bamfile),"\.bam$", "\.ns2bedpe\.bed")} > ~{bampebed}
+            }' ~{sub(basename(bamfile),".bam$", ".ns2bedpe.bedpe")} > ~{bampebed}
 
         #fragmentsgraph
 
@@ -87,7 +87,6 @@ task fraggraph {
         ax.annotate(nobs_min, xy = (minimum,0), xytext=(minimum,0.3), bbox=bbox, arrowprops=arrowprops, size='small', weight='semibold')
         ax.annotate(nobs_mean, xy = (means,0), xytext=(means,0.2), bbox=bbox, arrowprops=arrowprops, size='small', weight='semibold')
         ax.annotate(nobs_max, xy = (maximum,0), xytext=(maximum,0.1), bbox=bbox, arrowprops=arrowprops, size='small', weight='semibold', ha='right')
-        ax.set_title("Life Expectancy By Country",size='larger',weight='bold')
 
         ax.set_xlabel("Fragments sizes (bp)")
         ax.set_title("~{sub(basename(bamfile),".sorted.*$", "")}",size='larger',weight='bold')
@@ -101,17 +100,17 @@ task fraggraph {
         bedtools makewindows -w 50 \
             -g ~{chromsizes} \
             | sort -k1,1 -k2,2n \
-            > ~{sub(basename(chromsizes),"\.tab", "-50bpwindows\.bed")}
+            > ~{sub(basename(chromsizes),".tab", "-50bpwindows.bed")}
 
         #bedtobam
         bedToBam \
             -i ~{bampebed} \
             -g ~{chromsizes} \
-            > ~{sub(basename(bamfile),"\.bam$", "\.w50\.bam")}
+            > ~{sub(basename(bamfile),".bam$", ".bam2bedpe.bam")}
 
         #position sort
         samtools sort \
-            ~{sub(basename(bamfile),"\.bam$", "\.w50\.bam")} \
+            ~{sub(basename(bamfile),".bam$", ".bam2bedpe.bam")} \
             -o ~{fragbam}
 
         #view fragments
@@ -119,13 +118,14 @@ task fraggraph {
 
         #create bedgraph
         intersectBed -c \
-            -a ~{sub(basename(chromsizes),"\.tab", "-50bpwindows\.bed")} \
+            -a ~{sub(basename(chromsizes),".tab", "-50bpwindows.bed")} \
             -b ~{bampebed} \
-            | awk -F'[\t]' -v mapped=$mappedPE '{print $1 "\t" $2 "\t" $3 "\t" $4*1000000/mapped} ' > ~{sub(basename(bamfile),"\.bam$", "\.w50\.FPM\.graph")}
+            | awk -F'[\t]' -v mapped=$mappedPE '{print $1 "\t" $2 "\t" $3 "\t" $4*1000000/mapped}' \
+            > ~{sub(basename(bamfile),".bam$", ".w50.FPM.graph")}
 
         #create bigwig and tdf
         bedGraphToBigWig \
-            ~{sub(basename(bamfile),"\.bam$", "\.w50\.FPM\.graph")} \
+            ~{sub(basename(bamfile),".bam$", ".w50.FPM.graph")} \
             ~{chromsizes} \
             ~{bigwig}
 
@@ -178,18 +178,25 @@ task pe_bamtobed {
         #namesort
         samtools sort -n \
             ~{bamfile} \
-            -o ~{sub(basename(bamfile),"\.bam$", "\.ns\.bam")}
+            -o ~{sub(basename(bamfile),".bam$", ".ns.bam")}
 
         #bamtobed
         bamToBed -bedpe \
-            -i ~{sub(basename(bamfile),"\.bam$", "\.ns\.bam")} \
-            > ~{sub(basename(bamfile),"\.bam$", "\.ns\.bed")}
+            -i ~{sub(basename(bamfile),".bam$", ".ns.bam")} \
+            > ~{sub(basename(bamfile),".bam$", ".ns.bed")}
 
         #sortbed
+        #if [[ "~{sicer}" == "true" ]]; then
+        #    awk -F\\t '{
+        #        if($1==$4 && $1~"chr")
+        #        { print $1 "\t" $2 - 1 + int( ($6 - $2) / 2) "\t" $2 + int( ($6 - $2) / 2 ) "\t" $7 "\t255\t+" }
+        #        }' ~{sub(basename(bamfile),".bam$", ".ns.bed")} > ~{outputfile}
+        #else 
         awk -F\\t '{
-            if($1==$4 && $1~"chr" && $6-$2<1000)
+            if($1==$4 && $1~"chr")
             { print $1 "\t" $2 "\t" $6 "\t" $7 "\t255\t+" }
-            }' ~{sub(basename(bamfile),"\.bam$", "\.ns\.bed")} > ~{outputfile}
+            }' ~{sub(basename(bamfile),".bam$", ".ns.bed")} > ~{outputfile}
+        #fi
 
     >>>
     runtime {
@@ -228,7 +235,7 @@ task pairedend_summaryreport {
     command <<<
 
         # Printing header
-        head -n 121 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}
+        head -n 121 /usr/local/bin/seaseq_overall.header > ~{outputfile}
         sed -i "s/SEAseq Report/PEAseq Report/" ~{outputfile}
         sed -i "s/SEAseq Quality/PEAseq Quality/" ~{outputfile}
         if [ -f "~{sampleqc_se_html}" ]; then
@@ -297,14 +304,14 @@ task pairedend_summaryreport {
             echo "<p><b>*</b> Peaks identified after Input/Control correction.</p>" >> ~{outputfile}
         fi
         echo '</div>' >> ~{outputfile}
-        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}
+        tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputfile}
         echo -e '\n' >> ~{outputtxt}
 
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
+        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
         cpu: ncpu
     }
     output {
@@ -332,7 +339,7 @@ task pe_mergehtml {
         mkdir -p ~{default_location} && cd ~{default_location}
 
         #extract header information
-        head -n 245 /usr/local/bin/scripts/seaseq_overall.header  | tail -n 123 > ~{outputfile}
+        head -n 245 /usr/local/bin/seaseq_overall.header  | tail -n 123 > ~{outputfile}
         sed -i "s/SEAseq Report/PEAseq Report/" ~{outputfile}
         sed -i "s/SEAseq Quality/PEAseq Quality/" ~{outputfile}
 
@@ -348,7 +355,7 @@ task pe_mergehtml {
         echo $pe_mergeoutput >> ~{outputfile}
         echo '</table></div>' >> ~{outputfile}
         
-        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}
+        tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputfile}
 
         #working on TXTfile
         head -n 1 ~{se_txtfiles[0]} > ~{outputfile}.txt
@@ -363,7 +370,7 @@ task pe_mergehtml {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
+        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
         cpu: ncpu
     }
     output {

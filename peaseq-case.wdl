@@ -177,8 +177,8 @@ workflow peaseq {
             File R2end = select_first([fastqdump.R2end, string_sra[0]])
         } # end scatter each sra
 
-        Array[File] sample_R1_srafile_ = R1end
-        Array[File] sample_R2_srafile_ = R2end
+        Array[File] sample_R1_srafile = R1end
+        Array[File] sample_R2_srafile = R2end
     } # end if sample_sraid
 
     # Generating INDEX files
@@ -203,7 +203,7 @@ workflow peaseq {
             }
         }
     }
-    Array[File] bowtie_index_ = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
+    Array[File] actual_bowtie_index = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
 
     # FASTA faidx and chromsizes and effective genome size
     call samtools.faidx as samtools_faidx {
@@ -221,15 +221,15 @@ workflow peaseq {
     if ( defined(sample_R1_fastq) ) {
         Array[String] string_fastq = [1] #buffer to allow for fastq optionality
         Array[File] s_R1_fastq = select_first([sample_R1_fastq, string_fastq])
-        Array[File] sample_R1_fastqfile_ = s_R1_fastq
+        Array[File] sample_R1_fastqfile = s_R1_fastq
         Array[File] s_R2_fastq = select_first([sample_R2_fastq, string_fastq])
-        Array[File] sample_R2_fastqfile_ = s_R2_fastq
+        Array[File] sample_R2_fastqfile = s_R2_fastq
     }
 
     # collate all fastqfiles
-    Array[File] sample_R1 = flatten(select_all([sample_R1_srafile_, sample_R1_fastqfile_]))
-    Array[File] sample_R2 = flatten(select_all([sample_R2_srafile_, sample_R2_fastqfile_]))
-    Array[File] all_sample_fastqfiles = flatten(select_all([sample_R1_srafile_, sample_R1_fastqfile_,sample_R2_srafile_, sample_R2_fastqfile_]))
+    Array[File] sample_R1 = flatten(select_all([sample_R1_srafile, sample_R1_fastqfile]))
+    Array[File] sample_R2 = flatten(select_all([sample_R2_srafile, sample_R2_fastqfile]))
+    Array[File] all_sample_fastqfiles = flatten(select_all([sample_R1_srafile, sample_R1_fastqfile,sample_R2_srafile, sample_R2_fastqfile]))
 
     # transpose to paired-end tuples
     Array[Pair[File, File]] sample_fastqfiles = zip(sample_R1, sample_R2)
@@ -255,7 +255,7 @@ workflow peaseq {
         call mapping.mapping as indv_mapping {
             input :
                 fastqfile=eachfastq,
-                index_files=bowtie_index_,
+                index_files=actual_bowtie_index,
                 metricsfile=indv_bfs.metrics_out,
                 blacklist=blacklist,
                 default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/BAM_files'
@@ -307,6 +307,7 @@ workflow peaseq {
     call samtools.mergebam as SE_mergebam {
         input:
             bamfiles=indv_mapping.sorted_bam,
+            metricsfiles=indv_bfs.metrics_out,
             default_location = if defined(results_name) then results_name + '_SE/BAM_files' else 'AllMapped_' + length(indv_mapping.sorted_bam) + 'fastqs_SE/BAM_files',
             outputfile = if defined(results_name) then results_name + '_SE.sorted.bam' else 'AllMapped_' + length(all_sample_fastqfiles) + 'fastqs_SE.sorted.bam'
     }
@@ -326,11 +327,11 @@ workflow peaseq {
     if ( defined(blacklist) ) {
         # remove blacklist regions
         String string_blacklist = "" #buffer to allow for blacklist optionality
-        File blacklist_ = select_first([blacklist, string_blacklist])
+        File blacklist_file = select_first([blacklist, string_blacklist])
         call bedtools.intersect as SE_merge_rmblklist {
             input :
                 fileA=SE_mergebam.mergebam,
-                fileB=blacklist_,
+                fileB=blacklist_file,
                 default_location=sub(basename(SE_mergebam.mergebam),'.sorted.b.*$','') + '/BAM_files',
                 nooverlap=true
         }
@@ -383,7 +384,7 @@ workflow peaseq {
                     fastqfile_R2=fastqpair.right,
                     insert_size=insertsize,
                     strandedness=strandedness,
-                    index_files=bowtie_index_,
+                    index_files=actual_bowtie_index,
                     blacklist=blacklist,
                     paired_end=true,
                     default_location='SAMPLE/' + sub(basename(fastqpair.left),'_R?[12].*.f.*q.gz','') + '/BAM_files'
@@ -446,6 +447,7 @@ workflow peaseq {
         call samtools.mergebam as PE_mergebam {
             input:
                 bamfiles=indv_PE_mapping.as_sortedbam,
+                metricsfiles=indv_bfs.metrics_out,
                 paired_end=true,
                 default_location = if defined(results_name) then results_name + '_PE/BAM_files' else 'AllMapped_' + length(indv_PE_mapping.sorted_bam) + 'fastqpairs_PE/BAM_files',
                 outputfile = if defined(results_name) then results_name + '_PE.sorted.bam' else 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs_PE.sorted.bam',
@@ -467,13 +469,13 @@ workflow peaseq {
         if ( defined(blacklist) ) {
             # remove blacklist regions
             String string_pe_blacklist = "" #buffer to allow for blacklist optionality
-            File blacklist_pe_ = select_first([blacklist, string_pe_blacklist])
+            File blacklist_pe = select_first([blacklist, string_pe_blacklist])
             String string_pe_fixmate = "" #buffer to allow for blacklist optionality
-            File fixmate_pe_ = select_first([PE_mergebam.fixmatemergebam, string_pe_fixmate])
+            File fixmate_pe = select_first([PE_mergebam.fixmatemergebam, string_pe_fixmate])
             call bedtools.pairtobed as PE_merge_rmblklist {
                 input :
-                    fileA=fixmate_pe_,
-                    fileB=blacklist_pe_,
+                    fileA=fixmate_pe,
+                    fileB=blacklist_pe,
                     default_location=sub(basename(PE_mergebam.mergebam),'.sorted.b.*$','') + '/BAM_files'
             }
             call samtools.indexstats as PE_merge_bklist {
@@ -524,7 +526,7 @@ workflow peaseq {
                 fastqfile_R2=sample_fastqfiles[0].right,
                 insert_size=insertsize,
                 strandedness=strandedness,
-                index_files=bowtie_index_,
+                index_files=actual_bowtie_index,
                 blacklist=blacklist,
                 paired_end=true,
                 results_name=results_name,
@@ -613,6 +615,7 @@ workflow peaseq {
             bedfile=SE_forsicerbed.bedfile,
             chromsizes=samtools_faidx.chromsizes,
             genome_fraction=egs.genomefraction,
+            fragmentlength=SE_mergebam.avg_readlength,
             default_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/PEAKS/BROAD_peaks',
             coverage_location=sub(basename(SE_mergebam_afterbklist),'.sorted.b.*$','') + '/COVERAGE_files/BROAD_peaks'
     }
@@ -827,7 +830,8 @@ workflow peaseq {
 
     call peaseq_util.pe_bamtobed as PE_forsicerbed {
         input :
-            bamfile=select_first([PE_merge_markdup.mkdupbam, uno_PE_mapping.mkdup_bam])
+            bamfile=select_first([PE_merge_markdup.mkdupbam, uno_PE_mapping.mkdup_bam]),
+            outputfile = basename(select_first([PE_merge_markdup.mkdupbam, uno_PE_mapping.mkdup_bam])) + "2sicer.bed"
     }
 
     call sicer.sicer as PE_sicer {

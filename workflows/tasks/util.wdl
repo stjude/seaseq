@@ -3,7 +3,7 @@ version 1.0
 task basicfastqstats {
     input {
         File fastqfile
-        String outputfile = sub(basename(fastqfile),'\.fastq\.gz|\.fq\.gz', '-fastq.readlength_dist.txt')
+        String outputfile = sub(basename(fastqfile),'.fastq.gz|.fq.gz', '-fastq.readlength_dist.txt')
         String default_location = "QC_files/STATS"
 
         Int max_retries = 1
@@ -37,6 +37,8 @@ task basicfastqstats {
         
         echo Min.$'\t'1st Qu.$'\t'Median$'\t'Mean$'\t'3rd Qu.$'\t'Max.$'\t'StdDev.$'\t'IQR > ~{outputfile}
         echo $minimum$'\t'$Q1$'\t'$median$'\t'$average$'\t'$Q3$'\t'$maximum$'\t'$stddev$'\t'$IQR >> ~{outputfile}
+
+        echo ${average%.*} > readlength.txt
         
         rm -rf values.dat
 
@@ -44,10 +46,12 @@ task basicfastqstats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
+        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
         cpu: ncpu
     }
     output {
         File metrics_out = "~{default_location}/~{outputfile}"
+        Int readlength = read_int("~{default_location}/readlength.txt")
     }
 }
 
@@ -55,10 +59,9 @@ task basicfastqstats {
 task flankbed {
     input {
         File bedfile
+        Int flank = 50
         String outputfile = basename(bedfile, '.bed') + '-flank' + flank + '.bed'
         String default_location = "."
-
-        Int flank = 50
 
         Int memory_gb = 5
         Int max_retries = 1
@@ -89,7 +92,7 @@ task flankbed {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
+        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
         cpu: ncpu
     }
     output {
@@ -117,7 +120,7 @@ task summaryreport {
     command <<<
 
         # Printing header
-        head -n 121 /usr/local/bin/scripts/seaseq_overall.header > ~{outputfile}
+        head -n 121 /usr/local/bin/seaseq_overall.header > ~{outputfile}
 
         if [ -f "~{sampleqc_html}" ]; then
             # Printing Sample Quality Reports
@@ -151,14 +154,14 @@ task summaryreport {
             echo "<p><b>*</b> Peaks identified after Input/Control correction.</p>" >> ~{outputfile}
         fi
         echo '</div>' >> ~{outputfile}
-        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}
+        tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputfile}
         echo -e '\n' >> ~{outputtxt}
 
     >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
+        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
         cpu: ncpu
     }
     output {
@@ -213,7 +216,7 @@ task evalstats {
             ~{if defined(superenhancers) then "-rs " + superenhancers else ""} \
             -outfile ~{outputfile}
 
-        head -n 245 /usr/local/bin/scripts/seaseq_overall.header  | tail -n 123 > ~{outputhtml}
+        head -n 245 /usr/local/bin/seaseq_overall.header  | tail -n 123 > ~{outputhtml}
         if [[ "~{peaseq}" == "true" ]]; then
             sed -i "s/SEAseq Report/PEAseq Report/" ~{outputhtml}
             sed -i "s/SEAseq Quality/PEAseq Quality/" ~{outputhtml}
@@ -222,14 +225,14 @@ task evalstats {
         cat ~{outputhtml}x >> ~{outputhtml}
         sed -i "s/SEAseq Sample FASTQ Report/~{fastq_type} Report/" ~{outputhtml}
         echo '</table></div>' >> ~{outputhtml}
-        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputhtml}
+        tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputhtml}
 
 
     >>> 
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
+        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
         cpu: ncpu
     }
     output {
@@ -241,6 +244,7 @@ task evalstats {
     }
 }
 
+
 task normalize {
     input {
         File wigfile
@@ -248,7 +252,7 @@ task normalize {
         Boolean control = false
         String default_location = "Coverage_files"
 
-        String outputfile = sub(basename(wigfile),'\.wig\.gz', '.RPM.wig')
+        String outputfile = sub(basename(wigfile),'.wig.gz', '.RPM.wig')
 
         Int memory_gb = 5
         Int max_retries = 1
@@ -303,7 +307,7 @@ task normalize {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
+        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
         cpu: ncpu
     }
     output {
@@ -315,7 +319,7 @@ task normalize {
 task peaksanno {
     input {
         File bedfile
-	    File? summitfile
+	File? summitfile
         String default_location = "PEAKSAnnotation"
 
         File gtffile
@@ -348,7 +352,7 @@ task peaksanno {
         continueOnReturnCode: [0, 1]
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
+        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
         cpu: ncpu
     }
     output {
@@ -362,6 +366,7 @@ task peaksanno {
 
     }
 }
+
 
 task mergehtml {
     input {
@@ -380,7 +385,7 @@ task mergehtml {
         mkdir -p ~{default_location} && cd ~{default_location}
 
         #extract header information
-        head -n 245 /usr/local/bin/scripts/seaseq_overall.header  | tail -n 123 > ~{outputfile}
+        head -n 245 /usr/local/bin/seaseq_overall.header  | tail -n 123 > ~{outputfile}
         if [[ "~{peaseq}" == "true" ]]; then
             sed -i "s/SEAseq Report/PEAseq Report/" ~{outputfile}
             sed -i "s/SEAseq Quality/PEAseq Quality/" ~{outputfile}
@@ -390,7 +395,7 @@ task mergehtml {
         echo $mergeoutput >> ~{outputfile}
         sed -i "s/SEAseq Sample FASTQ Report/~{fastq_type} Report/" ~{outputfile}
         echo '</table></div>' >> ~{outputfile}
-        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}
+        tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputfile}
 
         echo $mergeoutput > ~{outputfile}x
 
@@ -403,36 +408,13 @@ task mergehtml {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
+        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
         cpu: ncpu
     }
     output {
         File mergefile = "~{default_location}/~{outputfile}"
         File mergetxt = "~{default_location}/~{outputfile}.txt"
         File xhtml = "~{default_location}/~{outputfile}x"
-    }
-}
-
-task linkname {
-    input {
-        String prefix
-        File in_fastq
-
-        Int memory_gb = 10
-        Int max_retries = 1
-        Int ncpu = 1
-    }
-    command <<<
-        mv ~{in_fastq} ~{prefix}.fastq.gz
-        
-    >>>
-    runtime {
-        memory: ceil(memory_gb * ncpu) + " GB"
-        maxRetries: max_retries
-        cpu: ncpu
-    }
-    output {
-        File out_fastq = "~{prefix}.fastq.gz"
     }
 }
 
@@ -526,21 +508,37 @@ task concatstats {
                     controltextvalues += "\t"
                     writestatsfile.write(convertheader + "," + OQCvalue['Total_Peaks'] + "\n")
                 else:
-                    samplehtmlvalues += "<td rowspan='2' bgcolor='" + \
-                                        color[OQCscore[stats[key]]] + "'><center>" + \
-                                        OQCvalue[stats[key]] + "</center></td>"
-                    sampletextvalues += "\t" + OQCvalue[stats[key]]
+                    try:
+                        samplehtmlvalues += "<td rowspan='2' bgcolor='" + \
+                                            color[OQCscore[stats[key]]] + "'><center>" + \
+                                            OQCvalue[stats[key]] + "</center></td>"
+                        sampletextvalues += "\t" + OQCvalue[stats[key]]
+                        writestatsfile.write(convertheader + "," + OQCvalue[stats[key]] + "\n")
+                    except:
+                        samplehtmlvalues += "<td rowspan='2' bgcolor='" + color[-2] + \
+                                            "'><center>0</center></td>"
+                        sampletextvalues += "\t0"
+                        writestatsfile.write(convertheader + ",0\n")
                     controltextvalues += "\t"
-                    writestatsfile.write(convertheader + "," + OQCvalue[stats[key]] + "\n")
             else:
-                samplehtmlvalues += "<td bgcolor='" + color[SQCscore[stats[key]]] + \
-                                    "'><center>" + SQCvalue[stats[key]] + "</center></td>"
-                controlhtmlvalues += "<td bgcolor='" + color[CQCscore[stats[key]]] + \
-                                    "'><center>" + CQCvalue[stats[key]] + "</center></td>"
-                sampletextvalues += "\t" + SQCvalue[stats[key]]
-                controltextvalues += "\t" + CQCvalue[stats[key]]
-                writestatsfile.write("Sample : " + convertheader + "," + SQCvalue[stats[key]] + "\n")
-                writestatsfile.write("Control : " + convertheader + "," + CQCvalue[stats[key]] + "\n")
+                try:
+                    samplehtmlvalues += "<td bgcolor='" + color[SQCscore[stats[key]]] + \
+                                        "'><center>" + SQCvalue[stats[key]] + "</center></td>"
+                    sampletextvalues += "\t" + SQCvalue[stats[key]]
+                    writestatsfile.write("Sample : " + convertheader + "," + SQCvalue[stats[key]] + "\n")
+                except:
+                    samplehtmlvalues += "<td bgcolor='" + color[-2] + "'><center>0</center></td>"
+                    sampletextvalues += "\t0"
+                    writestatsfile.write("Sample : " + convertheader + ",0\n")
+                try:
+                    controlhtmlvalues += "<td bgcolor='" + color[CQCscore[stats[key]]] + \
+                                         "'><center>" + CQCvalue[stats[key]] + "</center></td>"
+                    controltextvalues += "\t" + CQCvalue[stats[key]]
+                    writestatsfile.write("Control : " + convertheader + "," + CQCvalue[stats[key]] + "\n")
+                except:
+                    controlhtmlvalues += "<td bgcolor='" + color[-2] + "'><center>0</center></td>"
+                    controltextvalues += "\t0"
+                    writestatsfile.write("Control : " + convertheader + ",0\n")
 
         htmlheader += "</th></tr>"
         samplehtmlvalues += "</tr>"
@@ -556,7 +554,7 @@ task concatstats {
 
         CODE
 
-        head -n 245 /usr/local/bin/scripts/seaseq_overall.header | tail -n 123 > ~{outputfile}-stats.html
+        head -n 245 /usr/local/bin/seaseq_overall.header | tail -n 123 > ~{outputfile}-stats.html
         if [[ "~{peaseq}" == "true" ]]; then
             sed -i "s/SEAseq Report/PEAseq Report/" ~{outputfile}-stats.html
             sed -i "s/SEAseq Quality/PEAseq Quality/" ~{outputfile}-stats.html
@@ -564,14 +562,14 @@ task concatstats {
 
         cat ~{outputfile}-stats.htmlx >> ~{outputfile}-stats.html
         echo "</table><p><b>*</b> Peaks identified after Input/Control correction.</p></div>" >> ~{outputfile}-stats.html
-        tail -n 13 /usr/local/bin/scripts/seaseq_overall.header >> ~{outputfile}-stats.html
+        tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputfile}-stats.html
         sed -i "s/SEAseq Sample FASTQ Report/SEAseq Comprehensive Report/" ~{outputfile}-stats.html
 
     >>> 
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/seaseq:v2.0.0'
+        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
         cpu: ncpu
     }
     output {
@@ -611,6 +609,7 @@ task addreadme {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
+        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
         cpu: ncpu
     }
     output {
@@ -618,76 +617,6 @@ task addreadme {
     }
 }
 
-
-task mergefastqs {
-    # Concat paired-end FASTQ files
-    input {
-        Array[File] fastqfiles
-        String output_file = sub(basename(fastqfiles[0]),'_R?1.*\.f.*q\.gz','')
-        Int memory_gb = 2
-        Int max_retries = 1
-        Int ncpu = 1
-    }
-    command <<<
-        zcat -f ~{sep=' ' fastqfiles} | gzip -nc > ~{output_file}.merged.fastq.gz
-    >>>
-    runtime {
-        memory: ceil(memory_gb * ncpu) + " GB"
-        maxRetries: max_retries
-        cpu: ncpu
-    }
-    output {
-	    File mergepaired = "~{output_file}.merged.fastq.gz"
-    }
-
-}
-
-
-task checkinputs {
-    # Sort FASTQ files provided, to make sure files are specified in alphanumeric order
-    input {
-        Array[File] inputfiles
-
-        Int memory_gb = 5
-        Int max_retries = 1
-        Int ncpu = 1
-    }
-    command <<<
-        echo -e "~{sep='\n' inputfiles}" > listoffiles.txt
-        mkdir -p R1 R2
-        touch paired_file
-
-python <<CODE
-import os
-import sys
-import re
-
-all = open("listoffiles.txt", 'r')
-for each in all:
-    each = each.rstrip('\n')
-    eachall = each.split('/')[-1]
-    if re.search("_R?1.*\.f.*q\.gz",eachall) :
-        bashCommand = "ln -s " + each + " R1/" + eachall
-    elif re.search("_R?2.*\.f.*q\.gz",eachall) :
-        bashCommand = "ln -s " + each + " R2/" + eachall + ';echo true > paired_file'
-    else :
-        bashCommand = "ln -s " + each + " R1/" + eachall
-    os.system(bashCommand)
-
-CODE
-    cat paired_file
-    >>>
-    runtime {
-        memory: ceil(memory_gb * ncpu) + " GB"
-        maxRetries: max_retries
-        cpu: ncpu
-    }
-    output {
-        Array[File] S1 = glob("R1/*")
-        Array[File]? S2 = glob("R2/*")
-        String paired_end = read_string('paired_file')
-    }
-}
 
 task effective_genome_size {
     # Calculate effective genome size and fraction
@@ -707,7 +636,7 @@ task effective_genome_size {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/kentutils:latest'
+        docker: 'ghcr.io/stjude/abralab/kentutils:latest'
         cpu: ncpu
     }
     output {

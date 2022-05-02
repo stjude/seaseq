@@ -149,7 +149,7 @@ workflow seaseq {
             }
         } # end scatter each sra
 
-        Array[File] sample_srafile_ = flatten(fastqdump.fastqfile)
+        Array[File] sample_srafile = flatten(fastqdump.fastqfile)
     } # end if sample_sraid
 
     # Generating INDEX files
@@ -193,10 +193,10 @@ workflow seaseq {
         Array[String] string_fastq = [1] #buffer to allow for fastq optionality
         Array[File] s_fastq = select_first([sample_fastq, string_fastq])
 
-        Array[File] sample_fastqfile_ = s_fastq
+        Array[File] sample_fastqfile = s_fastq
     }
-    Array[File] fastqfiles = flatten(select_all([sample_srafile_, sample_fastqfile_]))
-    Array[File] bowtie_index_ = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
+    Array[File] fastqfiles = flatten(select_all([sample_srafile, sample_fastqfile]))
+    Array[File] actual_bowtie_index = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
 
 ### ------------------------------------------------- ###
 ### ---------------- S E C T I O N 2 ---------------- ###
@@ -236,7 +236,7 @@ workflow seaseq {
             call mapping.mapping as indv_mapping {
                 input :
                     fastqfile=eachfastq,
-                    index_files=bowtie_index_,
+                    index_files=actual_bowtie_index,
                     metricsfile=indv_bfs.metrics_out,
                     blacklist=blacklist,
                     default_location='SAMPLE/' + sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/BAM_files'
@@ -290,6 +290,7 @@ workflow seaseq {
         call samtools.mergebam {
             input:
                 bamfiles=indv_mapping.sorted_bam,
+                metricsfiles=indv_bfs.metrics_out,
                 default_location = if defined(results_name) then results_name + '/BAM_files' else 'AllMerge_' + length(indv_mapping.sorted_bam) + '_mapped' + '/BAM_files',
                 outputfile = if defined(results_name) then results_name + '.sorted.bam' else 'AllMerge_' + length(fastqfiles) + '_mapped.sorted.bam'
         }
@@ -309,11 +310,11 @@ workflow seaseq {
         if ( defined(blacklist) ) {
             # remove blacklist regions
             String string_blacklist = "" #buffer to allow for blacklist optionality
-            File blacklist_ = select_first([blacklist, string_blacklist])
+            File blacklist_file = select_first([blacklist, string_blacklist])
             call bedtools.intersect as merge_rmblklist {
                 input :
                     fileA=mergebam.mergebam,
-                    fileB=blacklist_,
+                    fileB=blacklist_file,
                     default_location=sub(basename(mergebam.mergebam),'.sorted.b.*$','') + '/BAM_files',
                     nooverlap=true
             }
@@ -373,7 +374,7 @@ workflow seaseq {
         call mapping.mapping {
             input :
                 fastqfile=fastqfiles[0],
-                index_files=bowtie_index_,
+                index_files=actual_bowtie_index,
                 metricsfile=uno_bfs.metrics_out,
                 blacklist=blacklist,
                 default_location=sub(basename(fastqfiles[0]),'.fastq.gz|.fq.gz','') + '/BAM_files'
@@ -465,6 +466,7 @@ workflow seaseq {
             bedfile=forsicerbed.bedfile,
             chromsizes=samtools_faidx.chromsizes,
             genome_fraction=egs.genomefraction,
+            fragmentlength=select_first([uno_bfs.readlength, mergebam.avg_readlength]),
             default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/BROAD_peaks',
             coverage_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/BROAD_peaks'
     }

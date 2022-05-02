@@ -157,7 +157,7 @@ workflow seaseq {
             }
         } # end scatter each sra
 
-        Array[File] sample_srafile_ = flatten(fastqdump.fastqfile)
+        Array[File] sample_srafile = flatten(fastqdump.fastqfile)
     } # end if sample_sraid
 
     if ( defined(control_sraid) ) {
@@ -174,7 +174,7 @@ workflow seaseq {
             }
         } # end scatter each sra
 
-        Array[File] control_srafile_ = flatten(c_fastqdump.fastqfile)
+        Array[File] control_srafile = flatten(c_fastqdump.fastqfile)
     } # end if sample_sraid
 
     # Generating INDEX files
@@ -218,7 +218,7 @@ workflow seaseq {
         Array[String] string_fastq = [1] #buffer to allow for fastq optionality
         Array[File] s_fastq = select_first([sample_fastq, string_fastq])
 
-        Array[File] sample_fastqfile_ = s_fastq
+        Array[File] sample_fastqfile = s_fastq
     }
 
     if ( defined(control_fastq) ) {
@@ -226,12 +226,12 @@ workflow seaseq {
         Array[String] c_string_fastq = [1] #buffer to allow for fastq optionality
         Array[File] c_fastq = select_first([control_fastq, c_string_fastq])
 
-        Array[File] control_fastqfile_ = c_fastq
+        Array[File] control_fastqfile = c_fastq
     }
 
-    Array[File] bowtie_index_ = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
-    Array[File] s_fastqfiles = flatten(select_all([sample_fastqfile_, sample_srafile_]))
-    Array[File] c_fastqfiles = flatten(select_all([control_fastqfile_, control_srafile_]))
+    Array[File] actual_bowtie_index = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
+    Array[File] s_fastqfiles = flatten(select_all([sample_fastqfile, sample_srafile]))
+    Array[File] c_fastqfiles = flatten(select_all([control_fastqfile, control_srafile]))
 
 ### ------------------------------------------------- ###
 ### ---------------- S E C T I O N 2 ---------------- ###
@@ -273,7 +273,7 @@ workflow seaseq {
             call mapping.mapping as indv_s_mapping {
                 input :
                     fastqfile=eachfastq,
-                    index_files=bowtie_index_,
+                    index_files=actual_bowtie_index,
                     metricsfile=indv_s_bfs.metrics_out,
                     blacklist=blacklist,
                     default_location='SAMPLE/' + sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/BAM_files'
@@ -327,6 +327,7 @@ workflow seaseq {
         call samtools.mergebam as s_mergebam {
             input:
                 bamfiles=indv_s_mapping.sorted_bam,
+                metricsfiles=indv_s_bfs.metrics_out,
                 default_location = 'SAMPLE/AllCasesMerge_' + length(indv_s_mapping.sorted_bam) + '_mapped' + '/BAM_files',
                 outputfile = 'AllCasesMerge_' + length(s_fastqfiles) + '_mapped.sorted.bam'
         }
@@ -346,11 +347,11 @@ workflow seaseq {
         if ( defined(blacklist) ) {
             # remove blacklist regions
             String string_blacklist = "" #buffer to allow for blacklist optionality
-            File blacklist_ = select_first([blacklist, string_blacklist])
+            File blacklist_file = select_first([blacklist, string_blacklist])
             call bedtools.intersect as s_merge_rmblklist {
                 input :
                     fileA=s_mergebam.mergebam,
-                    fileB=blacklist_,
+                    fileB=blacklist_file,
                     default_location='SAMPLE/' + sub(basename(s_mergebam.mergebam),'.sorted.b.*$','') + '/BAM_files',
                     nooverlap=true
             }
@@ -406,7 +407,7 @@ workflow seaseq {
             call mapping.mapping as indv_c_mapping {
                 input :
                     fastqfile=eachfastq,
-                    index_files=bowtie_index_,
+                    index_files=actual_bowtie_index,
                     metricsfile=indv_c_bfs.metrics_out,
                     blacklist=blacklist,
                     default_location='CONTROL/' + sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/BAM_files'
@@ -461,6 +462,7 @@ workflow seaseq {
         call samtools.mergebam as c_mergebam {
             input:
                 bamfiles=indv_c_mapping.sorted_bam,
+                metricsfiles=indv_c_bfs.metrics_out,
                 default_location = 'CONTROL/' + 'AllCtrlsMerge_' + length(indv_c_mapping.sorted_bam) + '_mapped' + '/BAM_files',
                 outputfile = 'AllCtrlsMerge_' + length(c_fastqfiles) + '_mapped.sorted.bam'
         }
@@ -480,11 +482,11 @@ workflow seaseq {
         if ( defined(blacklist) ) {
             # remove blacklist regions
             String c_string_blacklist = "" #buffer to allow for blacklist optionality
-            File c_blacklist_ = select_first([blacklist, c_string_blacklist])
+            File c_blacklist_file = select_first([blacklist, c_string_blacklist])
             call bedtools.intersect as c_merge_rmblklist {
                 input :
                     fileA=c_mergebam.mergebam,
-                    fileB=c_blacklist_,
+                    fileB=c_blacklist_file,
                     default_location='CONTROL/' + sub(basename(c_mergebam.mergebam),'.sorted.b.*$','') + '/BAM_files',
                     nooverlap=true
             }
@@ -545,7 +547,7 @@ workflow seaseq {
         call mapping.mapping as s_mapping {
             input :
                 fastqfile=s_fastqfiles[0],
-                index_files=bowtie_index_,
+                index_files=actual_bowtie_index,
                 metricsfile=uno_s_bfs.metrics_out,
                 blacklist=blacklist,
                 default_location='SAMPLE/' + sub(basename(s_fastqfiles[0]),'.fastq.gz|.fq.gz','') + '/BAM_files'
@@ -610,7 +612,7 @@ workflow seaseq {
         call mapping.mapping as c_mapping {
             input :
                 fastqfile=c_fastqfiles[0],
-                index_files=bowtie_index_,
+                index_files=actual_bowtie_index,
                 metricsfile=uno_c_bfs.metrics_out,
                 blacklist=blacklist,
                 default_location='CONTROL/' + sub(basename(c_fastqfiles[0]),'.fastq.gz|.fq.gz','') + '/BAM_files'
@@ -731,6 +733,7 @@ workflow seaseq {
             control_bed=c_forsicerbed.bedfile,
             chromsizes=samtools_faidx.chromsizes,
             genome_fraction=egs.genomefraction,
+            fragmentlength=select_first([uno_s_bfs.readlength, s_mergebam.avg_readlength]),
             outputname=if defined(results_name) then results_name else basename(s_forsicerbed.bedfile,'.bed') + '+control',
             default_location=if defined(results_name) then results_name + '/PEAKS/BROAD_peaks' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/BROAD_peaks',
             coverage_location=if defined(results_name) then results_name + '/COVERAGE_files/BROAD_peaks' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/BROAD_peaks'
@@ -892,7 +895,7 @@ workflow seaseq {
             keep_dup="auto",
             egs=egs.genomesize,
             default_location='SAMPLE/' + sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(sample_bam,'.bam') + '-p9_kd-auto',
-            coverage_location='SAMPLE/' + sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(sample_bam,'.bam') + '-p9_kd-auto/' + basename(sample_bam,'.bam') + '_p9_kd-auto_MACS_wiggle/treat'
+            coverage_location='SAMPLE/' + sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(sample_bam,'.bam') + '-p9_kd-auto/'
 
     }
 
@@ -904,7 +907,7 @@ workflow seaseq {
             keep_dup="auto",
             egs=egs.genomesize,
             default_location='CONTROL/' + sub(basename(control_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(control_bam,'.bam') + '-p9_kd-auto',
-            coverage_location='CONTROL/' + sub(basename(control_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(control_bam,'.bam') + '-p9_kd-auto/' + basename(control_bam,'.bam') + '_p9_kd-auto_MACS_wiggle/treat'
+            coverage_location='CONTROL/' + sub(basename(control_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(control_bam,'.bam') + '-p9_kd-auto/'
     }
 
     call bedtools.bamtobed as only_c_finalbed {

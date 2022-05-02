@@ -57,12 +57,12 @@ workflow mapping {
     if ( defined(blacklist) ) {
         # remove blacklist regions
         String string_blacklist = "" #buffer to allow for blacklist optionality
-        File blacklist_ = select_first([blacklist, string_blacklist])
+        File blacklist_file = select_first([blacklist, string_blacklist])
         if ( defined(metricsfile) ) {
             call bedtools.intersect as rmblklist {
                 input :
                     fileA=viewsort.sortedbam,
-                    fileB=blacklist_,
+                    fileB=blacklist_file,
                     default_location=default_location,
                     nooverlap=true
             }
@@ -70,11 +70,11 @@ workflow mapping {
 
         if ( defined(fastqfile_R2) ) {
             String string_fixmate = "" #buffer to allow for blacklist optionality
-            File fixmate_ = select_first([viewsort.fixmatebam, string_fixmate])
+            File fixmate_file = select_first([viewsort.fixmatebam, string_fixmate])
             call bedtools.pairtobed as pairtobed {
                 input :
-                    fileA=fixmate_,
-                    fileB=blacklist_,
+                    fileA=fixmate_file,
+                    fileB=blacklist_file,
                     default_location=default_location
             }
         }

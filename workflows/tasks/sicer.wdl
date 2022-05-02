@@ -6,6 +6,7 @@ task sicer {
         File bedfile
         File? control_bed
         File chromsizes
+        Int? fragmentlength = 0
         String default_location = "PEAKS_files/BROAD_peaks"
         String coverage_location = "COVERAGE_files/NARROW_peaks"
 
@@ -26,24 +27,34 @@ task sicer {
     command <<<
         mkdir -p ~{default_location} ~{coverage_location}
 
+        ln -s ~{bedfile} ~{outputname}.bed
+
+        if [ "~{fragmentlength}" -gt 0 ]; then
+            fragment_size=~{fragmentlength}
+        else
+            fragment_size=~{fragment_size}
+        fi
+
+        echo $fragment_size
+
         sicer \
             -cpu ~{ncpu} \
-            -t ~{bedfile} \
+            -t ~{outputname}.bed \
             ~{if defined(control_bed) then "-c" + control_bed else ""} \
             -sc ~{chromsizes} \
             -rt ~{redundancy} \
             -w ~{window} \
-            -f ~{fragment_size} \
+            -f $fragment_size \
             -egf ~{genome_fraction} \
             -g ~{gap_size} \
             -e ~{evalue}
 
-        mv ~{basename(bedfile,'.bed')}-W~{window}-G~{gap_size}.scoreisland ~{outputname}-W~{window}-G~{gap_size}.scoreisland
-        mv ~{basename(bedfile,'.bed')}-W~{window}-normalized.wig ~{outputname}-W~{window}-normalized.wig
-        mv ~{basename(bedfile,'.bed')}-W~{window}-G~{gap_size}-islands-summary ~{outputname}-W~{window}-G~{gap_size}-islands-summary
-        if [ -f "~{basename(bedfile,'.bed')}-W~{window}-G~{gap_size}-FDR0.01-island.bed" ]; then
-            mv ~{basename(bedfile,'.bed')}-W~{window}-G~{gap_size}-FDR0.01-island.bed ~{outputname}-W~{window}-G~{gap_size}-FDR0.01-island.bed
-        fi
+        #mv ~{basename(bedfile,'.bed')}-W~{window}-G~{gap_size}.scoreisland ~{outputname}-W~{window}-G~{gap_size}.scoreisland
+        #mv ~{basename(bedfile,'.bed')}-W~{window}-normalized.wig ~{outputname}-W~{window}-normalized.wig
+        #mv ~{basename(bedfile,'.bed')}-W~{window}-G~{gap_size}-islands-summary ~{outputname}-W~{window}-G~{gap_size}-islands-summary
+        #if [ -f "~{basename(bedfile,'.bed')}-W~{window}-G~{gap_size}-FDR0.01-island.bed" ]; then
+        #    mv ~{basename(bedfile,'.bed')}-W~{window}-G~{gap_size}-FDR0.01-island.bed ~{outputname}-W~{window}-G~{gap_size}-FDR0.01-island.bed
+        #fi
         gzip *wig
         mv ~{outputname}-W~{window}-normalized.wig.gz ~{coverage_location}
         mv ~{outputname}-* ~{default_location}
@@ -51,7 +62,7 @@ task sicer {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/sicer:v1.1.0'
+        docker: 'ghcr.io/stjude/abralab/sicer:v1.1.0'
         cpu: ncpu
     }
     output {

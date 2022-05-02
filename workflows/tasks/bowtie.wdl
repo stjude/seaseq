@@ -21,10 +21,13 @@ task bowtie {
                         else if strandedness=='ff' then '--ff'
                         else '--fr'
 
-        Int memory_gb = 10
+        Int additional_memory_gb = 10
         Int max_retries = 1
         Int ncpu = 20
     }
+
+    Int memory_gb = ceil(size(fastqfile, "GiB")) + ceil(size(index_files, "GiB")) + additional_memory_gb
+
     command <<<
         if [ -f "~{metricsfile}" ]; then
             readlength=$(tail -n 1 ~{metricsfile} | awk '{print $4}');
@@ -63,9 +66,9 @@ task bowtie {
         fi
     >>>
     runtime {
-        memory: ceil(memory_gb * ncpu) + " GB"
+        memory: memory_gb + " GB"
         maxRetries: max_retries
-        docker: 'abralab/bowtie:v1.2.3'
+        docker: 'ghcr.io/stjude/abralab/bowtie:v1.2.3'
         cpu: ncpu
     }
     output {
@@ -94,7 +97,7 @@ task index {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/bowtie:v1.2.3'
+        docker: 'ghcr.io/stjude/abralab/bowtie:v1.2.3'
         cpu: ncpu
     }
     output {

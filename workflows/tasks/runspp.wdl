@@ -6,7 +6,7 @@ task runspp {
         File? control
         Boolean crosscorr = true
 
-        String outputfile = basename(bamfile,'\.bam')+ '-spp.out'
+        String outputfile = basename(bamfile,'.bam')+ '-spp.out'
 
         Int memory_gb = 10
         Int max_retries = 1
@@ -31,7 +31,7 @@ task runspp {
         continueOnReturnCode: [0, 1]
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/spp:v1.16.0'
+        docker: 'ghcr.io/stjude/abralab/spp:v1.16.0'
         cpu: ncpu
     }
     output {
