@@ -89,7 +89,11 @@ java -jar cromwell.jar run seaseq-case.wdl -i inputs.json -o options.json
 # For sample FASTQs with Input Control or IgG
 java -jar cromwell.jar run seaseq-control.wdl -i inputs.json -o options.json
 ```
-View [`/test`](https://github.com/stjude/seaseq/tree/master/test) folder for example usage and further instructions.
+
+View [`/test`](https://github.com/stjude/seaseq/tree/master/test) folder for example usage.
+
+HPC platforms using Singularity will require additional configuration requires to execute SEAseq.
+Please consult [hpc-configurations](/docs/docs/hpc-configurations/readme.md) for more details.
 
 
 ## SEAseq on St. Jude cloud
