@@ -80,7 +80,7 @@ More descriptions on SEAseq Inputs and Outputs can be found [here](https://githu
 
 ## SEAseq on Linux or HPC
 
-SEAseq pipeline requires the [Cromwell](https://github.com/broadinstitute/cromwell/releases) runner, docker/singularity,
+SEAseq pipeline requires the [Cromwell](https://github.com/broadinstitute/cromwell/releases) jar runner, docker/singularity,
 and about 30GB of supplemental data.
 ```bash
 # For sample FASTQs only
@@ -89,8 +89,10 @@ java -jar cromwell.jar run seaseq-case.wdl -i inputs.json -o options.json
 # For sample FASTQs with Input Control or IgG
 java -jar cromwell.jar run seaseq-control.wdl -i inputs.json -o options.json
 ```
-View [`/test`](https://github.com/stjude/seaseq/tree/master/test) folder for example usage and further instructions.
 
+View [`/test`](https://github.com/stjude/seaseq/tree/master/test) folder for example usage.
+
+#### NOTE : HPC platforms using Singularity will require a configuration file to properly execute cromwell. Please consult [hpc-configurations](docs/hpc-configurations#readme) for more details.
 
 ## SEAseq on St. Jude cloud
 
