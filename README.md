@@ -9,6 +9,7 @@ SEAseq analyses include alignment, peak calling, motif analysis, read coverage p
 [SRA]: https://www.ncbi.nlm.nih.gov/sra
 [GEO]: https://www.ncbi.nlm.nih.gov/geo/
 
+#### Citation: Adetunji, M.O., Abraham, B.J. SEAseq: a portable and cloud-based chromatin occupancy analysis suite. BMC Bioinformatics 23, 77 (2022). https://doi.org/10.1186/s12859-022-04588-z
 ## Inputs
 
 |   Name                                               |   Type                | Description                                                                    |  Example                         |
