@@ -7,6 +7,7 @@ task sicer {
         File? control_bed
         File chromsizes
         Int? fragmentlength = 0
+        Boolean paired_end = false
         String default_location = "PEAKS_files/BROAD_peaks"
         String coverage_location = "COVERAGE_files/NARROW_peaks"
 
@@ -14,7 +15,7 @@ task sicer {
         Int window = 200
         Int fragment_size = 150
         Float genome_fraction = 0.86
-        Int gap_size = 200
+        Int gap_size = 400
         Int evalue = 100
 
         String outputname = basename(bedfile,'.bed')
@@ -41,6 +42,7 @@ task sicer {
             -cpu ~{ncpu} \
             -t ~{outputname}.bed \
             ~{if defined(control_bed) then "-c" + control_bed else ""} \
+            ~{true="-pe" false="" paired_end} \
             -sc ~{chromsizes} \
             -rt ~{redundancy} \
             -w ~{window} \
@@ -62,7 +64,7 @@ task sicer {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/abralab/sicer:v1.1.0'
+        docker: 'ghcr.io/stjude/abralab/sicer:v1.2.0'
         cpu: ncpu
     }
     output {
