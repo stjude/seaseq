@@ -155,7 +155,7 @@ task bamtogff_gtftogenes {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/abralab/bamtogff:v1.2.1'
+        docker: 'ghcr.io/stjude/abralab/bamtogff:v1.2.2'
         cpu: ncpu
     }
     output {
@@ -190,7 +190,7 @@ task bamtogff_main {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/abralab/bamtogff:v1.2.1'
+        docker: 'ghcr.io/stjude/abralab/bamtogff:v1.2.2'
         cpu: ncpu
     }
     output {
@@ -225,7 +225,7 @@ task bamtogff_plot {
 
         #create a custom R script to recreate plots
         RSCRIPT="densityplots.R"
-        head -n 419 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R > $RSCRIPT
+        head -n 443 /opt/BAM2GFF-1.2.2/bin/BAM2GFF_plots.R > $RSCRIPT
         echo 'if ("pdftools" %in% rownames(installed.packages()) == FALSE){ install.packages("pdftools") }' >> $RSCRIPT
         echo '' >> $RSCRIPT
         echo '#=========================================' >> $RSCRIPT
@@ -238,7 +238,7 @@ task bamtogff_plot {
         echo '' >> $RSCRIPT
         echo '#=========================================' >> $RSCRIPT
         echo '' >> $RSCRIPT
-        tail -n 112 /opt/BAM2GFF-1.2.1/bin/BAM2GFF_plots.R | head -n -3 >> $RSCRIPT 
+        tail -n 127 /opt/BAM2GFF-1.2.2/bin/BAM2GFF_plots.R | head -n -3 >> $RSCRIPT 
 
         #moving sample matrix files to sample_matrixfiles folder
         mkdir -p ~{default_location} sample_matrixfiles
@@ -279,7 +279,7 @@ task bamtogff_plot {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/abralab/bamtogff:v1.2.1'
+        docker: 'ghcr.io/stjude/abralab/bamtogff:v1.2.2'
         cpu: ncpu
     }
     output {
