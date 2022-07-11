@@ -24,7 +24,7 @@ workflow seaseq {
         description: 'A comprehensive automated computational pipeline for all ChIP-Seq/CUT&RUN data analysis.'
         version: '2.0.0'
         details: {
-            citation: 'pending',
+            citation: 'https://doi.org/10.1186/s12859-022-04588-z',
             contactEmail: 'modupeore.adetunji@stjude.org',
             contactOrg: "St Jude Children's Research Hospital",
             contactUrl: "",
@@ -131,7 +131,7 @@ workflow seaseq {
 
 ### ---------------------------------------- ###
 ### ------------ S E C T I O N 1 ----------- ###
-### ------ pre-process analysis files ------ ###
+### ------ Pre-process Analysis Files ------ ###
 ### ---------------------------------------- ###
 
     # Process SRRs
@@ -161,7 +161,7 @@ workflow seaseq {
                 reference=reference
         }
     }
-
+    #2. Make sure indexes are six else build indexes
     if ( defined(bowtie_index) ) {
         # check total number of bowtie indexes provided
         Array[String] string_bowtie_index = [1] #buffer to allow for bowtie_index optionality
@@ -174,13 +174,14 @@ workflow seaseq {
             }
         }
     }
+    Array[File] actual_bowtie_index = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
 
+    # FASTA faidx and chromsizes and effective genome size
     call samtools.faidx as samtools_faidx {
         # create FASTA index and chrom sizes files
         input :
             reference=reference
     }
-
     call util.effective_genome_size as egs {
         # effective genome size for FASTA
         input :
@@ -195,8 +196,9 @@ workflow seaseq {
 
         Array[File] sample_fastqfile = s_fastq
     }
+
     Array[File] fastqfiles = flatten(select_all([sample_srafile, sample_fastqfile]))
-    Array[File] actual_bowtie_index = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
+    
 
 ### ------------------------------------------------- ###
 ### ---------------- S E C T I O N 2 ---------------- ###
