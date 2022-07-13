@@ -39,11 +39,10 @@ task fraggraph {
         #filterbedpe
         awk -F\\t '{
             if($1==$4 && $1~"chr")
-            { print $1 "\t" $2 "\t" $6 "\t" $7 }
+            { print $1 "\t" $2 "\t" $6 "\t" $7 "\t255\t+" }
             }' ~{sub(basename(bamfile),".bam$", ".ns2bedpe.bedpe")} > ~{bampebed}
 
         #fragmentsgraph
-
         python3 <<CODE
 
         import sys
@@ -165,6 +164,7 @@ task pe_bamtobed {
     input {
         File bamfile
         String outputfile = basename(bamfile) + "2bedpe.bed"
+        Boolean sicer = false
 
         String default_location = "BAM_files"
 
@@ -186,12 +186,6 @@ task pe_bamtobed {
             > ~{sub(basename(bamfile),".bam$", ".ns.bed")}
 
         #sortbed
-        #if [[ "~{sicer}" == "true" ]]; then
-        #    awk -F\\t '{
-        #        if($1==$4 && $1~"chr")
-        #        { print $1 "\t" $2 - 1 + int( ($6 - $2) / 2) "\t" $2 + int( ($6 - $2) / 2 ) "\t" $7 "\t255\t+" }
-        #        }' ~{sub(basename(bamfile),".bam$", ".ns.bed")} > ~{outputfile}
-        #else 
         awk -F\\t '{
             if($1==$4 && $1~"chr")
             { print $1 "\t" $2 "\t" $6 "\t" $7 "\t255\t+" }
