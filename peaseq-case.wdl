@@ -246,13 +246,13 @@ workflow peaseq {
         call fastqc.fastqc as indv_fastqc {
             input :
                 inputfile=eachfastq,
-                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/FastQC'
+                default_location=if multi_fastqpair then 'SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/FastQC' else sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/single-end_mode/QC/FastQC'
         }
 
         call util.basicfastqstats as indv_bfs {
             input :
                 fastqfile=eachfastq,
-                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/SummaryStats'
+                default_location=if multi_fastqpair then 'SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/SummaryStats' else sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/single-end_mode/QC/SummaryStats'
         }
 
         call mapping.mapping as indv_mapping {
@@ -261,13 +261,13 @@ workflow peaseq {
                 index_files=actual_bowtie_index,
                 metricsfile=indv_bfs.metrics_out,
                 blacklist=blacklist,
-                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/BAM_files'
+                default_location=if multi_fastqpair then 'SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/BAM_files' else sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/single-end_mode/BAM_files'
         }
 
         call fastqc.fastqc as indv_bamfqc {
             input :
                 inputfile=indv_mapping.sorted_bam,
-                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/FastQC'
+                default_location=if multi_fastqpair then 'SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/FastQC' else sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/single-end_mode/QC/FastQC'
         }
 
         call runspp.runspp as indv_runspp {
@@ -290,7 +290,7 @@ workflow peaseq {
                 rmdupflag=indv_mapping.mkdup_stats,
                 bkflag=indv_mapping.bklist_stats,
                 fastqmetrics=indv_bfs.metrics_out,
-                default_location='SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/SummaryStats'
+                default_location=if multi_fastqpair then 'SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/SummaryStats' else sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/single-end_mode/QC/SummaryStats'
         }
     } # end scatter (for eachfastq)
 
@@ -957,6 +957,7 @@ workflow peaseq {
 
     # Final MERGE output file
     File mergehtmlfile =  select_first([final_mergehtml.mergefile, mergehtml.mergefile])
+    File mergetxtfile =  select_first([final_mergehtml.mergetxt, mergehtml.mergetxt])
     
 ### ------------------------------------------------- ###
 ### ----------------- S E C T I O N 5 --------------- ###
@@ -979,6 +980,14 @@ workflow peaseq {
             default_location = if defined(results_name) then results_name + '/single-end_mode/QC/SummaryStats' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/QC/SummaryStats' else sub(basename(sample_fastqfiles[0].left),'_R?[12].*.f.*q.gz','') + '/single-end_mode/QC/SummaryStats'
     }
 
+    call util.summaryreport as merge_overallsummary {
+        input:
+            sampleqc_html=mergehtml.xhtml,
+            overallqc_html=SE_summarystats.xhtml,
+            sampleqc_txt=mergehtml.mergetxt,
+            overallqc_txt=SE_summarystats.textfile,
+            default_location=if defined(results_name) then results_name + '/single-end_mode' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode' else sub(basename(sample_fastqfiles[0].left),'_R?[12].*.f.*q.gz','') + '/single-end_mode'
+    }
 ### ------------------------------------------------- ###
 ### ----------------- S E C T I O N 5 --------------- ###
 ### --------------- Summary Statistics -------------- ###
@@ -1335,7 +1344,11 @@ workflow peaseq {
         File? s_htmlfile = SE_summarystats.htmlfile
         File? s_textfile = SE_summarystats.textfile
 
-        File? s_qc_mergehtml = mergehtmlfile
+        File s_summaryhtml = merge_overallsummary.summaryhtml
+        File s_summarytxt = merge_overallsummary.summarytxt
+
+        File? s_qc_mergehtml = final_mergehtml.mergefile
+        File? s_qc_mergetxt = final_mergehtml.mergetxt
         
         Array[File?]? sp_qc_statsfile = indv_PE_summarystats.statsfile
         Array[File?]? sp_qc_htmlfile = indv_PE_summarystats.htmlfile

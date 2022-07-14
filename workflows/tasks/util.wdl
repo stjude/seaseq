@@ -109,6 +109,7 @@ task summaryreport {
         File? sampleqc_html
         File overallqc_txt
         File overallqc_html
+        String default_location = './'
 
         String outputfile = sub(basename(overallqc_html), 'stats.htmlx', 'seaseq_report.html')
         String outputtxt = sub(basename(overallqc_html), 'stats.htmlx', 'seaseq_report.txt')
@@ -118,6 +119,10 @@ task summaryreport {
         Int ncpu = 1
     }
     command <<<
+
+        # make default location
+        mkdir -p ~{default_location}
+        cd ~{default_location}
 
         # Printing header
         head -n 121 /usr/local/bin/seaseq_overall.header > ~{outputfile}
@@ -165,8 +170,8 @@ task summaryreport {
         cpu: ncpu
     }
     output {
-        File summaryhtml = "~{outputfile}"
-        File summarytxt = "~{outputtxt}"
+        File summaryhtml = "~{default_location}/~{outputfile}"
+        File summarytxt = "~{default_location}/~{outputtxt}"
     }
 }
 
