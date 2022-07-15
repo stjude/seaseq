@@ -323,6 +323,7 @@ task pe_mergehtml {
         String fastq_type = "Sample FASTQs"
         String default_location = "QC_files"
         String outputfile 
+        String outputtxt = sub(outputfile, '.html', '.txt')
         Boolean peaseq = false
 
         Int memory_gb = 10
@@ -352,13 +353,13 @@ task pe_mergehtml {
         tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputfile}
 
         #working on TXTfile
-        head -n 1 ~{se_txtfiles[0]} > ~{outputfile}.txt
+        head -n 1 ~{se_txtfiles[0]} > ~{outputtxt}
         se_mergeoutput=$(tail -n 1 ~{sep='; echo "xxx"; tail -n 1 ' se_txtfiles})
         pe_mergeoutput=$(tail -n 1 ~{sep='; echo "xxx"; tail -n 1 ' pe_txtfiles})
-        echo $se_mergeoutput | awk -F" xxx " '{for (i=1;i<=NF;i++) print $i}' >> ~{outputfile}.txt
-        echo -e '\nAfter Paired End Reference Mapping\n' >> ~{outputfile}.txt
-        echo $pe_mergeoutput | awk -F" xxx " '{for (i=1;i<=NF;i++) print $i}' >> ~{outputfile}.txt
-        perl -pi -e 's/ /\t/g' ~{outputfile}.txt
+        echo $se_mergeoutput | awk -F" xxx " '{for (i=1;i<=NF;i++) print $i}' >> ~{outputtxt}
+        echo -e '\nAfter Paired End Reference Mapping\n' >> ~{outputtxt}
+        echo $pe_mergeoutput | awk -F" xxx " '{for (i=1;i<=NF;i++) print $i}' >> ~{outputtxt}
+        perl -pi -e 's/ /\t/g' ~{outputtxt}
 
     >>>
     runtime {
@@ -369,6 +370,6 @@ task pe_mergehtml {
     }
     output {
         File mergefile = "~{default_location}/~{outputfile}"
-        File mergetxt = "~{default_location}/~{outputfile}.txt"
+        File mergetxt = "~{default_location}/~{outputtxt}"
     }
 }
