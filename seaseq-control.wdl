@@ -674,7 +674,7 @@ workflow seaseq {
             egs=egs.genomesize,
             output_name = if defined(results_name) then results_name + '-p9_kd-auto' else basename(sample_bam,'.bam') + '+control-p9_kd-auto',
             default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-auto' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-p9_kd-auto',
-            coverage_location = if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + results_name + '-p9_kd-auto' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control_p9_kd-auto'
+            coverage_location = if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + results_name + '-p9_kd-auto' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-p9_kd-auto'
     }
 
     call util.addreadme {
@@ -691,7 +691,7 @@ workflow seaseq {
             egs=egs.genomesize,
             output_name = if defined(results_name) then results_name + '-p9_kd-all' else basename(sample_bam,'.bam') + '+control-p9_kd-all',
             default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-all' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-p9_kd-all',
-            coverage_location = if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + results_name + '-p9_kd-all' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control_p9_kd-all'
+            coverage_location = if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + results_name + '-p9_kd-all' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-p9_kd-all'
     }
 
     call macs.macs as nomodel {
@@ -702,7 +702,7 @@ workflow seaseq {
             egs=egs.genomesize,
             output_name = if defined(results_name) then results_name + '-nm' else basename(sample_bam,'.bam') + '+control-nm',
             default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-nm' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-nm',
-            coverage_location = if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + results_name + '-nm' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control_nm'
+            coverage_location = if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + results_name + '-nm' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-nm'
     }
 
     call bamtogff.bamtogff {
@@ -713,7 +713,7 @@ workflow seaseq {
             bamindex=select_first([s_merge_mkdup.indexbam, s_mapping.mkdup_index]),
             control_bamfile=select_first([c_merge_markdup.mkdupbam, c_mapping.mkdup_bam]),
             control_bamindex=select_first([c_merge_mkdup.indexbam, c_mapping.mkdup_index]),
-            samplename=if defined(results_name) then results_name else basename(sample_bam,'.bam') + '+control',
+            samplename=if defined(results_name) then results_name else basename((select_first([s_merge_markdup.mkdupbam, s_mapping.mkdup_bam])),'.bam') + '+control',
             default_location=if defined(results_name) then results_name + '/BAM_Density' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/BAM_Density'
     }
 
@@ -1103,7 +1103,7 @@ workflow seaseq {
             overallqc_html=concatstats.xhtml,
             controlqc_txt=select_first([uno_c_summarystats.textfile, c_mergehtml.mergetxt, string_qual]),
             sampleqc_txt=select_first([uno_s_summarystats.textfile, s_mergehtml.mergetxt]),
-            overallqc_txt=concatstats.textfile,
+            overallqc_txt=concatstats.textfile
     }
 
     output {

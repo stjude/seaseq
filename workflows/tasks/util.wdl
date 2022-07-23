@@ -110,6 +110,7 @@ task summaryreport {
         File overallqc_txt
         File overallqc_html
         String default_location = './'
+        String fastq_mode = "SEAseq"
 
         String outputfile = sub(basename(overallqc_html), 'stats.htmlx', 'seaseq_report.html')
         String outputtxt = sub(basename(overallqc_html), 'stats.htmlx', 'seaseq_report.txt')
@@ -133,7 +134,7 @@ task summaryreport {
             cat ~{sampleqc_html} >> ~{outputfile}
             echo -e '</table></div>\n<div class="body">' >> ~{outputfile}
 
-            echo -e 'SEAseq Report\nSEAseq Quality Statistics and Evaluation Report\n\nSample FASTQs Quality Results' > ~{outputtxt}
+            echo -e 'SEAseq Report\n~{fastq_mode} Quality Statistics and Evaluation Report\n\nSample FASTQs Quality Results' > ~{outputtxt}
             cat ~{sampleqc_txt} >> ~{outputtxt}
             echo -e '\n' >> ~{outputtxt}
         fi
@@ -431,7 +432,7 @@ task concatstats {
         File overall_config
         String outputfile = sub(basename(overall_config),'-config.ml','')
         String default_location = "QC_files"
-        String fastq_type = "Sample FASTQs"
+        String fastq_mode = "SEAseq"
         Boolean peaseq = false
 
         Int memory_gb = 10
@@ -568,7 +569,7 @@ task concatstats {
         cat ~{outputfile}-stats.htmlx >> ~{outputfile}-stats.html
         echo "</table><p><b>*</b> Peaks identified after Input/Control correction.</p></div>" >> ~{outputfile}-stats.html
         tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputfile}-stats.html
-        sed -i "s/SEAseq Sample FASTQ Report/SEAseq Comprehensive Report/" ~{outputfile}-stats.html
+        sed -i "s/SEAseq Sample FASTQ Report/~{fastq_mode} Comprehensive Report/" ~{outputfile}-stats.html
 
     >>> 
     runtime {

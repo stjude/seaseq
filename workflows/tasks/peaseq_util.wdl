@@ -16,7 +16,7 @@ task fraggraph {
         String bam_location = "BAM_files"
         String annotation_location = "Annotation"
 
-        Int memory_gb = 200
+        Int memory_gb = 50
         Int max_retries = 1
         Int ncpu = 1
     }
@@ -320,7 +320,7 @@ task pe_mergehtml {
         Array[File] se_txtfiles
         Array[File] pe_htmlfiles
         Array[File] pe_txtfiles
-        String fastq_type = "Sample FASTQs"
+        String fastq_type = "PEAseq Sample FASTQs"
         String default_location = "QC_files"
         String outputfile 
         String outputtxt = sub(outputfile, '.html', '.txt')

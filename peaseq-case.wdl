@@ -967,7 +967,7 @@ workflow peaseq {
 ### ------------------------------------------------- ###
     call util.evalstats as SE_summarystats {
         input:
-            fastq_type="PEAseq Comprehensive SEmode",
+            fastq_type="PEAseq SEmode Comprehensive",
             bambed=SE_finalbed.bedfile,
             sppfile=SE_runspp.spp_out,
             fastqczip=SE_mergebamfqc.zipfile,
@@ -1001,7 +1001,7 @@ workflow peaseq {
         call util.evalstats as PE_uno_summarystats {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             input:
-                fastq_type="PEAseq Comprehensive PEmode",
+                fastq_type="PEAseq PEmode Comprehensive",
                 bambed=PE_finalbed.bedfile,
                 sppfile=PE_runspp.spp_out,
                 fastqczip=select_first([uno_PE_bamfqc.zipfile, string_qual]),
@@ -1033,7 +1033,7 @@ workflow peaseq {
         call util.evalstats as PE_merge_summarystats {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             input:
-                fastq_type="PEAseq Comprehensive PEmode",
+                fastq_type="PEAseq PEmode Comprehensive",
                 bambed=PE_finalbed.bedfile,
                 sppfile=PE_runspp.spp_out,
                 fastqczip=select_first([PE_mergebamfqc.zipfile, string_qual]),
