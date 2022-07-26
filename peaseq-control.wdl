@@ -345,7 +345,7 @@ workflow peaseq {
                 rmdupflag=indv_s_mapping.mkdup_stats,
                 bkflag=indv_s_mapping.bklist_stats,
                 fastqmetrics=indv_s_bfs.metrics_out,
-                default_location=if multi_fastqpair then 'SAMPLE/individual_fastqs/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/SummaryStats' else 'SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/SummaryStats'
+                default_location=if multi_fastqpair then 'SAMPLE/individual_fastqs/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/single-end_mode/QC/SummaryStats' else 'SAMPLE/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/single-end_mode/QC/SummaryStats'
         }
     } # end scatter (for eachfastq : samples)
 
@@ -419,7 +419,7 @@ workflow peaseq {
         call fastqc.fastqc as c_indv_fastqc {
             input :
                 inputfile=eachfastq,
-                default_location=if multi_control_fastqpair then 'CONTROL/individual_fastqs/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/FastQC' else 'CONTROL/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/FastQC' 
+                default_location=if multi_control_fastqpair then 'CONTROL/individual_fastqs/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/FastQC' else 'CONTROL/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/FastQC'
         }
 
         call util.basicfastqstats as indv_c_bfs {
@@ -463,7 +463,7 @@ workflow peaseq {
                 rmdupflag=indv_c_mapping.mkdup_stats,
                 bkflag=indv_c_mapping.bklist_stats,
                 fastqmetrics=indv_c_bfs.metrics_out,
-                default_location=if multi_control_fastqpair then 'CONTROL/individual_fastqs/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/SummaryStats' else 'CONTROL/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/QC/SummaryStats'
+                default_location=if multi_control_fastqpair then 'CONTROL/individual_fastqs/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/single-end_mode/QC/SummaryStats' else 'CONTROL/' + sub(basename(eachfastq),'_R?[12].*.f.*q.gz','') + '/single-end_mode/QC/SummaryStats'
         }
     } # end scatter (for eachfastq : control)
 
@@ -606,7 +606,7 @@ workflow peaseq {
                 default_location='SAMPLE',
                 outputfile = 'AllCases_PEmode_peaseq-summary-stats.html'
         }
-        
+
         call peaseq_util.pe_mergehtml as s_final_mergehtml {
             input:
                 pe_htmlfiles=s_indv_PE_summarystats.xhtml,
@@ -741,7 +741,7 @@ workflow peaseq {
                 default_location='CONTROL',
                 outputfile = 'AllControl_PEmode_peaseq-summary-stats.html'
         }
-        
+
         call peaseq_util.pe_mergehtml as c_final_mergehtml {
             input:
                 fastq_type = "PEAseq Control FASTQs",
@@ -1154,7 +1154,7 @@ workflow peaseq {
         input:
             bamfile=SE_c_mergebam_afterbklist
     }
-    
+
     call sortbed.sortbed as SE_c_sortbed {
         input:
             bedfile=SE_c_finalbed.bedfile
@@ -1297,7 +1297,7 @@ workflow peaseq {
             bedfile=s_fraggraph.bedpefile,
             control_bed=c_fraggraph.bedpefile,
             paired_end=true,
-            gap_size=600, 
+            gap_size=600,
             chromsizes=samtools_faidx.chromsizes,
             genome_fraction=egs.genomefraction,
             outputname=if defined(results_name) then results_name else basename(s_fraggraph.bedpefile,'.bed') + '+control',
@@ -1510,7 +1510,7 @@ workflow peaseq {
             countoverlap=true,
             sorted=true
     }
-    
+
     call bedtools.intersect as PE_intersect {
         input:
             fileA=PE_macs.peakbedfile,
@@ -1522,7 +1522,7 @@ workflow peaseq {
     # Final MERGE output file
     File s_mergehtmlfile =  select_first([s_final_mergehtml.mergefile, SE_s_mergehtml.mergefile])
     File c_mergehtmlfile =  select_first([c_final_mergehtml.mergefile, SE_c_mergehtml.mergefile])
-    
+
 ### ------------------------------------------------- ###
 ### ----------------- S E C T I O N 5 --------------- ###
 ### --------------- Summary Statistics -------------- ###
@@ -1718,7 +1718,7 @@ workflow peaseq {
                 configml = sub(basename(PE_sample_bam),'.sorted.b.*$', '-config.ml')
         }
     } # end if multifastqpair
-        
+
     if (multi_control_fastqpair) {
         call util.evalstats as PE_merge_c_summarystats {
             input:
@@ -1800,11 +1800,11 @@ workflow peaseq {
         File? cp_mergebam_htmlfile = c_PE_mergebamfqc.htmlfile
         File? cp_mergebam_zipfile = c_PE_mergebamfqc.zipfile
 
-        File? uno_sp_bam_htmlfile = s_uno_PE_bamfqc.htmlfile
-        File? uno_sp_bam_zipfile = s_uno_PE_bamfqc.zipfile
+        File? uno_s_bam_htmlfile = s_uno_PE_bamfqc.htmlfile
+        File? uno_s_bam_zipfile = s_uno_PE_bamfqc.zipfile
 
-        File? uno_cp_bam_htmlfile = c_uno_PE_bamfqc.htmlfile
-        File? uno_cp_bam_zipfile = c_uno_PE_bamfqc.zipfile
+        File? uno_c_bam_htmlfile = c_uno_PE_bamfqc.htmlfile
+        File? uno_c_bam_zipfile = c_uno_PE_bamfqc.zipfile
 
         #BASICMETRICS
         Array[File?]? s_metrics_out = indv_s_bfs.metrics_out
@@ -1882,25 +1882,25 @@ workflow peaseq {
         File? c_fragments_indexbam = c_frag_index.indexbam
 
         #MACS
-        File? s_peakbedfile = SE_macs.peakbedfile
-        File? s_peakxlsfile = SE_macs.peakxlsfile
-        File? s_summitsfile = SE_macs.summitsfile
-        File? s_negativexlsfile = SE_macs.negativepeaks
-        File? s_wigfile = SE_macs.wigfile
-        File? s_ctrlwigfile = SE_macs.ctrlwigfile
-        File? s_all_peakbedfile = SE_all.peakbedfile
-        File? s_all_peakxlsfile = SE_all.peakxlsfile
-        File? s_all_summitsfile = SE_all.summitsfile
-        File? s_all_negativexlsfile = SE_all.negativepeaks
-        File? s_all_wigfile = SE_all.wigfile
-        File? s_all_ctrlwigfile = SE_all.ctrlwigfile
-        File? s_nm_peakbedfile = SE_nomodel.peakbedfile
-        File? s_nm_peakxlsfile = SE_nomodel.peakxlsfile
-        File? s_nm_summitsfile = SE_nomodel.summitsfile
-        File? s_nm_negativexlsfile = SE_nomodel.negativepeaks
-        File? s_nm_wigfile = SE_nomodel.wigfile
-        File? s_nm_ctrlwigfile = SE_nomodel.ctrlwigfile
-        File? s_readme_peaks = SE_addreadme.readme_peaks
+        File? peakbedfile = SE_macs.peakbedfile
+        File? peakxlsfile = SE_macs.peakxlsfile
+        File? summitsfile = SE_macs.summitsfile
+        File? negativexlsfile = SE_macs.negativepeaks
+        File? wigfile = SE_macs.wigfile
+        File? ctrlwigfile = SE_macs.ctrlwigfile
+        File? all_peakbedfile = SE_all.peakbedfile
+        File? all_peakxlsfile = SE_all.peakxlsfile
+        File? all_summitsfile = SE_all.summitsfile
+        File? all_negativexlsfile = SE_all.negativepeaks
+        File? all_wigfile = SE_all.wigfile
+        File? all_ctrlwigfile = SE_all.ctrlwigfile
+        File? nm_peakbedfile = SE_nomodel.peakbedfile
+        File? nm_peakxlsfile = SE_nomodel.peakxlsfile
+        File? nm_summitsfile = SE_nomodel.summitsfile
+        File? nm_negativexlsfile = SE_nomodel.negativepeaks
+        File? nm_wigfile = SE_nomodel.wigfile
+        File? nm_ctrlwigfile = SE_nomodel.ctrlwigfile
+        File? readme_peaks = SE_addreadme.readme_peaks
 
         File? only_c_peakbedfile = only_c_macs.peakbedfile
         File? only_c_peakxlsfile = only_c_macs.peakxlsfile
@@ -1941,31 +1941,29 @@ workflow peaseq {
         File? sp_readme_peaks = PE_addreadme.readme_peaks
 
         #SICER
-        File? s_scoreisland = SE_sicer.scoreisland
-        File? s_sicer_wigfile = SE_sicer.wigfile
-        File? s_sicer_summary = SE_sicer.summary
-        File? s_sicer_fdrisland = SE_sicer.fdrisland
-
+        File? scoreisland = SE_sicer.scoreisland
+        File? sicer_wigfile = SE_sicer.wigfile
+        File? sicer_summary = SE_sicer.summary
+        File? sicer_fdrisland = SE_sicer.fdrisland
         File? sp_scoreisland = PE_sicer.scoreisland
         File? sp_sicer_wigfile = PE_sicer.wigfile
         File? sp_sicer_summary = PE_sicer.summary
         File? sp_sicer_fdrisland = PE_sicer.fdrisland
 
         #ROSE
-        File? s_pngfile = SE_rose.pngfile
-        File? s_mapped_union = SE_rose.mapped_union
-        File? s_mapped_stitch = SE_rose.mapped_stitch
-        File? s_enhancers = SE_rose.enhancers
-        File? s_super_enhancers = SE_rose.super_enhancers
-        File? s_gff_file = SE_rose.gff_file
-        File? s_gff_union = SE_rose.gff_union
-        File? s_union_enhancers = SE_rose.union_enhancers
-        File? s_stitch_enhancers = SE_rose.stitch_enhancers
-        File? s_e_to_g_enhancers = SE_rose.e_to_g_enhancers
-        File? s_g_to_e_enhancers = SE_rose.g_to_e_enhancers
-        File? s_e_to_g_super_enhancers = SE_rose.e_to_g_super_enhancers
-        File? s_g_to_e_super_enhancers = SE_rose.g_to_e_super_enhancers
-
+        File? pngfile = SE_rose.pngfile
+        File? mapped_union = SE_rose.mapped_union
+        File? mapped_stitch = SE_rose.mapped_stitch
+        File? enhancers = SE_rose.enhancers
+        File? super_enhancers = SE_rose.super_enhancers
+        File? gff_file = SE_rose.gff_file
+        File? gff_union = SE_rose.gff_union
+        File? union_enhancers = SE_rose.union_enhancers
+        File? stitch_enhancers = SE_rose.stitch_enhancers
+        File? e_to_g_enhancers = SE_rose.e_to_g_enhancers
+        File? g_to_e_enhancers = SE_rose.g_to_e_enhancers
+        File? e_to_g_super_enhancers = SE_rose.e_to_g_super_enhancers
+        File? g_to_e_super_enhancers = SE_rose.g_to_e_super_enhancers
         File? sp_pngfile = PE_rose.pngfile
         File? sp_mapped_union = PE_rose.mapped_union
         File? sp_mapped_stitch = PE_rose.mapped_stitch
@@ -1992,7 +1990,6 @@ workflow peaseq {
         File? summit_ame_seq = SE_flank.ame_seq
         File? summit_meme = SE_flank.meme_out
         File? summit_meme_summary = SE_flank.meme_summary
-
         File? sp_flankbedfile = PE_flankbed.flankbedfile
         File? sp_ame_tsv = PE_motifs.ame_tsv
         File? sp_ame_html = PE_motifs.ame_html
@@ -2163,9 +2160,10 @@ workflow peaseq {
         File? c_summaryhtml = PE_merge_c_summarystats.htmlfile
         File? c_summarystats = PE_merge_c_summarystats.statsfile
         File? c_summarytxt = PE_merge_c_summarystats.textfile
-        File? sp_summaryhtml = PE_overallsummary.summaryhtml
-        File? sp_summarytxt = PE_overallsummary.summarytxt
+        File? m_summaryhtml = PE_overallsummary.summaryhtml
+        File? m_summarytxt = PE_overallsummary.summarytxt
         File? s_fragsize = s_fraggraph.fragsizepng
         File? c_fragsize = c_fraggraph.fragsizepng
     }
 }
+

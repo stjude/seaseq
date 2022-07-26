@@ -198,7 +198,7 @@ workflow seaseq {
     }
 
     Array[File] fastqfiles = flatten(select_all([sample_srafile, sample_fastqfile]))
-    
+
 
 ### ------------------------------------------------- ###
 ### ---------------- S E C T I O N 2 ---------------- ###
@@ -222,7 +222,7 @@ workflow seaseq {
             #   Remove read duplicates
             #   Summary statistics on FASTQs
             #   Combine html files into one for easy viewing
-            
+
             call fastqc.fastqc as indv_fastqc {
                 input :
                     inputfile=eachfastq,
@@ -462,7 +462,7 @@ workflow seaseq {
         input :
             bamfile=select_first([merge_markdup.mkdupbam, mapping.mkdup_bam])
     }
-    
+
     call sicer.sicer {
         input :
             bedfile=forsicerbed.bedfile,
@@ -524,7 +524,7 @@ workflow seaseq {
     }
 
     # Motif Analysis
-    if (run_motifs) { 
+    if (run_motifs) {
         call motifs.motifs {
             input:
                 reference=reference,
@@ -651,7 +651,7 @@ workflow seaseq {
                 superenhancers=rose.super_enhancers,
                 default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/QC/SummaryStats'
         }
-        
+
         call util.summaryreport as merge_overallsummary {
             # Presenting all quality stats for the analysis
             input:
