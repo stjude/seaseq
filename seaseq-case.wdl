@@ -188,12 +188,6 @@ workflow seaseq {
             reference=reference
     }
 
-    call util.effective_genome_size as egs {
-        # effective genome size for FASTA
-        input :
-            reference=reference
-    }
-
     # Process FASTQs
     if ( defined(sample_fastq) ) {
 
