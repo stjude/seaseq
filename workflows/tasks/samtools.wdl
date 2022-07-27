@@ -66,23 +66,37 @@ task viewsort {
     input {
         File samfile
         String outputfile = basename(sub(samfile,'.sam$','.sorted.bam'))
+        String fixmatefile = basename(sub(samfile,'.sam$','.fixmate.bam'))
         String default_location = "BAM_files"
+        Boolean paired_end = false
 
         Int memory_gb = 5
         Int max_retries = 1
         Int ncpu = 1
     }
-    command {
+    command <<<
         mkdir -p ~{default_location} && cd ~{default_location}
 
-        samtools view -b \
-            ~{samfile} \
-            > ~{sub(samfile,'.sam$','.bam')}
+        if [ "~{paired_end}" == 'true' ]; then
+            awk -F\\t 'BEGIN{j=0}{j++}{if(NF>5 && j%2==0){ \
+                printf "%s_%.0f\t", $1, j-1 } else if(NF>5 && j%2==1){ \
+                printf "%s_%.0f\t", $1, j } else { printf $1 "\t";j=0 } \
+                for(i=2;i<=NF;i++){ printf "%s\t", $i}; printf "\n" }' \
+                ~{samfile} > ~{basename(sub(samfile,'.sam','.renamed.sam'))}
 
-        samtools sort \
-           ~{sub(samfile,'.sam$','.bam')} \
-           -o ~{outputfile}
-    }
+            samtools fixmate -m \
+                ~{basename(sub(samfile,'.sam','.renamed.sam'))} \
+                ~{fixmatefile}
+            samtools sort \
+                ~{fixmatefile} \
+                -o ~{outputfile}
+        else
+            samtools sort \
+                ~{samfile} \
+                -o ~{outputfile}
+        fi
+
+    >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
@@ -91,6 +105,7 @@ task viewsort {
     }
     output {
         File sortedbam = "~{default_location}/~{outputfile}"
+        File? fixmatebam = "~{default_location}/~{fixmatefile}"
     }
 }
 
@@ -119,7 +134,7 @@ task faidx {
         cpu: ncpu
     }
     output {
-	File faidx_file = "~{sub(basename(reference),'.gz','')}.fai"
+        File faidx_file = "~{sub(basename(reference),'.gz','')}.fai"
         File chromsizes = "~{sub(basename(reference),'.gz','')}.tab"
     }
 }
@@ -127,18 +142,43 @@ task faidx {
 task mergebam {
     input {
         Array[File] bamfiles
+        Array[File] metricsfiles
         String outputfile = 'AllMapped.' + length(bamfiles) + '_merge.bam'
+        String fixmatefile = 'AllMapped.' + length(bamfiles) + '_merge.fixmate.bam'
         String default_location = "BAM_files"
+        Boolean paired_end = false
 
         Int memory_gb = 5
         Int max_retries = 1
         Int ncpu = 20
     }
-    command {
+    command <<<
         mkdir -p ~{default_location} && cd ~{default_location}
 
-        samtools merge --threads ~{ncpu} ~{outputfile} ~{sep=' ' bamfiles}
-    }
+        total_readlength=0
+        for each in $(ls -1 ~{sep=' ' metricsfiles}); do
+            readlength=$(tail -n 1 $each | awk '{print $4}');
+            total_readlength=$(echo "$readlength + $total_readlength" | bc)
+        done
+        echo "$total_readlength/~{length(metricsfiles)}" | bc > average_readlength.txt
+
+        cat average_readlength.txt
+
+        if [ "~{paired_end}" == 'true' ]; then
+            samtools merge \
+                --threads ~{ncpu} \
+                ~{fixmatefile} \
+                ~{sep=' ' bamfiles}
+            samtools sort \
+                ~{fixmatefile} \
+                -o ~{outputfile}
+        else
+            samtools merge \
+                --threads ~{ncpu} \
+                ~{outputfile} \
+                ~{sep=' ' bamfiles}
+        fi
+    >>>
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
@@ -147,5 +187,37 @@ task mergebam {
     }
     output {
         File mergebam = "~{default_location}/~{outputfile}"
+        Int avg_readlength = read_int("~{default_location}/average_readlength.txt")
+        File? fixmatemergebam = "~{default_location}/~{fixmatefile}"
+    }
+}
+
+task checkmapped {
+    input {
+        File bamfile
+        String default_location = "BAM_files"
+        String outputfile = basename(sub(bamfile,".bam$", "-mappedcount.txt"))
+
+        Int memory_gb = 5
+	Int max_retries = 1
+        Int ncpu = 1
+    }
+    command {
+        mkdir -p ~{default_location} && cd ~{default_location}
+
+        mappedreads=$(samtools view -F 0x0204 ~{bamfile} | wc -l)
+
+        if [ $mappedreads -gt 0 ]; then
+            echo $mappedreads > ~{outputfile}
+        fi
+    }
+    runtime {
+	memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'ghcr.io/stjude/abralab/samtools:v1.9'
+        cpu: ncpu
+    }
+    output {
+        File? outputfile = "~{default_location}/~{outputfile}"
     }
 }

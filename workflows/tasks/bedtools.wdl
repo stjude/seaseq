@@ -8,6 +8,7 @@ task intersect {
         Boolean nooverlap = false
         Boolean countoverlap = false
         Boolean sorted = false
+
         String outputfile = sub(basename(fileA), '.bam$', '')
         String suffixname = if (nooverlap) then '.bklist.bam' else '.sorted.bed'
         String default_location = "."
@@ -109,5 +110,50 @@ task bedfasta {
     }
     output {
         File fastafile = "~{outputfile}"
+    }
+}
+
+task pairtobed {
+    input {
+        File fileA
+        File fileB
+
+        String outputfile = sub(basename(fileA), '.fixmate.bam', '.sorted.bklist.bam')
+        String default_location = "."
+        
+        Int memory_gb = 10
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command <<<
+        mkdir -p ~{default_location} && cd ~{default_location}
+
+        ln -s ~{fileA} ~{basename(fileA)}
+
+        if [[ "~{fileB}" == *"gz" ]]; then
+            gunzip -c ~{fileB} > ~{sub(basename(fileB),'.gz','')}
+        else
+           ln -s ~{fileB} ~{sub(basename(fileB),'.gz','')}
+        fi
+
+        pairToBed \
+            -abam ~{basename(fileA)} \
+            -b ~{sub(basename(fileB),'.gz','')} \
+            -type neither \
+            > ~{sub(basename(fileA), '.b..$', '.bklist.bam')}
+        
+        samtools sort \
+            ~{sub(basename(fileA), '.b..$', '.bklist.bam')} \
+            -o ~{outputfile}
+        
+    >>> 
+    runtime {
+        memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'abralab/peaseq_frag:latest'
+        cpu: ncpu
+    }
+    output {
+        File pairtobed_out = "~{default_location}/~{outputfile}" 
     }
 }

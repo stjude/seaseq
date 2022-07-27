@@ -7,8 +7,8 @@ local_cromwell="/Users/madetunj/Downloads/cromwell-61.jar"
 # CROMWELL on St. Jude hpc user directory
 sjhpc_cromwell="/home/madetunj/madetunj/software/cromwell-52.jar"
 lsf_config="/home/madetunj/.commands/lsf.conf"
-input="inputs-control.json"
-option="options-control.json"
+input="inputs-s_control.json"
+option="options-s_control.json"
 
 # STD OUT and ERR files
 logout="wdlseaseq-control_out"

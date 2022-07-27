@@ -24,7 +24,7 @@ workflow seaseq {
         description: 'A comprehensive automated computational pipeline for all ChIP-Seq/CUT&RUN data analysis.'
         version: '2.0.0'
         details: {
-            citation: 'pending',
+            citation: 'https://doi.org/10.1186/s12859-022-04588-z',
             contactEmail: 'modupeore.adetunji@stjude.org',
             contactOrg: "St Jude Children's Research Hospital",
             contactUrl: "",
@@ -131,7 +131,7 @@ workflow seaseq {
 
 ### ---------------------------------------- ###
 ### ------------ S E C T I O N 1 ----------- ###
-### ------ pre-process analysis files ------ ###
+### ------ Pre-process Analysis Files ------ ###
 ### ---------------------------------------- ###
 
     # Process SRRs
@@ -161,7 +161,7 @@ workflow seaseq {
                 reference=reference
         }
     }
-
+    #2. Make sure indexes are six else build indexes
     if ( defined(bowtie_index) ) {
         # check total number of bowtie indexes provided
         Array[String] string_bowtie_index = [1] #buffer to allow for bowtie_index optionality
@@ -174,9 +174,16 @@ workflow seaseq {
             }
         }
     }
+    Array[File] actual_bowtie_index = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
 
+    # FASTA faidx and chromsizes and effective genome size
     call samtools.faidx as samtools_faidx {
         # create FASTA index and chrom sizes files
+        input :
+            reference=reference
+    }
+    call util.effective_genome_size as egs {
+        # effective genome size for FASTA
         input :
             reference=reference
     }
@@ -196,7 +203,6 @@ workflow seaseq {
         Array[File] sample_fastqfile = s_fastq
     }
     Array[File] fastqfiles = flatten(select_all([sample_srafile, sample_fastqfile]))
-    Array[File] actual_bowtie_index = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
 
 ### ------------------------------------------------- ###
 ### ---------------- S E C T I O N 2 ---------------- ###
@@ -220,7 +226,7 @@ workflow seaseq {
             #   Remove read duplicates
             #   Summary statistics on FASTQs
             #   Combine html files into one for easy viewing
-            
+
             call fastqc.fastqc as indv_fastqc {
                 input :
                     inputfile=eachfastq,
@@ -260,7 +266,7 @@ workflow seaseq {
 
             call util.evalstats as indv_summarystats {
                 input:
-                    fastq_type="Sample FASTQ",
+                    fastq_type="SEAseq Sample FASTQ",
                     bambed=indv_bamtobed.bedfile,
                     sppfile=indv_runspp.spp_out,
                     fastqczip=indv_fastqc.zipfile,
@@ -290,6 +296,7 @@ workflow seaseq {
         call samtools.mergebam {
             input:
                 bamfiles=indv_mapping.sorted_bam,
+                metricsfiles=indv_bfs.metrics_out,
                 default_location = if defined(results_name) then results_name + '/BAM_files' else 'AllMerge_' + length(indv_mapping.sorted_bam) + '_mapped' + '/BAM_files',
                 outputfile = if defined(results_name) then results_name + '.sorted.bam' else 'AllMerge_' + length(fastqfiles) + '_mapped.sorted.bam'
         }
@@ -418,8 +425,8 @@ workflow seaseq {
             pvalue="1e-9",
             keep_dup="auto",
             egs=egs.genomesize,
-            default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(sample_bam,'.bam') + '-p9_kd-auto'
-
+            default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(sample_bam,'.bam') + '-p9_kd-auto',
+            coverage_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + basename(sample_bam,'.bam') + '_p9_kd-auto'
     }
 
     call util.addreadme {
@@ -433,7 +440,8 @@ workflow seaseq {
             pvalue="1e-9",
             keep_dup="all",
             egs=egs.genomesize,
-            default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(sample_bam,'.bam') + '-p9_kd-all'
+            default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(sample_bam,'.bam') + '-p9_kd-all',
+            coverage_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + basename(sample_bam,'.bam') + '_p9_kd-all'
     }
 
     call macs.macs as nomodel {
@@ -441,8 +449,8 @@ workflow seaseq {
             bamfile=sample_bam,
             nomodel=true,
             egs=egs.genomesize,
-            default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(sample_bam,'.bam') + '-nm'
-
+            default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/NARROW_peaks' + '/' + basename(sample_bam,'.bam') + '-nm',
+            coverage_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/NARROW_peaks' + '/' + basename(sample_bam,'.bam') + '_nm'
     }
 
     call bamtogff.bamtogff {
@@ -458,14 +466,15 @@ workflow seaseq {
         input :
             bamfile=select_first([merge_markdup.mkdupbam, mapping.mkdup_bam])
     }
-    
+
     call sicer.sicer {
         input :
             bedfile=forsicerbed.bedfile,
             chromsizes=samtools_faidx.chromsizes,
             genome_fraction=egs.genomefraction,
-            default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/BROAD_peaks'
-
+            fragmentlength=select_first([uno_bfs.readlength, mergebam.avg_readlength]),
+            default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/BROAD_peaks',
+            coverage_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/BROAD_peaks'
     }
 
     call rose.rose {
@@ -519,7 +528,7 @@ workflow seaseq {
     }
 
     # Motif Analysis
-    if (run_motifs) { 
+    if (run_motifs) {
         call motifs.motifs {
             input:
                 reference=reference,
@@ -606,7 +615,7 @@ workflow seaseq {
         call util.evalstats as uno_summarystats {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             input:
-                fastq_type="Sample FASTQ",
+                fastq_type="SEAseq Sample FASTQ",
                 bambed=finalbed.bedfile,
                 sppfile=runspp.spp_out,
                 fastqczip=select_first([uno_bamfqc.zipfile, string_qual]),
@@ -633,7 +642,7 @@ workflow seaseq {
         call util.evalstats as merge_summarystats {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             input:
-                fastq_type="Comprehensive",
+                fastq_type="SEAseq Comprehensive",
                 bambed=finalbed.bedfile,
                 sppfile=runspp.spp_out,
                 fastqczip=select_first([mergebamfqc.zipfile, string_qual]),
@@ -646,7 +655,7 @@ workflow seaseq {
                 superenhancers=rose.super_enhancers,
                 default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/QC/SummaryStats'
         }
-        
+
         call util.summaryreport as merge_overallsummary {
             # Presenting all quality stats for the analysis
             input:

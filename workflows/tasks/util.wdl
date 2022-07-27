@@ -37,6 +37,8 @@ task basicfastqstats {
         
         echo Min.$'\t'1st Qu.$'\t'Median$'\t'Mean$'\t'3rd Qu.$'\t'Max.$'\t'StdDev.$'\t'IQR > ~{outputfile}
         echo $minimum$'\t'$Q1$'\t'$median$'\t'$average$'\t'$Q3$'\t'$maximum$'\t'$stddev$'\t'$IQR >> ~{outputfile}
+
+        echo ${average%.*} > readlength.txt
         
         rm -rf values.dat
 
@@ -49,6 +51,7 @@ task basicfastqstats {
     }
     output {
         File metrics_out = "~{default_location}/~{outputfile}"
+        Int readlength = read_int("~{default_location}/readlength.txt")
     }
 }
 
@@ -106,6 +109,8 @@ task summaryreport {
         File? sampleqc_html
         File overallqc_txt
         File overallqc_html
+        String default_location = './'
+        String fastq_mode = "SEAseq"
 
         String outputfile = sub(basename(overallqc_html), 'stats.htmlx', 'seaseq_report.html')
         String outputtxt = sub(basename(overallqc_html), 'stats.htmlx', 'seaseq_report.txt')
@@ -116,15 +121,20 @@ task summaryreport {
     }
     command <<<
 
+        # make default location
+        mkdir -p ~{default_location}
+        cd ~{default_location}
+
         # Printing header
         head -n 121 /usr/local/bin/seaseq_overall.header > ~{outputfile}
+
         if [ -f "~{sampleqc_html}" ]; then
             # Printing Sample Quality Reports
             echo '<h2>Sample FASTQs Quality Results</h2>' >> ~{outputfile}
             cat ~{sampleqc_html} >> ~{outputfile}
             echo -e '</table></div>\n<div class="body">' >> ~{outputfile}
 
-            echo -e 'SEAseq Report\nSEAseq Quality Statistics and Evaluation Report\n\nSample FASTQs Quality Results' > ~{outputtxt}
+            echo -e 'SEAseq Report\n~{fastq_mode} Quality Statistics and Evaluation Report\n\nSample FASTQs Quality Results' > ~{outputtxt}
             cat ~{sampleqc_txt} >> ~{outputtxt}
             echo -e '\n' >> ~{outputtxt}
         fi
@@ -161,8 +171,8 @@ task summaryreport {
         cpu: ncpu
     }
     output {
-        File summaryhtml = "~{outputfile}"
-        File summarytxt = "~{outputtxt}"
+        File summaryhtml = "~{default_location}/~{outputfile}"
+        File summarytxt = "~{default_location}/~{outputtxt}"
     }
 }
 
@@ -183,6 +193,7 @@ task evalstats {
 
         String fastq_type = "Sample FASTQs"
         String default_location = "QC_files/STATS"
+        Boolean peaseq = false
         String outputfile = sub(basename(fastqczip),'_fastqc.zip', '-stats.csv')
         String outputhtml = sub(basename(fastqczip),'_fastqc.zip', '-stats.html')
         String outputtext = sub(basename(fastqczip),'_fastqc.zip', '-stats.txt')
@@ -212,8 +223,14 @@ task evalstats {
             -outfile ~{outputfile}
 
         head -n 245 /usr/local/bin/seaseq_overall.header  | tail -n 123 > ~{outputhtml}
+
+        if [[ "~{peaseq}" == "true" ]]; then
+            sed -i "s/SEAseq Report/PEAseq Report/" ~{outputhtml}
+            sed -i "s/SEAseq Quality/PEAseq Quality/" ~{outputhtml}
+        fi
+
         cat ~{outputhtml}x >> ~{outputhtml}
-        sed -i "s/SEAseq Sample FASTQ Report/SEAseq ~{fastq_type} Report/" ~{outputhtml}
+        sed -i "s/SEAseq Sample FASTQ Report/~{fastq_type} Report/" ~{outputhtml}
         echo '</table></div>' >> ~{outputhtml}
         tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputhtml}
 
@@ -233,6 +250,7 @@ task evalstats {
         File xhtml = "~{default_location}/~{outputhtml}x"
     }
 }
+
 
 task normalize {
     input {
@@ -356,6 +374,7 @@ task peaksanno {
     }
 }
 
+
 task mergehtml {
     input {
         Array[File] htmlfiles
@@ -363,6 +382,7 @@ task mergehtml {
         String fastq_type = "Sample FASTQs"
         String default_location = "QC_files"
         String outputfile 
+        Boolean peaseq = false
 
         Int memory_gb = 10
         Int max_retries = 1
@@ -373,10 +393,14 @@ task mergehtml {
 
         #extract header information
         head -n 245 /usr/local/bin/seaseq_overall.header  | tail -n 123 > ~{outputfile}
+        if [[ "~{peaseq}" == "true" ]]; then
+            sed -i "s/SEAseq Report/PEAseq Report/" ~{outputfile}
+            sed -i "s/SEAseq Quality/PEAseq Quality/" ~{outputfile}
+        fi
 
         mergeoutput=$(cat ~{sep='; tail -n 1 ' htmlfiles})
         echo $mergeoutput >> ~{outputfile}
-        sed -i "s/SEAseq Sample FASTQ Report/SEAseq ~{fastq_type} Report/" ~{outputfile}
+        sed -i "s/SEAseq Sample FASTQ Report/~{fastq_type} Report/" ~{outputfile}
         echo '</table></div>' >> ~{outputfile}
         tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputfile}
 
@@ -408,7 +432,8 @@ task concatstats {
         File overall_config
         String outputfile = sub(basename(overall_config),'-config.ml','')
         String default_location = "QC_files"
-        String fastq_type = "Sample FASTQs"
+        String fastq_mode = "SEAseq"
+        Boolean peaseq = false
 
         Int memory_gb = 10
         Int max_retries = 1
@@ -489,21 +514,37 @@ task concatstats {
                     controltextvalues += "\t"
                     writestatsfile.write(convertheader + "," + OQCvalue['Total_Peaks'] + "\n")
                 else:
-                    samplehtmlvalues += "<td rowspan='2' bgcolor='" + \
-                                        color[OQCscore[stats[key]]] + "'><center>" + \
-                                        OQCvalue[stats[key]] + "</center></td>"
-                    sampletextvalues += "\t" + OQCvalue[stats[key]]
+                    try:
+                        samplehtmlvalues += "<td rowspan='2' bgcolor='" + \
+                                            color[OQCscore[stats[key]]] + "'><center>" + \
+                                            OQCvalue[stats[key]] + "</center></td>"
+                        sampletextvalues += "\t" + OQCvalue[stats[key]]
+                        writestatsfile.write(convertheader + "," + OQCvalue[stats[key]] + "\n")
+                    except:
+                        samplehtmlvalues += "<td rowspan='2' bgcolor='" + color[-2] + \
+                                            "'><center>0</center></td>"
+                        sampletextvalues += "\t0"
+                        writestatsfile.write(convertheader + ",0\n")
                     controltextvalues += "\t"
-                    writestatsfile.write(convertheader + "," + OQCvalue[stats[key]] + "\n")
             else:
-                samplehtmlvalues += "<td bgcolor='" + color[SQCscore[stats[key]]] + \
-                                    "'><center>" + SQCvalue[stats[key]] + "</center></td>"
-                controlhtmlvalues += "<td bgcolor='" + color[CQCscore[stats[key]]] + \
-                                    "'><center>" + CQCvalue[stats[key]] + "</center></td>"
-                sampletextvalues += "\t" + SQCvalue[stats[key]]
-                controltextvalues += "\t" + CQCvalue[stats[key]]
-                writestatsfile.write("Sample : " + convertheader + "," + SQCvalue[stats[key]] + "\n")
-                writestatsfile.write("Control : " + convertheader + "," + CQCvalue[stats[key]] + "\n")
+                try:
+                    samplehtmlvalues += "<td bgcolor='" + color[SQCscore[stats[key]]] + \
+                                        "'><center>" + SQCvalue[stats[key]] + "</center></td>"
+                    sampletextvalues += "\t" + SQCvalue[stats[key]]
+                    writestatsfile.write("Sample : " + convertheader + "," + SQCvalue[stats[key]] + "\n")
+                except:
+                    samplehtmlvalues += "<td bgcolor='" + color[-2] + "'><center>0</center></td>"
+                    sampletextvalues += "\t0"
+                    writestatsfile.write("Sample : " + convertheader + ",0\n")
+                try:
+                    controlhtmlvalues += "<td bgcolor='" + color[CQCscore[stats[key]]] + \
+                                         "'><center>" + CQCvalue[stats[key]] + "</center></td>"
+                    controltextvalues += "\t" + CQCvalue[stats[key]]
+                    writestatsfile.write("Control : " + convertheader + "," + CQCvalue[stats[key]] + "\n")
+                except:
+                    controlhtmlvalues += "<td bgcolor='" + color[-2] + "'><center>0</center></td>"
+                    controltextvalues += "\t0"
+                    writestatsfile.write("Control : " + convertheader + ",0\n")
 
         htmlheader += "</th></tr>"
         samplehtmlvalues += "</tr>"
@@ -520,10 +561,15 @@ task concatstats {
         CODE
 
         head -n 245 /usr/local/bin/seaseq_overall.header | tail -n 123 > ~{outputfile}-stats.html
+        if [[ "~{peaseq}" == "true" ]]; then
+            sed -i "s/SEAseq Report/PEAseq Report/" ~{outputfile}-stats.html
+            sed -i "s/SEAseq Quality/PEAseq Quality/" ~{outputfile}-stats.html
+        fi
+
         cat ~{outputfile}-stats.htmlx >> ~{outputfile}-stats.html
         echo "</table><p><b>*</b> Peaks identified after Input/Control correction.</p></div>" >> ~{outputfile}-stats.html
         tail -n 13 /usr/local/bin/seaseq_overall.header >> ~{outputfile}-stats.html
-        sed -i "s/SEAseq Sample FASTQ Report/SEAseq Comprehensive Report/" ~{outputfile}-stats.html
+        sed -i "s/SEAseq Sample FASTQ Report/~{fastq_mode} Comprehensive Report/" ~{outputfile}-stats.html
 
     >>> 
     runtime {
@@ -603,4 +649,3 @@ task effective_genome_size {
         String genomesize = read_string('genomesize')
     }
 }
-

@@ -298,7 +298,7 @@ workflow seaseq {
 
             call util.evalstats as indv_s_summarystats {
                 input:
-                    fastq_type="Sample FASTQ",
+                    fastq_type="SEAseq Sample FASTQ",
                     bambed=indv_s_bamtobed.bedfile,
                     sppfile=indv_s_runspp.spp_out,
                     fastqczip=indv_s_fastqc.zipfile,
@@ -328,6 +328,7 @@ workflow seaseq {
         call samtools.mergebam as s_mergebam {
             input:
                 bamfiles=indv_s_mapping.sorted_bam,
+                metricsfiles=indv_s_bfs.metrics_out,
                 default_location = 'SAMPLE/AllCasesMerge_' + length(indv_s_mapping.sorted_bam) + '_mapped' + '/BAM_files',
                 outputfile = 'AllCasesMerge_' + length(s_fastqfiles) + '_mapped.sorted.bam'
         }
@@ -431,7 +432,7 @@ workflow seaseq {
 
             call util.evalstats as indv_c_summarystats {
                 input:
-                    fastq_type="Control FASTQ",
+                    fastq_type="SEAseq Control FASTQ",
                     bambed=indv_c_bamtobed.bedfile,
                     sppfile=indv_c_runspp.spp_out,
                     fastqczip=indv_c_fastqc.zipfile,
@@ -452,7 +453,7 @@ workflow seaseq {
         # merge bam files and perform fasTQC if more than one is provided
         call util.mergehtml as c_mergehtml {
             input:
-                fastq_type="Control FASTQs",
+                fastq_type="SEAseq Control FASTQs",
                 htmlfiles=indv_c_summarystats.xhtml,
                 txtfiles=indv_c_summarystats.textfile,
                 default_location='CONTROL',
@@ -462,6 +463,7 @@ workflow seaseq {
         call samtools.mergebam as c_mergebam {
             input:
                 bamfiles=indv_c_mapping.sorted_bam,
+                metricsfiles=indv_c_bfs.metrics_out,
                 default_location = 'CONTROL/' + 'AllCtrlsMerge_' + length(indv_c_mapping.sorted_bam) + '_mapped' + '/BAM_files',
                 outputfile = 'AllCtrlsMerge_' + length(c_fastqfiles) + '_mapped.sorted.bam'
         }
@@ -570,7 +572,7 @@ workflow seaseq {
 
         call util.evalstats as uno_s_summarystats {
             input:
-                fastq_type="Sample FASTQ",
+                fastq_type="SEAseq Sample FASTQ",
                 bambed=uno_s_bamtobed.bedfile,
                 sppfile=uno_s_runspp.spp_out,
                 fastqczip=uno_s_fastqc.zipfile,
@@ -635,7 +637,7 @@ workflow seaseq {
 
         call util.evalstats as uno_c_summarystats {
             input:
-                fastq_type="Control FASTQ",
+                fastq_type="SEAseq Control FASTQ",
                 bambed=uno_c_bamtobed.bedfile,
                 sppfile=uno_c_runspp.spp_out,
                 fastqczip=uno_c_fastqc.zipfile,
@@ -672,8 +674,8 @@ workflow seaseq {
             keep_dup="auto",
             egs=egs.genomesize,
             output_name = if defined(results_name) then results_name + '-p9_kd-auto' else basename(sample_bam,'.bam') + '+control-p9_kd-auto',
-            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-auto' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-p9_kd-auto'
-
+            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-auto' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-p9_kd-auto',
+            coverage_location = if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + results_name + '-p9_kd-auto' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-p9_kd-auto'
     }
 
     call util.addreadme {
@@ -689,7 +691,8 @@ workflow seaseq {
             keep_dup="all",
             egs=egs.genomesize,
             output_name = if defined(results_name) then results_name + '-p9_kd-all' else basename(sample_bam,'.bam') + '+control-p9_kd-all',
-            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-all' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-p9_kd-all'
+            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-p9_kd-all' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-p9_kd-all',
+            coverage_location = if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + results_name + '-p9_kd-all' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-p9_kd-all'
     }
 
     call macs.macs as nomodel {
@@ -699,7 +702,8 @@ workflow seaseq {
             nomodel=true,
             egs=egs.genomesize,
             output_name = if defined(results_name) then results_name + '-nm' else basename(sample_bam,'.bam') + '+control-nm',
-            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-nm' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-nm'
+            default_location = if defined(results_name) then results_name + '/PEAKS/NARROW_peaks/' + results_name + '-nm' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-nm',
+            coverage_location = if defined(results_name) then results_name + '/COVERAGE_files/NARROW_peaks/' + results_name + '-nm' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/NARROW_peaks/' + basename(sample_bam,'.bam') + '+control-nm'
     }
 
     call bamtogff.bamtogff {
@@ -710,7 +714,7 @@ workflow seaseq {
             bamindex=select_first([s_merge_mkdup.indexbam, s_mapping.mkdup_index]),
             control_bamfile=select_first([c_merge_markdup.mkdupbam, c_mapping.mkdup_bam]),
             control_bamindex=select_first([c_merge_mkdup.indexbam, c_mapping.mkdup_index]),
-            samplename=if defined(results_name) then results_name else basename(sample_bam,'.bam') + '+control',
+            samplename=if defined(results_name) then results_name else basename((select_first([s_merge_markdup.mkdupbam, s_mapping.mkdup_bam])),'.bam') + '+control',
             default_location=if defined(results_name) then results_name + '/BAM_Density' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/BAM_Density'
     }
 
@@ -730,9 +734,10 @@ workflow seaseq {
             control_bed=c_forsicerbed.bedfile,
             chromsizes=samtools_faidx.chromsizes,
             genome_fraction=egs.genomefraction,
+            fragmentlength=select_first([uno_s_bfs.readlength, s_mergebam.avg_readlength]),
             outputname=if defined(results_name) then results_name else basename(s_forsicerbed.bedfile,'.bed') + '+control',
-            default_location=if defined(results_name) then results_name + '/PEAKS/BROAD_peaks' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/BROAD_peaks'
-
+            default_location=if defined(results_name) then results_name + '/PEAKS/BROAD_peaks' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/BROAD_peaks',
+            coverage_location=if defined(results_name) then results_name + '/COVERAGE_files/BROAD_peaks' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/COVERAGE_files/BROAD_peaks'
     }
 
     call rose.rose {
@@ -890,7 +895,8 @@ workflow seaseq {
             pvalue="1e-9",
             keep_dup="auto",
             egs=egs.genomesize,
-            default_location='SAMPLE/' + sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(sample_bam,'.bam') + '-p9_kd-auto'
+            default_location='SAMPLE/' + sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(sample_bam,'.bam') + '-p9_kd-auto',
+            coverage_location='SAMPLE/' + sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(sample_bam,'.bam') + '-p9_kd-auto/'
 
     }
 
@@ -901,8 +907,8 @@ workflow seaseq {
             pvalue="1e-9",
             keep_dup="auto",
             egs=egs.genomesize,
-            default_location='CONTROL/' + sub(basename(control_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(control_bam,'.bam') + '-p9_kd-auto'
-
+            default_location='CONTROL/' + sub(basename(control_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(control_bam,'.bam') + '-p9_kd-auto',
+            coverage_location='CONTROL/' + sub(basename(control_bam),'.sorted.b.*$','') + '/PEAKS_forQC/' + basename(control_bam,'.bam') + '-p9_kd-auto/'
     }
 
     call bedtools.bamtobed as only_c_finalbed {
@@ -961,7 +967,7 @@ workflow seaseq {
         call util.evalstats as all_s_summarystats {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             input:
-                fastq_type="Sample",
+                fastq_type="SEAseq Sample",
                 bambed=only_s_finalbed.bedfile,
                 sppfile=only_s_runspp.spp_out,
                 fastqczip=select_first([uno_s_bamfqc.zipfile, string_qual]),
@@ -980,7 +986,7 @@ workflow seaseq {
         call util.evalstats as all_summarystats {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             input:
-                fastq_type="Comprehensive",
+                fastq_type="SEAseq Comprehensive",
                 bambed=only_s_finalbed.bedfile,
                 sppfile=runspp.spp_out,
                 fastqczip=select_first([uno_s_bamfqc.zipfile, string_qual]),
@@ -1003,7 +1009,7 @@ workflow seaseq {
         call util.evalstats as all_c_summarystats {
             # SUMMARY STATISTICS of sample file (only 1 sample file provided)
             input:
-                fastq_type="Control",
+                fastq_type="SEAseq Control",
                 bambed=only_c_finalbed.bedfile,
                 sppfile=only_c_runspp.spp_out,
                 fastqczip=select_first([uno_c_bamfqc.zipfile, string_qual]),
@@ -1024,7 +1030,7 @@ workflow seaseq {
         call util.evalstats as merge_s_summarystats {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             input:
-                fastq_type="Sample",
+                fastq_type="SEAseq Sample",
                 bambed=only_s_finalbed.bedfile,
                 sppfile=only_s_runspp.spp_out,
                 fastqczip=select_first([s_mergebamfqc.zipfile, string_qual]),
@@ -1042,7 +1048,7 @@ workflow seaseq {
         call util.evalstats as merge_summarystats {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             input:
-                fastq_type="Comprehensive",
+                fastq_type="SEAseq Comprehensive",
                 bambed=only_s_finalbed.bedfile,
                 sppfile=runspp.spp_out,
                 fastqczip=select_first([s_mergebamfqc.zipfile, string_qual]),
@@ -1064,7 +1070,7 @@ workflow seaseq {
         call util.evalstats as merge_c_summarystats {
             # SUMMARY STATISTICS of all samples files (more than 1 sample file provided)
             input:
-                fastq_type="Control",
+                fastq_type="SEAseq Control",
                 bambed=only_c_finalbed.bedfile,
                 sppfile=only_c_runspp.spp_out,
                 fastqczip=select_first([c_mergebamfqc.zipfile, string_qual]),
@@ -1098,7 +1104,7 @@ workflow seaseq {
             overallqc_html=concatstats.xhtml,
             controlqc_txt=select_first([uno_c_summarystats.textfile, c_mergehtml.mergetxt, string_qual]),
             sampleqc_txt=select_first([uno_s_summarystats.textfile, s_mergehtml.mergetxt]),
-            overallqc_txt=concatstats.textfile,
+            overallqc_txt=concatstats.textfile
     }
 
     output {
@@ -1245,11 +1251,11 @@ workflow seaseq {
         File? pdf_gene = bamtogff.pdf_gene
         File? pdf_h_gene = bamtogff.pdf_h_gene
         File? png_h_gene = bamtogff.png_h_gene
-	File? jpg_h_gene = bamtogff.jpg_h_gene
+        File? jpg_h_gene = bamtogff.jpg_h_gene
         File? pdf_promoters = bamtogff.pdf_promoters
         File? pdf_h_promoters = bamtogff.pdf_h_promoters
         File? png_h_promoters = bamtogff.png_h_promoters
-	File? jpg_h_promoters = bamtogff.jpg_h_promoters
+        File? jpg_h_promoters = bamtogff.jpg_h_promoters
 
         #PEAKS-ANNOTATION
         File? peak_promoters = peaksanno.peak_promoters

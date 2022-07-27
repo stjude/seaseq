@@ -9,6 +9,21 @@ task fastqdump {
         Int ncpu = 20
     }
     command {
+        # configuration for sra-toolkit
+        mkdir -p $PWD/ncbi $HOME/.ncbi
+        echo """
+        /LIBS/GUID = \"randomuuid\"
+        /config/default = \"false\"
+        /repository/user/ad/public/apps/file/volumes/flatAd = \".\"
+        /repository/user/ad/public/apps/refseq/volumes/refseqAd = \".\"
+        /repository/user/ad/public/apps/sra/volumes/sraAd = \".\"
+        /repository/user/ad/public/apps/sraPileup/volumes/ad = \".\"
+        /repository/user/ad/public/apps/sraRealign/volumes/ad = \".\"
+        /repository/user/ad/public/apps/wgs/volumes/wgsAd = \".\"
+        /repository/user/ad/public/root = \".\"
+        /repository/user/default-path = \"$PWD/ncbi\"
+        """ > $HOME/.ncbi/user-settings.mkfg
+
         # make number of threads compatible for DNAnexus
         threads=~{ncpu}
         if [ "~{cloud}" == 'true' ]; then
@@ -52,7 +67,7 @@ task fastqdump {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/abralab/sratoolkit:v2.9.6'
+        docker: 'ghcr.io/stjude/abralab/sratoolkit:v3.0.0'
         cpu: ncpu
     }
     output {
@@ -60,5 +75,48 @@ task fastqdump {
         File? R2end = "~{sra_id}_2.fastq.gz"
         Array[File] fastqfile = glob("~{sra_id}*fastq.gz")
         String paired_end = read_string('paired_file')
+    }
+}
+
+task srameta {
+    input {
+        String? sra_id
+        Int memory_gb = 5
+        Int max_retries = 1
+        Int ncpu = 1
+    }
+    command {
+        # configuration for sra-toolkit
+        mkdir -p $PWD/ncbi $HOME/.ncbi
+        echo """
+        /LIBS/GUID = \"randomuuid\"
+        /config/default = \"false\"
+        /repository/user/ad/public/apps/file/volumes/flatAd = \".\"
+        /repository/user/ad/public/apps/refseq/volumes/refseqAd = \".\"
+        /repository/user/ad/public/apps/sra/volumes/sraAd = \".\"
+        /repository/user/ad/public/apps/sraPileup/volumes/ad = \".\"
+        /repository/user/ad/public/apps/sraRealign/volumes/ad = \".\"
+        /repository/user/ad/public/apps/wgs/volumes/wgsAd = \".\"
+        /repository/user/ad/public/root = \".\"
+        /repository/user/default-path = \"$PWD/ncbi\"
+        """ > $HOME/.ncbi/user-settings.mkfg
+
+        # check if paired ended
+        numLines=$(fastq-dump -X 1 -Z --split-spot ~{sra_id} | wc -l)
+        paired_end="false"
+        touch paired_file
+        if [ "$numLines" -eq 8 ]; then
+            paired_end="true"
+            echo true > paired_file
+        fi
+    }
+    runtime {
+	memory: ceil(memory_gb * ncpu) + " GB"
+        maxRetries: max_retries
+        docker: 'ghcr.io/stjude/abralab/sratoolkit:v3.0.0'
+        cpu: ncpu
+    }
+    output { 
+        Boolean paired_end = read_string('paired_file')=='true'
     }
 }
