@@ -147,7 +147,7 @@ task fraggraph {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/peaseq_frag:latest'
+        docker: 'ghcr.io/stjude/seaseq/data_processing:v1.0.0'
         cpu: ncpu
     }
     output {
@@ -196,7 +196,7 @@ task pe_bamtobed {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/peaseq_frag:latest'
+        docker: 'ghcr.io/stjude/seaseq/data_processing:v1.0.0'
         cpu: ncpu
     }
     output {
@@ -305,7 +305,7 @@ task pairedend_summaryreport {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
+        docker: 'ghcr.io/stjude/seaseq/scripts:v2.3.0'
         cpu: ncpu
     }
     output {
@@ -365,7 +365,7 @@ task pe_mergehtml {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
+        docker: 'ghcr.io/stjude/seaseq/scripts:v2.3.0'
         cpu: ncpu
     }
     output {
