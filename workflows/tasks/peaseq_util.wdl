@@ -305,7 +305,7 @@ task pairedend_summaryreport {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/seaseq/scripts:v2.3.0'
+        docker: 'ghcr.io/stjude/seaseq/scripts:v2.4.0'
         cpu: ncpu
     }
     output {
@@ -365,7 +365,7 @@ task pe_mergehtml {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/seaseq/scripts:v2.3.0'
+        docker: 'ghcr.io/stjude/seaseq/scripts:v2.4.0'
         cpu: ncpu
     }
     output {

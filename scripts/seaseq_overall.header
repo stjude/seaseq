@@ -108,8 +108,8 @@
 <div class="legend">
     <table class='legend'>
         <tr style='border-color: #163861;'><th><font color='#163861'>LEGEND</font></th></tr>
-        <tr style='border-color: #008000;'><td bgcolor='#008000'>EXCELLENT</td></tr>
-        <tr style='border-color: #ADFF2F;'><td bgcolor='#ADFF2F'>GOOD</td></tr>
+        <tr style='border-color: #0066FF;'><td bgcolor='#0066FF'>EXCELLENT</td></tr>
+        <tr style='border-color: #00FFFF;'><td bgcolor='#00FFFF'>GOOD</td></tr>
         <tr style='border-color: #FFFF00;'><td bgcolor='#FFFF00'>AVERAGE</td></tr>
         <tr style='border-color: #FF8C00;'><td bgcolor='#FF8C00'>BELOW-AVERAGE</td></tr>
         <tr style='border-color: #FF0000;'><td bgcolor='#FF0000'>POOR</td></tr>
@@ -232,8 +232,8 @@
 <div class="legend">
     <table class='legend'>
         <tr style='border-color: #163861;'><th><font color='#163861'>LEGEND</font></th></tr>
-        <tr style='border-color: #008000;'><td bgcolor='#008000'>EXCELLENT</td></tr>
-        <tr style='border-color: #ADFF2F;'><td bgcolor='#ADFF2F'>GOOD</td></tr>
+        <tr style='border-color: #0066FF;'><td bgcolor='#0066FF'>EXCELLENT</td></tr>
+        <tr style='border-color: #00FFFF;'><td bgcolor='#00FFFF'>GOOD</td></tr>
         <tr style='border-color: #FFFF00;'><td bgcolor='#FFFF00'>AVERAGE</td></tr>
         <tr style='border-color: #FF8C00;'><td bgcolor='#FF8C00'>BELOW-AVERAGE</td></tr>
         <tr style='border-color: #FF0000;'><td bgcolor='#FF0000'>POOR</td></tr>
