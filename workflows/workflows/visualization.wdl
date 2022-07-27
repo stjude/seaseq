@@ -1,6 +1,6 @@
 version 1.0
 
-import "../tasks/util.wdl"
+import "../tasks/seaseq_util.wdl" as util
 
 workflow visualization {
     input {

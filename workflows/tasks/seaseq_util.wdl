@@ -46,7 +46,7 @@ task basicfastqstats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
+        docker: 'ghcr.io/stjude/seaseq/scripts:v2.3.0'
         cpu: ncpu
     }
     output {
@@ -92,7 +92,7 @@ task flankbed {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
+        docker: 'ghcr.io/stjude/seaseq/scripts:v2.3.0'
         cpu: ncpu
     }
     output {
@@ -167,7 +167,7 @@ task summaryreport {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
+        docker: 'ghcr.io/stjude/seaseq/scripts:v2.3.0'
         cpu: ncpu
     }
     output {
@@ -239,7 +239,7 @@ task evalstats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
+        docker: 'ghcr.io/stjude/seaseq/scripts:v2.3.0'
         cpu: ncpu
     }
     output {
@@ -314,7 +314,7 @@ task normalize {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
+        docker: 'ghcr.io/stjude/seaseq/scripts:v2.3.0'
         cpu: ncpu
     }
     output {
@@ -359,7 +359,7 @@ task peaksanno {
         continueOnReturnCode: [0, 1]
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
+        docker: 'ghcr.io/stjude/seaseq/scripts:v2.3.0'
         cpu: ncpu
     }
     output {
@@ -415,7 +415,7 @@ task mergehtml {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
+        docker: 'ghcr.io/stjude/seaseq/scripts:v2.3.0'
         cpu: ncpu
     }
     output {
@@ -575,7 +575,7 @@ task concatstats {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
+        docker: 'ghcr.io/stjude/seaseq/scripts:v2.3.0'
         cpu: ncpu
     }
     output {
@@ -615,7 +615,7 @@ task addreadme {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'ghcr.io/stjude/seaseq/seaseq-scripts:v2.2.0'
+        docker: 'ghcr.io/stjude/seaseq/scripts:v2.3.0'
         cpu: ncpu
     }
     output {

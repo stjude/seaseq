@@ -8,7 +8,7 @@ import "workflows/workflows/bamtogff.wdl"
 import "workflows/tasks/sicer.wdl"
 import "workflows/workflows/motifs.wdl"
 import "workflows/tasks/rose.wdl"
-import "workflows/tasks/util.wdl"
+import "workflows/tasks/seaseq_util.wdl" as util
 import "workflows/workflows/visualization.wdl" as viz
 import "workflows/workflows/mapping.wdl"
 import "workflows/tasks/runspp.wdl"
@@ -182,12 +182,6 @@ workflow seaseq {
         input :
             reference=reference
     }
-    call util.effective_genome_size as egs {
-        # effective genome size for FASTA
-        input :
-            reference=reference
-    }
-
     call util.effective_genome_size as egs {
         # effective genome size for FASTA
         input :
