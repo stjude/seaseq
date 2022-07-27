@@ -6,7 +6,6 @@ task bowtie {
         File? fastqfile_R2
         File? metricsfile
         Array[File]+ index_files
-
         String? prefix
         String outputfile = if (defined(prefix)) then prefix + '.sam' else if (defined(fastqfile_R2)) then sub(basename(fastqfile),'_R?[12].*\.f.*q\.gz','.sam') else sub(basename(fastqfile),'\.fastq\.gz|\.fq\.gz','.sam')
         
@@ -35,7 +34,7 @@ task bowtie {
         else
             readlength=~{read_length}
         fi
-
+        
         if [ -f "~{fastqfile_R2}" ]; then
             bowtie \
                 --chunkmbs=256 \

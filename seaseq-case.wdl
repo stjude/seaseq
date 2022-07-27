@@ -188,6 +188,12 @@ workflow seaseq {
             reference=reference
     }
 
+    call util.effective_genome_size as egs {
+        # effective genome size for FASTA
+        input :
+            reference=reference
+    }
+
     # Process FASTQs
     if ( defined(sample_fastq) ) {
 
@@ -196,9 +202,7 @@ workflow seaseq {
 
         Array[File] sample_fastqfile = s_fastq
     }
-
     Array[File] fastqfiles = flatten(select_all([sample_srafile, sample_fastqfile]))
-
 
 ### ------------------------------------------------- ###
 ### ---------------- S E C T I O N 2 ---------------- ###

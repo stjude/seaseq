@@ -15,6 +15,7 @@ workflow mapping {
         Int? read_length = 75
         Boolean paired_end = false
         String? strandedness = 'fr'
+
         String default_location = "BAM_files"
         String? results_name
     }

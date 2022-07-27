@@ -223,6 +223,7 @@ task evalstats {
             -outfile ~{outputfile}
 
         head -n 245 /usr/local/bin/seaseq_overall.header  | tail -n 123 > ~{outputhtml}
+
         if [[ "~{peaseq}" == "true" ]]; then
             sed -i "s/SEAseq Report/PEAseq Report/" ~{outputhtml}
             sed -i "s/SEAseq Quality/PEAseq Quality/" ~{outputhtml}
@@ -325,7 +326,7 @@ task normalize {
 task peaksanno {
     input {
         File bedfile
-	File? summitfile
+        File? summitfile
         String default_location = "PEAKSAnnotation"
 
         File gtffile
@@ -423,7 +424,6 @@ task mergehtml {
         File xhtml = "~{default_location}/~{outputfile}x"
     }
 }
-
 
 task concatstats {
     input {
@@ -622,7 +622,6 @@ task addreadme {
 	File readme_peaks = "~{default_location}/~{output_file}"
     }
 }
-
 
 task effective_genome_size {
     # Calculate effective genome size and fraction
