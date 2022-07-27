@@ -174,7 +174,7 @@ a custom R script that will also be provided in the results directory
 Below is an example of the average read coverage across all promoters and gene body regions for [SRR10259398].
 
 <p align="center">
-<img src="images/SRR10259398-density.png">
+<img src="docs/images/SRR10259398-density.png">
 </p>
 
 ### Peaks Annotation
@@ -189,7 +189,7 @@ of proximal genes, and the peaks occupancy percentages are graphically presented
 shown for [SRR10259398].
 
 <p align="center">
-<img width="50%" height="auto" src="images/SRR10259398-peaksoccupancy.png">
+<img width="50%" height="auto" src="docs/images/SRR10259398-peaksoccupancy.png">
 </p>
 
 ### QC Metrics
@@ -204,7 +204,7 @@ thresholds where possible.
 
 The metrics are color flagged for easy visualization of overall performance in HTML format as shown for [SRR10259398].
 
-<img src="images/SRR10259398-QC.png">
+<img src="docs/images/SRR10259398-QC.png">
 
 
 SEAseq metrics calculated to infer quality are (in alphabetical order):
