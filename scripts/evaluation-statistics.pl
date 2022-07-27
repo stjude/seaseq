@@ -288,6 +288,7 @@ foreach (keys %OvQual){
 }
 #color names
 my %color = ( "-2" => "#FF0000", "-1" => "#FF8C00", "0" => "#FFFF00", "1" => "#ADFF2F", "2" => "#008000" ); #red #orangered #yellow #greenyellow #green
+my %color = ( "-2" => "#FF0000", "-1" => "#FF8C00", "0" => "#FFFF00", "1" => "#00FFFF", "2" => "#0066FF" ); #colorblind #red #orangered #yellow #aqua #blue
 
 my $OverallQuality = "POOR"; #($totalscore/$count);
 my $color = $color{-2}; my $score = -2;
