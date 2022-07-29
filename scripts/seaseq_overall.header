@@ -108,11 +108,11 @@
 <div class="legend">
     <table class='legend'>
         <tr style='border-color: #163861;'><th><font color='#163861'>LEGEND</font></th></tr>
-        <tr style='border-color: #0066FF;'><td bgcolor='#0066FF'>EXCELLENT</td></tr>
-        <tr style='border-color: #00FFFF;'><td bgcolor='#00FFFF'>GOOD</td></tr>
-        <tr style='border-color: #FFFF00;'><td bgcolor='#FFFF00'>AVERAGE</td></tr>
-        <tr style='border-color: #FF8C00;'><td bgcolor='#FF8C00'>BELOW-AVERAGE</td></tr>
-        <tr style='border-color: #FF0000;'><td bgcolor='#FF0000'>POOR</td></tr>
+        <tr style='border-color: #A77393;'><td bgcolor='#A77393'>EXCELLENT</td></tr>
+        <tr style='border-color: #97BEBF;'><td bgcolor='#97BEBF'>GOOD</td></tr>
+        <tr style='border-color: #CBBC6B;'><td bgcolor='#CBBC6B'>AVERAGE</td></tr>
+        <tr style='border-color: #E28B51;'><td bgcolor='#E28B51'>BELOW-AVERAGE</td></tr>
+        <tr style='border-color: #C53440;'><td bgcolor='#C53440'>POOR</td></tr>
       </table>
 </div>
 </head>
@@ -232,11 +232,11 @@
 <div class="legend">
     <table class='legend'>
         <tr style='border-color: #163861;'><th><font color='#163861'>LEGEND</font></th></tr>
-        <tr style='border-color: #0066FF;'><td bgcolor='#0066FF'>EXCELLENT</td></tr>
-        <tr style='border-color: #00FFFF;'><td bgcolor='#00FFFF'>GOOD</td></tr>
-        <tr style='border-color: #FFFF00;'><td bgcolor='#FFFF00'>AVERAGE</td></tr>
-        <tr style='border-color: #FF8C00;'><td bgcolor='#FF8C00'>BELOW-AVERAGE</td></tr>
-        <tr style='border-color: #FF0000;'><td bgcolor='#FF0000'>POOR</td></tr>
+        <tr style='border-color: #A77393;'><td bgcolor='#A77393'>EXCELLENT</td></tr>
+        <tr style='border-color: #97BEBF;'><td bgcolor='#97BEBF'>GOOD</td></tr>
+        <tr style='border-color: #CBBC6B;'><td bgcolor='#CBBC6B'>AVERAGE</td></tr>
+        <tr style='border-color: #E28B51;'><td bgcolor='#E28B51'>BELOW-AVERAGE</td></tr>
+        <tr style='border-color: #C53440;'><td bgcolor='#C53440'>POOR</td></tr>
       </table>
 </div>
 </head>
