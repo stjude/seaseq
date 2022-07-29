@@ -466,7 +466,7 @@ task concatstats {
 
         #color scheme
         color = {
-            -2 : "#FF0000", -1 : "#FF8C00", 0 : "#FFFF00", 1 : "#00FFFF", 2 : "#0066FF"
+            -2 : "#C53440", -1 : "#E28B51", 0 : "#CBBC6B", 1 : "#97BEBF", 2 : "#A77393"
         }
 
         #merged statistics
