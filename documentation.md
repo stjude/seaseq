@@ -1,13 +1,46 @@
-## Overview
+<p align="center">
+   <h1 align="center">
+    SEAseq and PEAseq Documentation
+   </h1>
+</p>
 
-**SEAseq** is a comprehensive automated pipeline for ChIP-Seq/CUT&RUN data analysis. Speaking broadly, it containerizes and joins field-standard, open-source tools for processing raw data and performing a wide array of basic analyses.  
+# SEAseq Pipeline Flowchart
+<img src="https://github.com/stjude/seaseq/blob/master/docs/images/pipeline.png">
 
+This is the documentation for a comprehensive automated pipeline for ChIP-Seq/CUT&RUN data analysis. Speaking broadly, it containerizes and joins field-standard, open-source tools for processing raw data and performing a wide array of basic analyses.  
 
 SEAseq analyses include alignment, peak calling, motif analysis, read coverage profiling, clustered peak (e.g. super-enhancer) identification, and quality assessment metrics, as well as automatic interfacing with data in [GEO]/[SRA]. The easy-to-use and flexibility of SEAseq makes it a reliable and efficient resource for ensuring high quality ChIP-Seq analysis, especially in research environments lacking computational infrastructure or expertise.  
 
-
 [SRA]: https://www.ncbi.nlm.nih.gov/sra
 [GEO]: https://www.ncbi.nlm.nih.gov/geo/
+
+
+## SEAseq on St. Jude cloud
+
+Before you can run SEAseq on St. Jude Cloud, you must first create a workspace in
+DNAnexus for the run. Refer to [the general workflow
+guide](https://university.stjude.cloud/docs/genomics-platform/analyzing-data/running-sj-workflows#getting-started) to learn
+how to create a DNAnexus workspace for each workflow run.
+
+You can navigate to the SEAseq workflow page
+[here](https://platform.stjude.cloud/workflows/seaseq).
+
+
+## SEAseq on Linux or HPC
+
+SEAseq pipeline requires the [Cromwell](https://github.com/broadinstitute/cromwell/releases) jar runner, docker/singularity,
+and about 30GB of supplemental data.
+```bash
+# For sample FASTQs only
+java -jar cromwell.jar run seaseq-case.wdl -i inputs.json -o options.json
+
+# For sample FASTQs with Input Control or IgG
+java -jar cromwell.jar run seaseq-control.wdl -i inputs.json -o options.json
+```
+
+View [`/test`](https://github.com/stjude/seaseq/tree/master/test) folder for example usage.
+
+#### NOTE : HPC platforms using Singularity will require a configuration file to properly execute cromwell. Please consult [hpc-configurations](docs/hpc-configurations#readme) for more details.
 
 ## Inputs
 
@@ -22,6 +55,7 @@ SEAseq analyses include alignment, peak calling, motif analysis, read coverage p
 |   Gene Annotation                                    |   File                |   A gene position database file.                                               |   [`*.gtf`, `*.gff`, `*.gff3`]   |
 |   Blacklists                                         |   File                |   [UHS]/[DER]/[DAC] or custom blacklist regions file.                          |   [`*.bed`]                      |
 |   [Motif databases]                                  |   Array of files      |   One or more position weight matrix databases.                                |   [`*.meme`]                     |
+
 
 ### Input configuration
 
@@ -76,33 +110,6 @@ More descriptions on SEAseq Inputs and Outputs can be found [here](https://githu
 8. Motif discovery and enrichment using tools from the [MEME Suite].
 9. Annotation of peaks in genic regions.
 10. Assessment of quality by calculating relevant metrics including those recommmended by the [ENCODE consortium]. More information is provided [here](#qc-metrics).
-
-
-## SEAseq on Linux or HPC
-
-SEAseq pipeline requires the [Cromwell](https://github.com/broadinstitute/cromwell/releases) jar runner, docker/singularity,
-and about 30GB of supplemental data.
-```bash
-# For sample FASTQs only
-java -jar cromwell.jar run seaseq-case.wdl -i inputs.json -o options.json
-
-# For sample FASTQs with Input Control or IgG
-java -jar cromwell.jar run seaseq-control.wdl -i inputs.json -o options.json
-```
-
-View [`/test`](https://github.com/stjude/seaseq/tree/master/test) folder for example usage.
-
-#### NOTE : HPC platforms using Singularity will require a configuration file to properly execute cromwell. Please consult [hpc-configurations](docs/hpc-configurations#readme) for more details.
-
-## SEAseq on St. Jude cloud
-
-Before you can run SEAseq on St. Jude Cloud, you must first create a workspace in
-DNAnexus for the run. Refer to [the general workflow
-guide](https://university.stjude.cloud/docs/genomics-platform/analyzing-data/running-sj-workflows#getting-started) to learn
-how to create a DNAnexus workspace for each workflow run.
-
-You can navigate to the SEAseq workflow page
-[here](https://platform.stjude.cloud/workflows/seaseq).
 
 ## Analysis of Results
 
