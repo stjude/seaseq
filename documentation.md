@@ -2,25 +2,20 @@
    <h1 align="center">
     SEAseq and PEAseq Documentation
    </h1>
+   
 </p>
 
-# SEAseq Pipeline Flowchart
-<img src="https://github.com/stjude/seaseq/blob/master/docs/images/pipeline.png">
+Both **SEAseq** (**S**ingle-**E**nd **A**ntibody **seq**uencing) and **PEAseq** (**P**aired-**E**nd **A**ntibody **seq**uencing) pipelines are bioinformatic workflows for comprehensive analysis of ChIP-Seq and CutNRun sequencing experiments.
 
-This is the documentation for a comprehensive automated pipeline for ChIP-Seq/CUT&RUN data analysis. Speaking broadly, it containerizes and joins field-standard, open-source tools for processing raw data and performing a wide array of basic analyses.  
+There analyses include reads alignment, narrow and broad peak calling, motif analysis, read coverage profiling, clustered peak (i.e. enhancer and super-enhancer) identification, and providing a detailed variety of quality assessment metrics.
 
-SEAseq analyses include alignment, peak calling, motif analysis, read coverage profiling, clustered peak (e.g. super-enhancer) identification, and quality assessment metrics, as well as automatic interfacing with data in [GEO]/[SRA]. The easy-to-use and flexibility of SEAseq makes it a reliable and efficient resource for ensuring high quality ChIP-Seq analysis, especially in research environments lacking computational infrastructure or expertise.  
+<img src="https://github.com/stjude/seaseq/blob/master/docs/images/seaseq_pipeline.png">
 
-[SRA]: https://www.ncbi.nlm.nih.gov/sra
-[GEO]: https://www.ncbi.nlm.nih.gov/geo/
+## How to use SEAseq/PEAseq?
 
+### 1. St. Jude Cloud Genomics Platorm
 
-## SEAseq on St. Jude cloud
-
-Before you can run SEAseq on St. Jude Cloud, you must first create a workspace in
-DNAnexus for the run. Refer to [the general workflow
-guide](https://university.stjude.cloud/docs/genomics-platform/analyzing-data/running-sj-workflows#getting-started) to learn
-how to create a DNAnexus workspace for each workflow run.
+SEAseq can be easily accessed using the St. Jude Cloud Genomics Platform.
 
 You can navigate to the SEAseq workflow page
 [here](https://platform.stjude.cloud/workflows/seaseq).
