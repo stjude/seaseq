@@ -9,19 +9,25 @@ Both **SEAseq** (**S**ingle-**E**nd **A**ntibody **seq**uencing) and **PEAseq** 
 
 There analyses include reads alignment, narrow and broad peak calling, motif analysis, read coverage profiling, clustered peak (i.e. enhancer and super-enhancer) identification, and providing a detailed variety of quality assessment metrics.
 
-<img src="https://github.com/stjude/seaseq/blob/master/docs/images/flowchart.png">
+<center><img src="https://github.com/stjude/seaseq/blob/master/docs/images/flowchart.png"></center>
 
 ## How to use SEAseq/PEAseq?
 
+The pipeline is designed to be platform-independent and scalable: 
+can be executed on a single node or computer (Linux or MAC OS, 
+though not recommended) or in high-performance computing (HPC) environments.
+
+Thus, We offer two versatile ways to use SEAseq based on user's perferences or computational resource constraints. 
+
 ### 1. St. Jude Cloud Genomics Platorm
 
-SEAseq can be easily accessed using the St. Jude Cloud Genomics Platform.
+SEAseq can be easily accessed in the reliable and reasonably priced parallel cloud computing environment.
 
 You can navigate to the SEAseq workflow page
 [here](https://platform.stjude.cloud/workflows/seaseq).
 
 
-## SEAseq on Linux or HPC
+### 2. Linux or HPC environment
 
 SEAseq pipeline requires the [Cromwell](https://github.com/broadinstitute/cromwell/releases) jar runner, docker/singularity,
 and about 30GB of supplemental data.
@@ -36,6 +42,7 @@ java -jar cromwell.jar run seaseq-control.wdl -i inputs.json -o options.json
 View [`/test`](https://github.com/stjude/seaseq/tree/master/test) folder for example usage.
 
 #### NOTE : HPC platforms using Singularity will require a configuration file to properly execute cromwell. Please consult [hpc-configurations](docs/hpc-configurations#readme) for more details.
+
 
 ## Inputs
 
@@ -65,6 +72,7 @@ SEAseq supports Genome Reference and Gene Annotation (or Gene position database)
 most genome repositories, such as [UCSC], [ENSEMBL], [RefSeq] or [GENCODE].
 
 [Motif databases]: https://meme-suite.org/meme/db/motifs
+
 
 ## Outputs
 
