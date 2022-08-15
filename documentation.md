@@ -9,7 +9,7 @@ Both **SEAseq** (**S**ingle-**E**nd **A**ntibody **seq**uencing) and **PEAseq** 
 
 There analyses include reads alignment, narrow and broad peak calling, motif analysis, read coverage profiling, clustered peak (i.e. enhancer and super-enhancer) identification, and providing a detailed variety of quality assessment metrics.
 
-<img src="https://github.com/stjude/seaseq/blob/master/docs/images/seaseq_pipeline.png">
+<img src="https://github.com/stjude/seaseq/blob/master/docs/images/flowchart.png">
 
 ## How to use SEAseq/PEAseq?
 

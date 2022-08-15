@@ -40,7 +40,7 @@ in research environments lacking computational infrastructure or expertise.
   <br />
 </p>
 
-## What's new in Version [2.4](https://github.com/stjude/seaseq/releases/tag/2.4)
+## What's new in Version [3.0](https://github.com/stjude/seaseq/releases/tag/3.0)
 - A new color-rank scheme for the Quality Metrics and Evaluation Report HTML.
 - Tentative PEAseq pipeline. 
 > **PEAseq (Paired-End Antibody Sequencing Pipeline)** performs all analysis provided in SEAseq and also in a paired-end aware manner; results from SEAseq will be stored under `/single-end_mode`.

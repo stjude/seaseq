@@ -223,12 +223,18 @@ workflow peaseq {
         Array[File] sample_R1_fastqfile = s_R1_fastq
         Array[File] s_R2_fastq = select_first([sample_R2_fastq, string_fastq])
         Array[File] sample_R2_fastqfile = s_R2_fastq
+        if (length(sample_R1_fastqfile) > 1) {
+            call peaseq_util.sortfiles as R1_sorted { input: fastqfiles=sample_R1_fastqfile }
+            call peaseq_util.sortfiles as R2_sorted { input: fastqfiles=sample_R2_fastqfile }
+        }
+        Array[File] sample_R1_fastqfiles = select_first([R1_sorted.allfiles, sample_R1_fastqfile])
+        Array[File] sample_R2_fastqfiles = select_first([R2_sorted.allfiles, sample_R2_fastqfile])
     }
 
     # collate all fastqfiles
-    Array[File] sample_R1 = flatten(select_all([sample_R1_srafile, sample_R1_fastqfile]))
-    Array[File] sample_R2 = flatten(select_all([sample_R2_srafile, sample_R2_fastqfile]))
-    Array[File] all_sample_fastqfiles = flatten(select_all([sample_R1_srafile, sample_R1_fastqfile,sample_R2_srafile, sample_R2_fastqfile]))
+    Array[File] sample_R1 = flatten(select_all([sample_R1_srafile, sample_R1_fastqfiles]))
+    Array[File] sample_R2 = flatten(select_all([sample_R2_srafile, sample_R2_fastqfiles]))
+    Array[File] all_sample_fastqfiles = flatten(select_all([sample_R1_srafile, sample_R1_fastqfiles,sample_R2_srafile, sample_R2_fastqfiles]))
 
     # transpose to paired-end tuples
     Array[Pair[File, File]] sample_fastqfiles = zip(sample_R1, sample_R2)

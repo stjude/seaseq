@@ -373,3 +373,23 @@ task pe_mergehtml {
         File mergetxt = "~{default_location}/~{outputtxt}"
     }
 }
+
+task sortfiles {
+    input {
+        Array[File] fastqfiles
+    }
+    command <<<
+        for filepath in ~{sep=' ' fastqfiles}; do
+            ln -s $filepath ${filepath##*/}
+        done
+    >>>
+    runtime {
+        memory: "5 GB"
+        maxRetries: 0
+        docker: 'ghcr.io/stjude/abralab/binf-base:1.1.0'
+        cpu: 1
+    }
+    output {
+        Array[File] allfiles = glob('*.f*q*')
+    }
+}
