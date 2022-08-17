@@ -167,7 +167,7 @@ workflow peaseq {
             help: 'Specify maximum insert size for paired-end alignment (default: 600).',
             example: 600
         }
-	    strandedness: {
+	strandedness: {
             description: 'Bowtie v1 mate orientation (--fr/--rf/--ff).',
             group: 'analysis_parameter',
             help: 'The upstream/downstream mate orientation for paired-end alignment (default: --fr).',
@@ -1792,14 +1792,14 @@ workflow peaseq {
 
     output {
         #FASTQC
-        Array[File?]? indv_s_fastqc = s_indv_fastqc.htmlfile
+        Array[File?]? indv_s_htmlfile = s_indv_fastqc.htmlfile
         Array[File?]? indv_s_zipfile = s_indv_fastqc.zipfile
         Array[File?]? indv_s_bam_htmlfile = indv_s_bamfqc.htmlfile
         Array[File?]? indv_s_bam_zipfile = indv_s_bamfqc.zipfile
         File? s_mergebam_htmlfile = SE_s_mergebamfqc.htmlfile
         File? s_mergebam_zipfile = SE_s_mergebamfqc.zipfile
 
-        Array[File?]? indv_c_fastqc = c_indv_fastqc.htmlfile
+        Array[File?]? indv_c_htmlfile = c_indv_fastqc.htmlfile
         Array[File?]? indv_c_zipfile = c_indv_fastqc.zipfile
         Array[File?]? indv_c_bam_htmlfile = indv_c_bamfqc.htmlfile
         Array[File?]? indv_c_bam_zipfile = indv_c_bamfqc.zipfile
@@ -1854,13 +1854,13 @@ workflow peaseq {
         Array[File?]? indv_cp_rmindexbam = c_indv_PE_mapping.mkdup_index
 
         File? uno_s_sortedbam = s_uno_PE_mapping.sorted_bam
-        File? uno_s_indexbam = s_uno_PE_mapping.bam_index
+        File? uno_s_indexstatsbam = s_uno_PE_mapping.bam_index
         File? uno_s_bkbam = s_uno_PE_mapping.bklist_bam
         File? uno_s_bkindexbam = s_uno_PE_mapping.bklist_index
         File? uno_s_rmbam = s_uno_PE_mapping.mkdup_bam
         File? uno_s_rmindexbam = s_uno_PE_mapping.mkdup_index
         File? uno_c_sortedbam = c_uno_PE_mapping.sorted_bam
-        File? uno_c_indexbam = c_uno_PE_mapping.bam_index
+        File? uno_c_indexstatsbam = c_uno_PE_mapping.bam_index
         File? uno_c_bkbam = c_uno_PE_mapping.bklist_bam
         File? uno_c_bkindexbam = c_uno_PE_mapping.bklist_index
         File? uno_c_rmbam = c_uno_PE_mapping.mkdup_bam
@@ -2020,6 +2020,7 @@ workflow peaseq {
 
         #BAM2GFF
         File? s_matrices = SE_bamtogff.s_matrices
+        File? c_matrices = SE_bamtogff.c_matrices
         File? densityplot = SE_bamtogff.densityplot
         File? pdf_gene = SE_bamtogff.pdf_gene
         File? pdf_h_gene = SE_bamtogff.pdf_h_gene
@@ -2031,6 +2032,7 @@ workflow peaseq {
         File? jpg_h_promoters = SE_bamtogff.jpg_h_promoters
 
         File? sp_s_matrices = PE_bamtogff.s_matrices
+        File? sp_c_matrices = PE_bamtogff.c_matrices
         File? sp_densityplot = PE_bamtogff.densityplot
         File? sp_pdf_gene = PE_bamtogff.pdf_gene
         File? sp_pdf_h_gene = PE_bamtogff.pdf_h_gene
@@ -2110,6 +2112,15 @@ workflow peaseq {
         File? a_bigwig = SE_vizall.bigwig
         File? a_norm_wig = SE_vizall.norm_wig
         File? a_tdffile = SE_vizall.tdffile
+        File? c_bigwig = SE_visualization.bigwig
+        File? c_norm_wig = SE_visualization.norm_wig
+        File? c_tdffile = SE_visualization.tdffile
+        File? c_n_bigwig = SE_viznomodel.bigwig
+        File? c_n_norm_wig = SE_viznomodel.norm_wig
+        File? c_n_tdffile = SE_viznomodel.tdffile
+        File? c_a_bigwig = SE_vizall.bigwig
+        File? c_a_norm_wig = SE_vizall.norm_wig
+        File? c_a_tdffile = SE_vizall.tdffile
         File? s_bigwig = SE_vizsicer.bigwig
         File? s_norm_wig = SE_vizsicer.norm_wig
         File? s_tdffile = SE_vizsicer.tdffile
@@ -2123,14 +2134,23 @@ workflow peaseq {
         File? sp_a_bigwig = PE_vizall.bigwig
         File? sp_a_norm_wig = PE_vizall.norm_wig
         File? sp_a_tdffile = PE_vizall.tdffile
+        File? cp_bigwig = SE_visualization.bigwig
+        File? cp_norm_wig = SE_visualization.norm_wig
+        File? cp_tdffile = SE_visualization.tdffile
+        File? cp_n_bigwig = SE_viznomodel.bigwig
+        File? cp_n_norm_wig = SE_viznomodel.norm_wig
+        File? cp_n_tdffile = SE_viznomodel.tdffile
+        File? cp_a_bigwig = SE_vizall.bigwig
+        File? cp_a_norm_wig = SE_vizall.norm_wig
+        File? cp_a_tdffile = SE_vizall.tdffile
         File? sp_s_bigwig = PE_vizsicer.bigwig
         File? sp_s_norm_wig = PE_vizsicer.norm_wig
         File? sp_s_tdffile = PE_vizsicer.tdffile
 
-        File? sf_bigwigfile = s_fraggraph.bigwigfile
+        File? sf_bigwig = s_fraggraph.bigwigfile
         File? sf_tdffile = s_fraggraph.tdffile
         File? sf_wigfile = s_fraggraph.wigfile
-        File? cf_bigwigfile = c_fraggraph.bigwigfile
+        File? cf_bigwig = c_fraggraph.bigwigfile
         File? cf_tdffile = c_fraggraph.tdffile
         File? cf_wigfile = c_fraggraph.wigfile
 
@@ -2161,12 +2181,12 @@ workflow peaseq {
         Array[File?]? cp_qc_textfile = c_indv_PE_summarystats.textfile
         File? s_qc_mergehtml = s_mergehtmlfile
         File? c_qc_mergehtml = c_mergehtmlfile
-        File? sp_s_uno_statsfile = PE_s_summarystats.statsfile
-        File? sp_s_uno_htmlfile = PE_s_summarystats.htmlfile
-        File? sp_s_uno_textfile = PE_s_summarystats.textfile
-        File? sp_c_uno_statsfile = PE_c_summarystats.statsfile
-        File? sp_c_uno_htmlfile = PE_c_summarystats.htmlfile
-        File? sp_c_uno_textfile = PE_c_summarystats.textfile
+        File? s_uno_statsfile = PE_s_summarystats.statsfile
+        File? s_uno_htmlfile = PE_s_summarystats.htmlfile
+        File? s_uno_textfile = PE_s_summarystats.textfile
+        File? c_uno_statsfile = PE_c_summarystats.statsfile
+        File? c_uno_htmlfile = PE_c_summarystats.htmlfile
+        File? c_uno_textfile = PE_c_summarystats.textfile
         File? sp_statsfile = PE_concatstats.statsfile
         File? sp_htmlfile = PE_concatstats.htmlfile
         File? sp_textfile = PE_concatstats.textfile
@@ -2176,8 +2196,8 @@ workflow peaseq {
         File? c_summaryhtml = PE_merge_c_summarystats.htmlfile
         File? c_summarystats = PE_merge_c_summarystats.statsfile
         File? c_summarytxt = PE_merge_c_summarystats.textfile
-        File? m_summaryhtml = PE_overallsummary.summaryhtml
-        File? m_summarytxt = PE_overallsummary.summarytxt
+        File? sp_summaryhtml = PE_overallsummary.summaryhtml
+        File? sp_summarytxt = PE_overallsummary.summarytxt
         File? s_fragsize = s_fraggraph.fragsizepng
         File? c_fragsize = c_fraggraph.fragsizepng
     }

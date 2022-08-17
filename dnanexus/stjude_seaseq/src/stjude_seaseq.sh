@@ -48,7 +48,7 @@ main() {
     fi
 
     # Make sure sample inputs are provided
-    if [ "$sample_fastq" == "" -a "$sample_sraid" == "" ]
+    if [ "$sample_R1_fastq" == "" -a "$sample_sraid" == "" ]
     then
       echo "Sample Input could not be determined." >&2
       echo "Sample FASTQ or SRR was not provided." >&2
@@ -70,7 +70,7 @@ main() {
     # git clone and configure SEAseq
     git clone https://github.com/stjude/seaseq.git seaseq
     cd seaseq
-    git checkout 2.2
+    git checkout 3.0
     cd dnanexus
     reorg_id=$(dx build -f /seaseq-reorg | jq -r '.id')
     echo "Reorg applet ID: ${reorg_id}"
@@ -81,19 +81,34 @@ main() {
     echo '434b515609123f1092453eac87984027  dxCompiler-2.9.0.jar' > dxCompiler-2.9.0.jar.md5
     md5sum -c dxCompiler-2.9.0.jar.md5
 
-    if grep -F "control_fastq" /home/dnanexus/job_input.json; then
-        SEASEQ="seaseq-control.wdl"
-    elif grep -F "control_sraid" /home/dnanexus/job_input.json; then
-        SEASEQ="seaseq-control.wdl"
-    else
-        SEASEQ="seaseq-case.wdl"
+    if grep -F "control_sraid" /home/dnanexus/job_input.json; then
+        SEASEQ="workflows/workflows/evaluatecontrolsrr.wdl"
+        sed -i "s/cloud=false/cloud=true/" peaseq-control.wdl
+        sed -i "s/cloud=false/cloud=true/" seaseq-control.wdl
+    elif grep -F "sample_sraid" /home/dnanexus/job_input.json; then
+        SEASEQ="workflows/workflows/evaluatesamplesrr.wdl"
+        sed -i "s/cloud=false/cloud=true/" seaseq-case.wdl
+        sed -i "s/cloud=false/cloud=true/" peaseq-case.wdl
+    else 
+        if grep -F "control_R2_fastq" /home/dnanexus/job_input.json; then
+            SEASEQ="peaseq-control.wdl"
+        elif grep -F "control_R1_fastq" /home/dnanexus/job_input.json; then
+            SEASEQ="seaseq-control.wdl"
+        elif grep -F "sample_R2_fastq" /home/dnanexus/job_input.json; then
+            SEASEQ="peaseq-case.wdl"
+        elif grep -F "sample_R1_fastq" /home/dnanexus/job_input.json; then
+            SEASEQ="seaseq-case.wdl"
+        fi
     fi
-
+    
+    echo $SEASEQ
     sed -i "s/cloud=false/cloud=true/" $SEASEQ
-    grep "cloud" $SEASEQ
+    
     sed -i "s/import \"..\/tasks\/util\.wdl/import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\/util\.wdl/" workflows/workflows/visualization.wdl
     sed -i "s/import \"..\/tasks\/bedtools\.wdl/import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\/bedtools\.wdl/" workflows/workflows/motifs.wdl
     sed -i "s/import \"..\/tasks\//import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\//" workflows/workflows/mapping.wdl
+    sed -i "s/import \"..\/../\//import \"\/home\/dnanexus\/seaseq\//" workflows/workflows/evaluatesamplesrr.wdl
+    sed -i "s/import \"..\/../\//import \"\/home\/dnanexus\/seaseq\//" workflows/workflows/evaluatecontrolsrr.wdl
 
     # compile SEAseq to dxCompiler-2.9.0
     dx mkdir -p "${DX_PROJECT_CONTEXT_ID}":/app-$timestamp/
@@ -102,7 +117,6 @@ main() {
 
     # specify output folder and input json
     out_folder=$(dx describe --json "$DX_JOB_ID" | jq -r '.folder')
-
 
     echo "LAUNCHING WORKFLOW"
     jq 'walk( if type == "object" then . | del(.genome) else . end)' /home/dnanexus/updated_input.json | jq 'walk( if type == "object" then with_entries( .key |= if startswith("$dnanexus") or startswith("project") or startswith("id") then . else sub( "^"; "stage-common.") end)  else . end )' > /home/dnanexus/wf_input.json

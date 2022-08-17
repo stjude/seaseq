@@ -146,7 +146,7 @@ workflow peaseq {
             help: 'Specify maximum insert size for paired-end alignment (default: 600).',
             example: 600
         }
-	    strandedness: {
+	strandedness: {
             description: 'Bowtie v1 mate orientation (--fr/--rf/--ff).',
             group: 'analysis_parameter',
             help: 'The upstream/downstream mate orientation for paired-end alignment (default: --fr).',
@@ -1110,7 +1110,7 @@ workflow peaseq {
         Array[File?]? indv_sp_rmindexbam = indv_PE_mapping.mkdup_index
 
         File? uno_s_sortedbam = uno_PE_mapping.sorted_bam
-        File? uno_s_indexbam = uno_PE_mapping.bam_index
+        File? uno_s_indexstatsbam = uno_PE_mapping.bam_index
         File? uno_s_bkbam = uno_PE_mapping.bklist_bam
         File? uno_s_bkindexbam = uno_PE_mapping.bklist_index
         File? uno_s_rmbam = uno_PE_mapping.mkdup_bam
@@ -1333,7 +1333,7 @@ workflow peaseq {
         File? sp_s_norm_wig = PE_vizsicer.norm_wig
         File? sp_s_tdffile = PE_vizsicer.tdffile
 
-        File? sf_bigwigfile = fraggraph.bigwigfile
+        File? sf_bigwig = fraggraph.bigwigfile
         File? sf_tdffile = fraggraph.tdffile
         File? sf_wigfile = fraggraph.wigfile
 
@@ -1349,7 +1349,6 @@ workflow peaseq {
         File s_summarytxt = merge_overallsummary.summarytxt
 
         File? s_qc_mergehtml = final_mergehtml.mergefile
-        File? s_qc_mergetxt = final_mergehtml.mergetxt
 
         Array[File?]? sp_qc_statsfile = indv_PE_summarystats.statsfile
         Array[File?]? sp_qc_htmlfile = indv_PE_summarystats.htmlfile
@@ -1362,9 +1361,8 @@ workflow peaseq {
         File? sp_textfile = PE_merge_summarystats.textfile
         File? summaryhtml = PE_uno_overallsummary.summaryhtml
         File? summarytxt = PE_uno_overallsummary.summarytxt
-        File? m_summaryhtml = PE_merge_overallsummary.summaryhtml
-        File? m_summarytxt = PE_merge_overallsummary.summarytxt
-
+        File? sp_summaryhtml = PE_merge_overallsummary.summaryhtml
+        File? sp_summarytxt = PE_merge_overallsummary.summarytxt
         File? s_fragsize = fraggraph.fragsizepng
     }
 }

@@ -9,7 +9,7 @@ Both **SEAseq** (**S**ingle-**E**nd **A**ntibody **seq**uencing) and **PEAseq** 
 
 There analyses include reads alignment, narrow and broad peak calling, motif analysis, read coverage profiling, clustered peak (i.e. enhancer and super-enhancer) identification, and providing a detailed variety of quality assessment metrics.
 
-<center><img src="https://github.com/stjude/seaseq/blob/master/docs/images/flowchart.png"></center>
+<p align="center"><img src="https://github.com/stjude/seaseq/blob/master/docs/images/flowchart.png"></p>
 
 ## How to use SEAseq/PEAseq?
 
@@ -17,7 +17,7 @@ The pipeline is designed to be platform-independent and scalable:
 can be executed on a single node or computer (Linux or MAC OS, 
 though not recommended) or in high-performance computing (HPC) environments.
 
-Thus, We offer two versatile ways to use SEAseq based on user's perferences or computational resource constraints. 
+Thus, We offer two versatile ways to use SEAseq based on user's preferences or computational resource constraints. 
 
 ### 1. St. Jude Cloud Genomics Platorm
 
