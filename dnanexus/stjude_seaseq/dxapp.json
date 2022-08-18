@@ -3,26 +3,48 @@
   "title": "SEAseq (St. Jude)",
   "summary": "Single-End Antibody sequencing workflow",
   "dxapi": "1.0.1",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "openSource" : true,
   "inputSpec": [
     {
-      "name": "sample_fastq",
-      "label": "Sample FASTQs",
+      "name": "sample_R1_fastq",
+      "label": "Sample R1 FASTQs",
       "class": "array:file",
       "optional": true,
-      "help": "Upload one or more sample FASTQ files.",
+      "help": "Upload one or more sample R1 FASTQ files.",
       "patterns": [
         "*.fq.gz",
         "*.fastq.gz"
       ]
     },
     {
-      "name": "control_fastq",
-      "label": "Control FASTQs",
+      "name": "sample_R2_fastq",
+      "label": "Sample R2 FASTQs",
       "class": "array:file",
       "optional": true,
-      "help": "Upload one or more input/control FASTQ files.",
+      "help": "Upload one or more sample R2 FASTQ files.",
+      "patterns": [
+        "*.fq.gz",
+        "*.fastq.gz"
+      ]
+    },
+    {
+      "name": "control_R1_fastq",
+      "label": "Control R1 FASTQs",
+      "class": "array:file",
+      "optional": true,
+      "help": "Upload one or more input/control R1 FASTQ files.",
+      "patterns": [
+        "*.fq.gz",
+        "*.fastq.gz"
+      ]
+    },
+    {
+      "name": "control_R2_fastq",
+      "label": "Control R2 FASTQs",
+      "class": "array:file",
+      "optional": true,
+      "help": "Upload one or more input/control R2 FASTQ files.",
       "patterns": [
         "*.fq.gz",
         "*.fastq.gz"
@@ -110,6 +132,21 @@
       "help": "Input publicly available input/control FASTQs (SRRs). Multiple SRRs are separated by commas (,). e.g. SRR12345678"
     },
     {
+      "name": "strandedness",
+      "label": "Strands Orientation",
+      "class": "string",
+      "choices": ["fr", "rf", "ff"],
+      "optional": true,
+      "help": "Select strand orientation of paired-end FASTQ reads. Default: 'fr'"
+    },
+    {
+      "name": "insertsize",
+      "label": "Paired-end Mapping Insert Size ",
+      "class": "int",
+      "optional": true,
+      "help": "Insert preferred Bowtie mapping insert size for paired-end FASTQs. Default: 600"
+    },
+    {
       "name": "results_name",
       "label": "Results File Name",
       "class": "string",
@@ -175,6 +212,46 @@
     },
     {
       "name": "c_mergebam_zipfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "indv_sp_bam_htmlfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_sp_bam_zipfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "sp_mergebam_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_mergebam_zipfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "indv_cp_bam_htmlfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_cp_bam_zipfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "cp_mergebam_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_mergebam_zipfile",
       "class": "file",
       "optional": true
     },
@@ -299,6 +376,66 @@
       "optional": true
     },
     {
+      "name": "indv_sp_sortedbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_sp_indexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_sp_bkbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_sp_bkindexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_sp_rmbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_sp_rmindexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_cp_sortedbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_cp_indexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_cp_bkbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_cp_bkindexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_cp_rmbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "indv_cp_rmindexbam",
+      "class": "array:file",
+      "optional": true
+    },
+    {
       "name": "uno_s_sortedbam",
       "class": "file",
       "optional": true
@@ -415,6 +552,86 @@
     },
     {
       "name": "c_rmindexbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_mergebamfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_mergebamindex",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_bkbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_bkindexbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_rmbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_rmindexbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_mergebamfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_mergebamindex",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_bkbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_bkindexbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_rmbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_rmindexbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_fragments_bam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_fragments_indexbam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_fragments_bam",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_fragments_indexbam",
       "class": "file",
       "optional": true
     },
@@ -554,6 +771,141 @@
       "optional": true
     },
     {
+      "name": "only_sp_peakbedfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "only_sp_peakxlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "only_sp_summitsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "only_sp_wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "only_cp_peakbedfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "only_cp_peakxlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "only_cp_summitsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "only_cp_wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_peakbedfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_peakxlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_negativexlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_summitsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_ctrlwigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_all_peakbedfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_all_peakxlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_all_negativexlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_all_summitsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_all_wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_all_ctrlwigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_nm_peakbedfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_nm_peakxlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_nm_negativexlsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_nm_summitsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_nm_wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_nm_ctrlwigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_readme_peaks",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "scoreisland",
       "class": "file",
       "optional": true
@@ -570,6 +922,26 @@
     },
     {
       "name": "sicer_fdrisland",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_scoreisland",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_sicer_wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_sicer_summary",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_sicer_fdrisland",
       "class": "file",
       "optional": true
     },
@@ -639,6 +1011,71 @@
       "optional": true
     },
     {
+      "name": "sp_pngfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_mapped_union",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_mapped_stitch",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_super_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_gff_file",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_gff_union",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_union_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_stitch_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_e_to_g_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_g_to_e_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_e_to_g_super_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_g_to_e_super_enhancers",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "flankbedfile",
       "class": "file",
       "optional": true
@@ -694,6 +1131,61 @@
       "optional": true
     },
     {
+      "name": "sp_flankbedfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_ame_tsv",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_ame_html",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_ame_seq",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_meme",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_meme_summary",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_summit_ame_tsv",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_summit_ame_html",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_summit_ame_seq",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_summit_meme",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_summit_meme_summary",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "s_matrices",
       "class": "file",
       "optional": true
@@ -745,6 +1237,61 @@
     },
     {
       "name": "jpg_h_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_s_matrices",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_c_matrices",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_densityplot",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_pdf_gene",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_pdf_h_gene",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_png_h_gene",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_jpg_h_gene",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_pdf_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_pdf_h_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_png_h_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_jpg_h_promoters",
       "class": "file",
       "optional": true
     },
@@ -889,6 +1436,146 @@
       "optional": true
     },
     {
+      "name": "sp_peak_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_peak_genebody",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_peak_window",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_peak_closest",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_peak_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_gene_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_pdf_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_all_peak_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_all_peak_genebody",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_all_peak_window",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_all_peak_closest",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_all_peak_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_all_gene_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_all_pdf_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_nomodel_peak_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_nomodel_peak_genebody",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_nomodel_peak_window",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_nomodel_peak_closest",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_nomodel_peak_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_nomodel_gene_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_nomodel_pdf_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_sicer_peak_promoters",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_sicer_peak_genebody",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_sicer_peak_window",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_sicer_peak_closest",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_sicer_peak_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_sicer_gene_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_sicer_pdf_comparison",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "bigwig",
       "class": "file",
       "optional": true
@@ -994,6 +1681,141 @@
       "optional": true
     },
     {
+      "name": "sp_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_norm_wig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_n_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_n_norm_wig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_n_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_a_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_a_norm_wig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_a_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_norm_wig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_n_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_n_norm_wig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_n_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_a_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_a_norm_wig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cp_a_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_s_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_s_norm_wig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_s_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sf_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sf_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sf_wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cf_bigwig",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cf_tdffile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "cf_wigfile",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "s_qc_statsfile",
       "class": "array:file",
       "optional": true
@@ -1031,6 +1853,36 @@
     {
       "name": "c_qc_mergehtml",
       "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_qc_statsfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "sp_qc_htmlfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "sp_qc_textfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "cp_qc_statsfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "cp_qc_htmlfile",
+      "class": "array:file",
+      "optional": true
+    },
+    {
+      "name": "cp_qc_textfile",
+      "class": "array:file",
       "optional": true
     },
     {
@@ -1079,6 +1931,91 @@
       "optional": true
     },
     {
+      "name": "s_statsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_textfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_statsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_textfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_statsfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_htmlfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "sp_textfile",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_summaryhtml",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_summarystats",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_summarytxt",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_summaryhtml",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_summarystats",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_summarytxt",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "s_fragsize",
+      "class": "file",
+      "optional": true
+    },
+    {
+      "name": "c_fragsize",
+      "class": "file",
+      "optional": true
+    },
+    {
       "name": "summaryhtml",
       "class": "file",
       "optional": true
@@ -1089,12 +2026,12 @@
       "optional": true
     },
     {
-      "name": "m_summaryhtml",
+      "name": "sp_summaryhtml",
       "class": "file",
       "optional": true
     },
     {
-      "name": "m_summarytxt",
+      "name": "sp_summarytxt",
       "class": "file",
       "optional": true
     }

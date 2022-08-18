@@ -146,7 +146,7 @@ workflow peaseq {
             help: 'Specify maximum insert size for paired-end alignment (default: 600).',
             example: 600
         }
-	    strandedness: {
+	strandedness: {
             description: 'Bowtie v1 mate orientation (--fr/--rf/--ff).',
             group: 'analysis_parameter',
             help: 'The upstream/downstream mate orientation for paired-end alignment (default: --fr).',
@@ -223,12 +223,18 @@ workflow peaseq {
         Array[File] sample_R1_fastqfile = s_R1_fastq
         Array[File] s_R2_fastq = select_first([sample_R2_fastq, string_fastq])
         Array[File] sample_R2_fastqfile = s_R2_fastq
+        if (length(sample_R1_fastqfile) > 1) {
+            call peaseq_util.sortfiles as R1_sorted { input: fastqfiles=sample_R1_fastqfile }
+            call peaseq_util.sortfiles as R2_sorted { input: fastqfiles=sample_R2_fastqfile }
+        }
+        Array[File] sample_R1_fastqfiles = select_first([R1_sorted.allfiles, sample_R1_fastqfile])
+        Array[File] sample_R2_fastqfiles = select_first([R2_sorted.allfiles, sample_R2_fastqfile])
     }
 
     # collate all fastqfiles
-    Array[File] sample_R1 = flatten(select_all([sample_R1_srafile, sample_R1_fastqfile]))
-    Array[File] sample_R2 = flatten(select_all([sample_R2_srafile, sample_R2_fastqfile]))
-    Array[File] all_sample_fastqfiles = flatten(select_all([sample_R1_srafile, sample_R1_fastqfile,sample_R2_srafile, sample_R2_fastqfile]))
+    Array[File] sample_R1 = flatten(select_all([sample_R1_srafile, sample_R1_fastqfiles]))
+    Array[File] sample_R2 = flatten(select_all([sample_R2_srafile, sample_R2_fastqfiles]))
+    Array[File] all_sample_fastqfiles = flatten(select_all([sample_R1_srafile, sample_R1_fastqfiles,sample_R2_srafile, sample_R2_fastqfiles]))
 
     # transpose to paired-end tuples
     Array[Pair[File, File]] sample_fastqfiles = zip(sample_R1, sample_R2)
@@ -1104,7 +1110,7 @@ workflow peaseq {
         Array[File?]? indv_sp_rmindexbam = indv_PE_mapping.mkdup_index
 
         File? uno_s_sortedbam = uno_PE_mapping.sorted_bam
-        File? uno_s_indexbam = uno_PE_mapping.bam_index
+        File? uno_s_indexstatsbam = uno_PE_mapping.bam_index
         File? uno_s_bkbam = uno_PE_mapping.bklist_bam
         File? uno_s_bkindexbam = uno_PE_mapping.bklist_index
         File? uno_s_rmbam = uno_PE_mapping.mkdup_bam
@@ -1327,7 +1333,7 @@ workflow peaseq {
         File? sp_s_norm_wig = PE_vizsicer.norm_wig
         File? sp_s_tdffile = PE_vizsicer.tdffile
 
-        File? sf_bigwigfile = fraggraph.bigwigfile
+        File? sf_bigwig = fraggraph.bigwigfile
         File? sf_tdffile = fraggraph.tdffile
         File? sf_wigfile = fraggraph.wigfile
 
@@ -1343,7 +1349,6 @@ workflow peaseq {
         File s_summarytxt = merge_overallsummary.summarytxt
 
         File? s_qc_mergehtml = final_mergehtml.mergefile
-        File? s_qc_mergetxt = final_mergehtml.mergetxt
 
         Array[File?]? sp_qc_statsfile = indv_PE_summarystats.statsfile
         Array[File?]? sp_qc_htmlfile = indv_PE_summarystats.htmlfile
@@ -1356,9 +1361,8 @@ workflow peaseq {
         File? sp_textfile = PE_merge_summarystats.textfile
         File? summaryhtml = PE_uno_overallsummary.summaryhtml
         File? summarytxt = PE_uno_overallsummary.summarytxt
-        File? m_summaryhtml = PE_merge_overallsummary.summaryhtml
-        File? m_summarytxt = PE_merge_overallsummary.summarytxt
-
+        File? sp_summaryhtml = PE_merge_overallsummary.summaryhtml
+        File? sp_summarytxt = PE_merge_overallsummary.summarytxt
         File? s_fragsize = fraggraph.fragsizepng
     }
 }

@@ -827,9 +827,7 @@ workflow seaseq {
         File? htmlfile = merge_summarystats.htmlfile
         File? textfile = merge_summarystats.textfile
 
-        File? summaryhtml = uno_overallsummary.summaryhtml
-        File? summarytxt = uno_overallsummary.summarytxt
-        File? m_summaryhtml = merge_overallsummary.summaryhtml
-        File? m_summarytxt = merge_overallsummary.summarytxt
+        File? summaryhtml = select_first([uno_overallsummary.summaryhtml, merge_overallsummary.summaryhtml])
+        File? summarytxt = select_first([uno_overallsummary.summarytxt,merge_overallsummary.summarytxt])
     }
 }
