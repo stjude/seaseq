@@ -27,7 +27,7 @@ in research environments lacking computational infrastructure or expertise.
 [SRA]: https://www.ncbi.nlm.nih.gov/sra
 
 <p align="center">
-  <a href="https://stjude.github.io/seaseq/docs/README.md"><strong>Explore the documentation »</strong></a>
+  <a href="https://github.com/stjude/seaseq/tree/master/docs#readme"><strong>Explore the documentation »</strong></a>
   <br />
   <a href="https://doi.org/10.1186/s12859-022-04588-z" target="_blank"><strong>Read the paper »</strong></a>
   <br />
