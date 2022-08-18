@@ -17,8 +17,6 @@ workflow evaluatesrr {
         Boolean run_motifs=true
         Int? insertsize = 600
         String? strandedness = "fr"
-        String? results_name
-        Boolean run_motifs=true
     }
     
     Boolean paired=true

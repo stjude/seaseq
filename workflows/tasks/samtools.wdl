@@ -191,33 +191,3 @@ task mergebam {
         File? fixmatemergebam = "~{default_location}/~{fixmatefile}"
     }
 }
-
-task checkmapped {
-    input {
-        File bamfile
-        String default_location = "BAM_files"
-        String outputfile = basename(sub(bamfile,".bam$", "-mappedcount.txt"))
-
-        Int memory_gb = 5
-	Int max_retries = 1
-        Int ncpu = 1
-    }
-    command {
-        mkdir -p ~{default_location} && cd ~{default_location}
-
-        mappedreads=$(samtools view -F 0x0204 ~{bamfile} | wc -l)
-
-        if [ $mappedreads -gt 0 ]; then
-            echo $mappedreads > ~{outputfile}
-        fi
-    }
-    runtime {
-	memory: ceil(memory_gb * ncpu) + " GB"
-        maxRetries: max_retries
-        docker: 'ghcr.io/stjude/abralab/samtools:v1.9'
-        cpu: ncpu
-    }
-    output {
-        File? outputfile = "~{default_location}/~{outputfile}"
-    }
-}

@@ -34,7 +34,7 @@ workflow peaseq {
             whatsNew: [
                 {
                     version: "1.0",
-                    changes: "Initial release"
+                    changes: ["Initial release"]
                 }
             ]
         }
@@ -146,7 +146,7 @@ workflow peaseq {
             help: 'Specify maximum insert size for paired-end alignment (default: 600).',
             example: 600
         }
-	strandedness: {
+	    strandedness: {
             description: 'Bowtie v1 mate orientation (--fr/--rf/--ff).',
             group: 'analysis_parameter',
             help: 'The upstream/downstream mate orientation for paired-end alignment (default: --fr).',

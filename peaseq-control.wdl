@@ -34,7 +34,7 @@ workflow peaseq {
             whatsNew: [
                 {
                     version: "1.0",
-                    changes: "Initial release"
+                    changes: ["Initial release"]
                 }
             ]
         }

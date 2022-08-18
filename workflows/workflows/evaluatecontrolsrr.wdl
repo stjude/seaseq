@@ -17,10 +17,8 @@ workflow evaluatesrr {
         Array[File]? control_R1_fastq
         Array[File]? control_R2_fastq
         String? results_name
-        Boolean run_motifs=true
         Int? insertsize = 600
         String? strandedness = "fr"
-        String? results_name
         Boolean run_motifs=true
     }
     
