@@ -94,21 +94,33 @@ main() {
             SEASEQ="peaseq-control.wdl"
         elif grep -F "control_R1_fastq" /home/dnanexus/job_input.json; then
             SEASEQ="seaseq-control.wdl"
+            sed -i "s/sample_R1_fastq/sample_fastq/" /home/dnanexus/updated_input.json
+            sed -i "s/control_R1_fastq/control_fastq/" /home/dnanexus/updated_input.json
+            sed -i '/\"insertsize"/d' /home/dnanexus/updated_input.json
+            sed -i '/\"strandedness/d' /home/dnanexus/updated_input.json
         elif grep -F "sample_R2_fastq" /home/dnanexus/job_input.json; then
             SEASEQ="peaseq-case.wdl"
-        elif grep -F "sample_R1_fastq" /home/dnanexus/job_input.json; then
+        elif grep -F "sample_R1_fastq" /home/dnanexus/updated_input.json; then
             SEASEQ="seaseq-case.wdl"
+            sed -i "s/sample_R1_fastq/sample_fastq/" /home/dnanexus/updated_input.json
+            sed -i '/\"insertsize/d' /home/dnanexus/updated_input.json
+            sed -i '/\"strandedness/d' /home/dnanexus/updated_input.json
+        else
+            echo "Can Not determine Pipeline to execute, contact Maintainer" >&2
+            exit 1
         fi
+        sed -i "s/cloud=false/cloud=true/" $SEASEQ
     fi
     
     echo $SEASEQ
-    sed -i "s/cloud=false/cloud=true/" $SEASEQ
     
+    #cat /home/dnanexus/updated_input.json
+
     sed -i "s/import \"..\/tasks\/util\.wdl/import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\/util\.wdl/" workflows/workflows/visualization.wdl
     sed -i "s/import \"..\/tasks\/bedtools\.wdl/import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\/bedtools\.wdl/" workflows/workflows/motifs.wdl
     sed -i "s/import \"..\/tasks\//import \"\/home\/dnanexus\/seaseq\/workflows\/tasks\//" workflows/workflows/mapping.wdl
-    sed -i "s/import \"..\/../\//import \"\/home\/dnanexus\/seaseq\//" workflows/workflows/evaluatesamplesrr.wdl
-    sed -i "s/import \"..\/../\//import \"\/home\/dnanexus\/seaseq\//" workflows/workflows/evaluatecontrolsrr.wdl
+    sed -i "s/import \"..\/..\//import \"\/home\/dnanexus\/seaseq\//" workflows/workflows/evaluatesamplesrr.wdl
+    sed -i "s/import \"..\/..\//import \"\/home\/dnanexus\/seaseq\//" workflows/workflows/evaluatecontrolsrr.wdl
 
     # compile SEAseq to dxCompiler-2.9.0
     dx mkdir -p "${DX_PROJECT_CONTEXT_ID}":/app-$timestamp/
@@ -121,7 +133,7 @@ main() {
     echo "LAUNCHING WORKFLOW"
     jq 'walk( if type == "object" then . | del(.genome) else . end)' /home/dnanexus/updated_input.json | jq 'walk( if type == "object" then with_entries( .key |= if startswith("$dnanexus") or startswith("project") or startswith("id") then . else sub( "^"; "stage-common.") end)  else . end )' > /home/dnanexus/wf_input.json
 
-    cat /home/dnanexus/wf_input.json
+    #cat /home/dnanexus/wf_input.json
 
     analysis_id=$(dx run -y "$wf_id" --brief -f /home/dnanexus/wf_input.json --destination "${DX_PROJECT_CONTEXT_ID}":"$out_folder" --extra-args '{"executionPolicy": {"onNonRestartableFailure": "failStage"}}')
 
