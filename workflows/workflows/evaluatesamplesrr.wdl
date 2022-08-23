@@ -17,9 +17,9 @@ workflow evaluatesrr {
         Boolean run_motifs=true
         Int? insertsize = 600
         String? strandedness = "fr"
+        Boolean paired=true
     }
     
-    Boolean paired=true
     Array[String] string_sra = [1] #buffer to allow for sra_id optionality
     Array[String] s_sraid = select_first([sample_sraid, string_sra])
     scatter (eachsra in s_sraid) {

@@ -86,9 +86,18 @@ main() {
         sed -i "s/cloud=false/cloud=true/" peaseq-control.wdl
         sed -i "s/cloud=false/cloud=true/" seaseq-control.wdl
     elif grep -F "sample_sraid" /home/dnanexus/job_input.json; then
-        SEASEQ="workflows/workflows/evaluatesamplesrr.wdl"
-        sed -i "s/cloud=false/cloud=true/" seaseq-case.wdl
-        sed -i "s/cloud=false/cloud=true/" peaseq-case.wdl
+        if grep -F "control_R1_fastq" /home/dnanexus/job_input.json; then
+            SEASEQ="workflows/workflows/evaluatecontrolsrr.wdl"
+            sed -i "s/cloud=false/cloud=true/" peaseq-control.wdl
+            sed -i "s/cloud=false/cloud=true/" seaseq-control.wdl
+            if ! grep -F "control_R2_fastq" /home/dnanexus/job_input.json; then
+                sed -i "s/paired=true/paired=false/" $SEASEQ
+            fi
+        else
+            SEASEQ="workflows/workflows/evaluatesamplesrr.wdl"
+            sed -i "s/cloud=false/cloud=true/" seaseq-case.wdl
+            sed -i "s/cloud=false/cloud=true/" peaseq-case.wdl
+        fi
     else 
         if grep -F "control_R2_fastq" /home/dnanexus/job_input.json; then
             SEASEQ="peaseq-control.wdl"
