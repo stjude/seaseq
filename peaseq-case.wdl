@@ -357,7 +357,7 @@ workflow peaseq {
         input :
             bamfile=SE_mergebam_afterbklist,
             default_location=if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12].*.f.*q.gz','') + '/single-end_mode/BAM_files'
-        }
+    }
 
     call samtools.indexstats as SE_merge_mkdup {
         input :
