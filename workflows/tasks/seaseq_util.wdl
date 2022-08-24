@@ -109,7 +109,8 @@ task summaryreport {
         File? sampleqc_html
         File overallqc_txt
         File overallqc_html
-        String default_location = './'
+        String? default_location
+        String default_location_m = if defined(default_location) then select_first([default_location,overallqc_txt]) + '/' else ""
         String fastq_mode = "SEAseq"
 
         String outputfile = sub(basename(overallqc_html), 'stats.htmlx', 'seaseq_report.html')
@@ -122,8 +123,8 @@ task summaryreport {
     command <<<
 
         # make default location
-        mkdir -p ~{default_location}
-        cd ~{default_location}
+        mkdir -p $(pwd)/~{default_location_m}
+        cd $(pwd)/~{default_location_m}
 
         # Printing header
         head -n 121 /usr/local/bin/seaseq_overall.header > ~{outputfile}
@@ -171,8 +172,8 @@ task summaryreport {
         cpu: ncpu
     }
     output {
-        File summaryhtml = "~{default_location}/~{outputfile}"
-        File summarytxt = "~{default_location}/~{outputtxt}"
+        File summaryhtml = "~{default_location_m}~{outputfile}"
+        File summarytxt = "~{default_location_m}~{outputtxt}"
     }
 }
 
