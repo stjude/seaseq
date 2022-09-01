@@ -1345,8 +1345,8 @@ workflow peaseq {
         File? htmlfile = SE_summarystats.htmlfile
         File? textfile = SE_summarystats.textfile
 
-        File s_summaryhtml = merge_overallsummary.summaryhtml
-        File s_summarytxt = merge_overallsummary.summarytxt
+        File? s_summaryhtml = merge_overallsummary.summaryhtml
+        File? s_summarytxt = merge_overallsummary.summarytxt
 
         File? s_qc_mergehtml = final_mergehtml.mergefile
 
