@@ -357,7 +357,7 @@ task peaksanno {
 
     >>>
     runtime {
-        continueOnReturnCode: [0, 1]
+        continueOnReturnCode: true
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
         docker: 'ghcr.io/stjude/seaseq/scripts:v2.4.0'

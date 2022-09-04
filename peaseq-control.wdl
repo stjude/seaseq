@@ -747,7 +747,7 @@ workflow peaseq {
         # Execute analysis on merge bam file
         # Analysis executed:
         #   Merge BAM (if more than 1 fastq is provided)
-        #   FastQC on Merge BAM (AllCases_<number>_mapped)
+        #   FastQC on Merge BAM (AllControl_<number>_mapped)
 
         # merge bam files and perform fasTQC if more than one is provided
         call util.mergehtml as c_PE_mergehtml {
@@ -1782,7 +1782,7 @@ workflow peaseq {
             sampleqc_pe_txt=select_first([s_PE_mergehtml.mergetxt,PE_s_summarystats.textfile]),
             controlqc_pe_txt=select_first([c_PE_mergehtml.mergetxt,PE_c_summarystats.textfile]),
             overallqc_pe_txt=PE_concatstats.textfile,
-            outputfile = if defined(results_name) then results_name + '.peaseq_report.html' else 'AllCases_' + length(sample_fastqfiles) + 'fastqpairs+control.peaseq_report.html'
+            outputfile = if defined(results_name) then results_name + '.peaseq_report.html' else if multi_fastqpair then 'AllCases_' + length(sample_fastqfiles) + 'fastqpairs+control.peaseq_report.html' else sub(basename(sample_fastqfiles[0].left),'_R?[12].*.f.*q.gz','') + '+control.peaseq_report.html'
     }
 
 ### ------------------------------------------------- ###
