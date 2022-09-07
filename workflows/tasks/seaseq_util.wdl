@@ -349,11 +349,14 @@ task peaksanno {
            ln -s ~{gtffile} ~{sub(basename(gtffile),'.gz','')}
         fi
 
-        peaksanno.py \
-        -p ~{bedfile} \
-        ~{if defined(summitfile) then "-s " + summitfile else ""} \
-        -g ~{sub(basename(gtffile),'.gz','')} \
-        -c ~{chromsizes}
+        checkcolumns=$(wc -l ~{bedfile} | awk -F' '  '{print $1}')
+        if [[ $checkcolumns -gt 0 ]]; then
+            peaksanno.py \
+            -p ~{bedfile} \
+            ~{if defined(summitfile) then "-s " + summitfile else ""} \
+            -g ~{sub(basename(gtffile),'.gz','')} \
+            -c ~{chromsizes}
+        fi
 
     >>>
     runtime {
