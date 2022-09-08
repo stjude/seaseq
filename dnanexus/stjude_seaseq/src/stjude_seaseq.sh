@@ -70,7 +70,7 @@ main() {
     # git clone and configure SEAseq
     git clone https://github.com/stjude/seaseq.git seaseq
     cd seaseq
-    git checkout p17-dxC
+    git checkout 3.0
     cd dnanexus
     reorg_id=$(dx build -f /seaseq-reorg | jq -r '.id')
     echo "Reorg applet ID: ${reorg_id}"
@@ -78,12 +78,8 @@ main() {
     cd ..
     timestamp=$(date +%s)
     wget -nv https://github.com/dnanexus/dxWDL/releases/download/v1.50/dxWDL-v1.50.jar
-    #echo '476621564b3b310b17598ee1f02a1865 dxWDL-v1.50.jar' > dxWDL-v1.50.jar.md5
-    #md5sum -c dxWDL-v1.50.jar.md5
-
-    #wget -nv https://github.com/dnanexus/dxCompiler/releases/download/2.9.0/dxCompiler-2.9.0.jar
-    #echo '434b515609123f1092453eac87984027  dxCompiler-2.9.0.jar' > dxCompiler-2.9.0.jar.md5
-    #md5sum -c dxCompiler-2.9.0.jar.md5
+    echo '476621564b3b310b17598ee1f02a1865 dxWDL-v1.50.jar' > dxWDL-v1.50.jar.md5
+    md5sum -c dxWDL-v1.50.jar.md5
 
     # Check fastqtype
     if [ $fastqtype = true ]; then pipeline_prefix='peaseq';
@@ -136,7 +132,7 @@ else . end)' > /home/dnanexus/corrected_input.json
     sed -i "s/${before}/${after}/" workflows/workflows/motifs.wdl
     sed -i "s/${before}/${after}/" workflows/workflows/mapping.wdl
     
-    # compile SEAseq to dxWDL-v1.50 #dxCompiler-2.9.0
+    # compile SEAseq to dxWDL-v1.50 
     dx mkdir -p "${DX_PROJECT_CONTEXT_ID}":/app-$timestamp/
     wf_id=$(java -jar dxWDL-v1.50.jar compile $SEASEQ -project "${DX_PROJECT_CONTEXT_ID}" -folder /app-$timestamp -force -extras dnanexus/extras.json)
     echo "Workflow ID: ${wf_id}"
