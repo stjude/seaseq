@@ -1,11 +1,11 @@
 {
     "peaseq.sample_R1_fastq" : 
     [
-        "./fastqfiles/SRR9736844-2_1.100.fastq.gz"
+        "./fastqfiles/subsample_paired_1.fq.gz"
     ],
     "peaseq.sample_R2_fastq" :
     [
-     	"./fastqfiles/SRR9736844-2_2.100.fastq.gz"
+     	"./fastqfiles/subsample_paired_2.fq.gz"
 
     ],
     "peaseq.reference" : "./hg19/hg19_chr21.fa.gz",

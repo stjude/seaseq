@@ -219,7 +219,7 @@ task pairedend_summaryreport {
         File overallqc_pe_txt
         File overallqc_pe_html
 
-        String outputfile
+        String outputfile = "samples_summary.html"
         String outputtxt = sub(outputfile, '.html', '.txt')
 
         Int memory_gb = 5
@@ -322,7 +322,7 @@ task pe_mergehtml {
         Array[File] pe_txtfiles
         String fastq_type = "PEAseq Sample FASTQs"
         String default_location = "QC_files"
-        String outputfile 
+        String outputfile = "merged_summary.html"
         String outputtxt = sub(outputfile, '.html', '.txt')
         Boolean peaseq = false
 

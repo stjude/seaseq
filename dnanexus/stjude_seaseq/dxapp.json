@@ -132,6 +132,14 @@
       "help": "Input publicly available input/control FASTQs (SRRs). Multiple SRRs are separated by commas (,). e.g. SRR12345678"
     },
     {
+      "name": "fastqtype",
+      "label": "Are SRRs PAIRED?",
+      "class": "boolean",
+      "default" : false,
+      "optional": true,
+      "help": "Specify if SRR read type listed are PAIRED. Default: 'FALSE' (SRRs will be treated as SINGLE)"
+    },
+    {
       "name": "strandedness",
       "label": "Strands Orientation",
       "class": "string",

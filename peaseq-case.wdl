@@ -34,7 +34,7 @@ workflow peaseq {
             whatsNew: [
                 {
                     version: "1.0",
-                    changes: "Initial release"
+                    changes: ["Initial release"]
                 }
             ]
         }
@@ -146,7 +146,7 @@ workflow peaseq {
             help: 'Specify maximum insert size for paired-end alignment (default: 600).',
             example: 600
         }
-	strandedness: {
+	    strandedness: {
             description: 'Bowtie v1 mate orientation (--fr/--rf/--ff).',
             group: 'analysis_parameter',
             help: 'The upstream/downstream mate orientation for paired-end alignment (default: --fr).',
@@ -357,7 +357,7 @@ workflow peaseq {
         input :
             bamfile=SE_mergebam_afterbklist,
             default_location=if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12].*.f.*q.gz','') + '/single-end_mode/BAM_files'
-        }
+    }
 
     call samtools.indexstats as SE_merge_mkdup {
         input :
@@ -1345,8 +1345,8 @@ workflow peaseq {
         File? htmlfile = SE_summarystats.htmlfile
         File? textfile = SE_summarystats.textfile
 
-        File s_summaryhtml = merge_overallsummary.summaryhtml
-        File s_summarytxt = merge_overallsummary.summarytxt
+        File? s_summaryhtml = merge_overallsummary.summaryhtml
+        File? s_summarytxt = merge_overallsummary.summarytxt
 
         File? s_qc_mergehtml = final_mergehtml.mergefile
 

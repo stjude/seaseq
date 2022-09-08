@@ -28,7 +28,7 @@ task runspp {
         fi
     >>> 
     runtime {
-        continueOnReturnCode: [0, 1]
+        continueOnReturnCode: true
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
         docker: 'ghcr.io/stjude/abralab/spp:v1.16.0'

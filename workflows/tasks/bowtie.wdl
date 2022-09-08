@@ -7,7 +7,7 @@ task bowtie {
         File? metricsfile
         Array[File]+ index_files
         String? prefix
-        String outputfile = if (defined(prefix)) then prefix + '.sam' else if (defined(fastqfile_R2)) then sub(basename(fastqfile),'_R?[12].*\.f.*q\.gz','.sam') else sub(basename(fastqfile),'\.fastq\.gz|\.fq\.gz','.sam')
+        String outputfile = if (defined(prefix)) then select_first([prefix,basename(fastqfile)]) + '.sam' else if (defined(fastqfile_R2)) then sub(basename(fastqfile),'_R?[12].*.f.*q.gz','.sam') else sub(basename(fastqfile),'.fastq.gz|.fq.gz','.sam')
         
         Int? read_length = 75
         Int? insert_size = 600
@@ -15,7 +15,7 @@ task bowtie {
         Int good_alignments = 2
         Boolean best_alignments = true
         String? strandedness = 'fr'
-        String stranded_ = if strandedness=='fr' then '--fr'
+        String stranded_m = if strandedness=='fr' then '--fr'
                         else if strandedness=='rf' then '--rf'
                         else if strandedness=='ff' then '--ff'
                         else '--fr'
@@ -42,10 +42,10 @@ task bowtie {
                 -k ~{good_alignments} \
                 -m ~{limit_alignments} \
                 -X ~{insert_size} \
-                ~{stranded_} \
+                ~{stranded_m} \
                 ~{true="--best" false="" best_alignments} \
                 -S \
-                ~{sub(index_files[0], "(\.rev)?\.[0-9]\.ebwt$", "")} \
+                ~{sub(index_files[0], "(.rev)?.[0-9].ebwt$", "")} \
                 -1 ~{fastqfile} \
                 -2 ~{fastqfile_R2} \
                 > ~{outputfile}
@@ -58,7 +58,7 @@ task bowtie {
                 -m ~{limit_alignments} \
                 ~{true="--best" false="" best_alignments} \
                 -S \
-                ~{sub(index_files[0], "(\.rev)?\.[0-9]\.ebwt$", "")} \
+                ~{sub(index_files[0], "(.rev)?.[0-9].ebwt$", "")} \
                 ~{fastqfile} \
                 > ~{outputfile}
                 
