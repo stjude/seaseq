@@ -58,6 +58,12 @@ View [`/test`](https://github.com/stjude/seaseq/tree/master/test) folder for exa
 |   Blacklists                                         |   File                |   [UHS]/[DER]/[DAC] or custom blacklist regions file.                          |   [`*.bed`]                      |
 |   [Motif databases]                                  |   Array of files      |   One or more position weight matrix databases.                                |   [`*.meme`]                     |
 
+### Optional additional inputs for PEAseq
+|   Name                                               |   Type                | Description                                                                    |  Example                         |
+|------------------------------------------------------|-----------------------|--------------------------------------------------------------------------------|----------------------------------|
+|   Insert size                                 |   Integer      |   Maximum insert size for paired-end alignment using Bowtie v1.2.3 (default: 600).     |   [`600`]                       |
+|   Strandedness        |   String    |   The upstream/downstream mate orientation for a valid paired-end alignement against the forward reference strand using Bowtie v1.2.3 (default: fr)                                                      |   [`fr`]                |
+
 
 ### Input configuration
 
@@ -130,7 +136,7 @@ different output directories in more detail.
 Reads are stringently mapped to reference genome using [Bowtie]
 `bowtie -l readlength -p 20 -k 2 -m 2 --best -S`.
 
-**PEAseq parameters include `-X 600 --fr`**
+**PEAseq parameters :** `bowtie -p 20 -k 2 -m 2 --chunkmbs=256 -X 600 --fr --best -S `
 
 Mapped BAMs are further processed by removal of duplicate reads using [SAMTools]
 and blacklisted regions using [bedtools].
