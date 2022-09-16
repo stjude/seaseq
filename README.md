@@ -62,6 +62,7 @@ View [`/test`](https://github.com/stjude/seaseq/tree/master/test) folder for exa
 [Java (v1.8.0)]: https://java.com/en/download/help/download_options.xml
 [Cromwell]: https://github.com/broadinstitute/cromwell/releases
 
+**St. Jude Users** please consult [SEAseq on St. Jude HPC](https://wiki.stjude.org/display/compbio/sjcb+SEAseq)
 ## SEAseq on St. Jude cloud
 
 Before you can run SEAseq on St. Jude Cloud, you must first create a workspace in
