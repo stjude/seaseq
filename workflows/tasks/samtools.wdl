@@ -78,14 +78,20 @@ task viewsort {
         mkdir -p ~{default_location} && cd ~{default_location}
 
         if [ "~{paired_end}" == 'true' ]; then
-            awk -F\\t 'BEGIN{j=0}{j++}{if(NF>5 && j%2==0){ \
-                printf "%s_%.0f\t", $1, j-1 } else if(NF>5 && j%2==1){ \
-                printf "%s_%.0f\t", $1, j } else { printf $1 "\t";j=0 } \
-                for(i=2;i<=NF;i++){ printf "%s\t", $i}; printf "\n" }' \
-                ~{samfile} > ~{basename(sub(samfile,'.sam','.renamed.sam'))}
+            # awk -F\\t 'BEGIN{j=0}{j++}{if(NF>5 && j%2==0){ \
+            #     printf "%s_%.0f\t", $1, j-1 } else if(NF>5 && j%2==1){ \
+            #     printf "%s_%.0f\t", $1, j } else { printf $1 "\t";j=0 } \
+            #     for(i=2;i<=NF;i++){ printf "%s\t", $i}; printf "\n" }' \
+            #     ~{samfile} > ~{basename(sub(samfile,'.sam$','.renamed.sam'))}
+
+            awk -F\\t 'BEGIN{j=0}{j++}{for(i=1;i<=NF;i++){ \
+                printf "%s\t", $i}; if(NF>5 && j%2==0){ \
+                printf "PS:i:%.0f", j-1 } else if(NF>5 && j%2==1){ \
+                printf "PS:i:%.0f", j } else { j=0 } printf "\n" }' \
+                ~{samfile} > ~{basename(sub(samfile,'.sam$','.renamed.sam'))}
 
             samtools fixmate -m \
-                ~{basename(sub(samfile,'.sam','.renamed.sam'))} \
+                ~{basename(sub(samfile,'.sam$','.renamed.sam'))} \
                 ~{fixmatefile}
             samtools sort \
                 ~{fixmatefile} \
