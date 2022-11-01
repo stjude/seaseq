@@ -150,7 +150,7 @@ task pairtobed {
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
         maxRetries: max_retries
-        docker: 'abralab/peaseq_frag:latest'
+        docker: 'ghcr.io/stjude/seaseq/data_processing:v1.0.0'
         cpu: ncpu
     }
     output {
