@@ -86,8 +86,8 @@ task viewsort {
 
             awk -F\\t 'BEGIN{j=0}{j++}{for(i=1;i<=NF;i++){ \
                 printf "%s\t", $i}; if(NF>5 && j%2==0){ \
-                printf "PS:i:%.0f", j-1 } else if(NF>5 && j%2==1){ \
-                printf "PS:i:%.0f", j } else { j=0 } printf "\n" }' \
+                printf "ps:i:%.0f", j-1 } else if(NF>5 && j%2==1){ \
+                printf "ps:i:%.0f", j } else { j=0 } printf "\n" }' \
                 ~{samfile} > ~{basename(sub(samfile,'.sam$','.renamed.sam'))}
 
             samtools fixmate -m \
