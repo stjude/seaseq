@@ -14,7 +14,7 @@ task bowtie {
         Int limit_alignments = 2
         Int good_alignments = 2
         Boolean best_alignments = true
-        String? strandedness = 'fr'
+        String strandedness = 'fr'
         String stranded_m = if strandedness=='fr' then '--fr'
                         else if strandedness=='rf' then '--rf'
                         else if strandedness=='ff' then '--ff'
