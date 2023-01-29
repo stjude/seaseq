@@ -32,13 +32,18 @@ task intersect {
            ln -s ~{fileB} ~{sub(basename(fileB),'.gz','')}
         fi
 
-        intersectBed \
-            ~{true="-v" false="" nooverlap} \
-            -a ~{sub(basename(fileA),'.gz','')} \
-            -b ~{sub(basename(fileB),'.gz','')} \
-            ~{true="-c" false="" countoverlap} \
-            ~{true="-sorted" false="" sorted} \
-            > ~{outputfile}~{suffixname}
+        line_count=$(cat ~{sub(basename(fileA),'.gz','')} | wc -l)
+        if [ $line_count -le 1 ]; then 
+            cp ~{sub(basename(fileA),'.gz','')} ~{outputfile}~{suffixname}
+        else
+            intersectBed \
+                ~{true="-v" false="" nooverlap} \
+                -a ~{sub(basename(fileA),'.gz','')} \
+                -b ~{sub(basename(fileB),'.gz','')} \
+                ~{true="-c" false="" countoverlap} \
+                ~{true="-sorted" false="" sorted} \
+                > ~{outputfile}~{suffixname}
+        fi
     >>> 
     runtime {
         memory: ceil(memory_gb * ncpu) + " GB"
