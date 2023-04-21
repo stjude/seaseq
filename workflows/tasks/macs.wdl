@@ -6,7 +6,7 @@ task macs {
         File bamfile
         File? control
 
-        Int memory_gb = 10
+        Int memory_gb = 20
         Int max_retries = 1
         Int ncpu = 1
 

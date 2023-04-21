@@ -6,7 +6,7 @@ task sortbed {
 
         String outputfile = basename(bedfile,'.bed')+ '.sorted.bed'
 
-        Int memory_gb = 10
+        Int memory_gb = 20
         Int max_retries = 1
         Int ncpu = 1
     }
