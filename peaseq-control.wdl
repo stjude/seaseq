@@ -567,10 +567,17 @@ workflow peaseq {
             #   Summary statistics on FASTQs
             #   Combine html files into one for easy viewing
 
+            call util.basicfastqstats as s_indv_R1_bfs {
+                input :
+                    fastqfile=fastqpair.left,
+                    default_location=if multi_fastqpair then 'SAMPLE/individual_fastqs/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/QC/SummaryStats' else 'SAMPLE/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/QC/SummaryStats'
+            }
+
             call mapping.mapping as s_indv_PE_mapping {
                 input :
                     fastqfile=fastqpair.left,
                     fastqfile_R2=fastqpair.right,
+                    metricsfile=s_indv_R1_bfs.metrics_out,
                     insert_size=insertsize,
                     strandedness=strandedness,
                     index_files=actual_bowtie_index,
@@ -702,10 +709,17 @@ workflow peaseq {
             #   Summary statistics on FASTQs
             #   Combine html files into one for easy viewing
 
+            call util.basicfastqstats as c_indv_R1_bfs {
+                input :
+                    fastqfile=fastqpair.left,
+                    default_location=if multi_fastqpair then 'CONTROL/individual_fastqs/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/QC/SummaryStats' else 'CONTROL/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/QC/SummaryStats'
+            }
+            
             call mapping.mapping as c_indv_PE_mapping {
                 input :
                     fastqfile=fastqpair.left,
                     fastqfile_R2=fastqpair.right,
+                    metricsfile=c_indv_R1_bfs.metrics_out,
                     insert_size=insertsize,
                     strandedness=strandedness,
                     index_files=actual_bowtie_index,
@@ -845,10 +859,18 @@ workflow peaseq {
         #   Summary statistics on FASTQs
         #   Combine html files into one for easy viewing
 
+        call util.basicfastqstats as s_R1_bfs {
+            input :
+                fastqfile=sample_fastqfiles[0].left,
+                default_location=if multi_fastqpair then 'SAMPLE/individual_fastqs/' + sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/QC/SummaryStats' else 'SAMPLE/' + sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/QC/SummaryStats'
+                    
+        }
+
         call mapping.mapping as s_uno_PE_mapping {
             input :
                 fastqfile=sample_fastqfiles[0].left,
                 fastqfile_R2=sample_fastqfiles[0].right,
+                metricsfile=s_R1_bfs.metrics_out,
                 insert_size=insertsize,
                 strandedness=strandedness,
                 index_files=actual_bowtie_index,
@@ -883,10 +905,17 @@ workflow peaseq {
         #   Summary statistics on FASTQs
         #   Combine html files into one for easy viewing
 
+        call util.basicfastqstats as c_R1_bfs {
+            input :
+                fastqfile=control_fastqfiles[0].left,
+                default_location=if multi_control_fastqpair then 'CONTROL/individual_fastqs/' + sub(basename(control_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/QC/SummaryStats' else 'CONTROL/' + sub(basename(control_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/QC/SummaryStats'
+        }
+        
         call mapping.mapping as c_uno_PE_mapping {
             input :
                 fastqfile=control_fastqfiles[0].left,
                 fastqfile_R2=control_fastqfiles[0].right,
+                metricsfile=c_R1_bfs.metrics_out,
                 insert_size=insertsize,
                 strandedness=strandedness,
                 index_files=actual_bowtie_index,

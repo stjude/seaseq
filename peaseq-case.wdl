@@ -383,10 +383,16 @@ workflow peaseq {
             #   Summary statistics on FASTQs
             #   Combine html files into one for easy viewing
 
+            call util.basicfastqstats as indv_R1_bfs {
+                input :
+                    fastqfile=fastqpair.left,
+                    default_location='SAMPLE/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/QC/SummaryStats'
+            }
             call mapping.mapping as indv_PE_mapping {
                 input :
                     fastqfile=fastqpair.left,
                     fastqfile_R2=fastqpair.right,
+                    metricsfile=indv_R1_bfs.metrics_out,
                     insert_size=insertsize,
                     strandedness=strandedness,
                     index_files=actual_bowtie_index,
@@ -526,10 +532,16 @@ workflow peaseq {
         #   Summary statistics on FASTQs
         #   Combine html files into one for easy viewing
 
+        call util.basicfastqstats as R1_bfs {
+            input :
+                fastqfile=sample_fastqfiles[0].left,
+                default_location=if defined(results_name) then results_name + '/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/QC/SummaryStats'
+        }
         call mapping.mapping as uno_PE_mapping {
             input :
                 fastqfile=sample_fastqfiles[0].left,
                 fastqfile_R2=sample_fastqfiles[0].right,
+                metricsfile=R1_bfs.metrics_out,
                 insert_size=insertsize,
                 strandedness=strandedness,
                 index_files=actual_bowtie_index,
