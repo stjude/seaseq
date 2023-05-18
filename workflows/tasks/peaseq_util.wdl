@@ -16,7 +16,7 @@ task fraggraph {
         String bam_location = "BAM_files"
         String annotation_location = "Annotation"
 
-        Int memory_gb = 50
+        Int memory_gb = 75
         Int max_retries = 1
         Int ncpu = 1
     }

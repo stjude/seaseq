@@ -8,7 +8,6 @@ task bowtie {
         Array[File]+ index_files
         String? prefix
         String outputfile = if (defined(prefix)) then select_first([prefix,basename(fastqfile)]) + '.sam' else if (defined(fastqfile_R2)) then sub(basename(fastqfile),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','.sam') else sub(basename(fastqfile),'.fastq.gz|.fq.gz','.sam')
-        
         Int read_length = 75
         Int insert_size = 600
         Int limit_alignments = 2
@@ -29,15 +28,18 @@ task bowtie {
 
     command <<<
         if [ -f "~{metricsfile}" ]; then
-            readlength=$(tail -n 1 ~{metricsfile} | awk '{print $4}');
+            readlength=$(tail -n 1 ~{metricsfile} | awk '{print $1}');
+            if [ $readlength -lt 28 ]; then readlength=28; fi
             echo "Metrics file with readlength " $readlength
         else
             readlength=~{read_length}
         fi
         
+        echo $readlength
         if [ -f "~{fastqfile_R2}" ]; then
             bowtie \
                 --chunkmbs=256 \
+                -l $readlength \
                 -p ~{ncpu} \
                 -k ~{good_alignments} \
                 -m ~{limit_alignments} \

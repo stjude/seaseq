@@ -20,7 +20,7 @@ workflow mapping {
         String? results_name
     }
 
-    if ( defined(metricsfile) ) {
+    if (! defined(fastqfile_R2) ) {
         call bowtie.bowtie as SE_map {
             input :
                 fastqfile=fastqfile,
@@ -35,6 +35,7 @@ workflow mapping {
             input :
                 fastqfile=fastqfile,
                 fastqfile_R2=fastqfile_R2,
+                metricsfile=metricsfile,
                 index_files=index_files,
                 insert_size=insert_size,
                 strandedness=strandedness,
