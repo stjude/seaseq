@@ -317,20 +317,20 @@ workflow peaseq {
         input:
             bamfiles=indv_mapping.sorted_bam,
             metricsfiles=indv_bfs.metrics_out,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_files',
+            default_location = if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_files',
             outputfile = 'AllMapped_' + length(all_sample_fastqfiles) + 'fastqs_SE.sorted.bam'
     }
 
     call fastqc.fastqc as SE_mergebamfqc {
         input:
             inputfile=SE_mergebam.mergebam,
-            default_location=if defined(results_name) then results_name + '/single-end_mode/QC/FastQC' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/QC/FastQC' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/QC/FastQC'
+            default_location=if defined(results_name) then results_name + '/single-end_mode/QC/FastQC' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/QC/FastQC' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/QC/FastQC'
     }
 
     call samtools.indexstats as SE_mergeindexstats {
         input:
             bamfile=SE_mergebam.mergebam,
-            default_location=if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_files'
+            default_location=if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_files'
     }
 
     if ( defined(blacklist) ) {
@@ -341,13 +341,13 @@ workflow peaseq {
             input :
                 fileA=SE_mergebam.mergebam,
                 fileB=blacklist_file,
-                default_location=if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_files',
+                default_location=if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_files',
                 nooverlap=true
         }
         call samtools.indexstats as SE_merge_bklist {
             input :
                 bamfile=SE_merge_rmblklist.intersect_out,
-                default_location=if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_files'
+                default_location=if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_files'
         }
     } # end if blacklist provided
 
@@ -356,13 +356,13 @@ workflow peaseq {
     call samtools.markdup as SE_merge_markdup {
         input :
             bamfile=SE_mergebam_afterbklist,
-            default_location=if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_files'
+            default_location=if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_files'
     }
 
     call samtools.indexstats as SE_merge_mkdup {
         input :
             bamfile=SE_merge_markdup.mkdupbam,
-            default_location=if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_files'
+            default_location=if defined(results_name) then results_name + '/single-end_mode/BAM_files' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_files' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_files'
     }
 
 ### ------------------------------------------------- ###
@@ -534,12 +534,12 @@ workflow peaseq {
 
         call util.basicfastqstats as R1_bfs {
             input :
-                fastqfile=sample_fastqfiles[0].left,
-                default_location=if defined(results_name) then results_name + '/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/QC/SummaryStats'
+                fastqfile=sample_R1[0],
+                default_location=if defined(results_name) then results_name + '/BAM_files' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/QC/SummaryStats'
         }
         call mapping.mapping as uno_PE_mapping {
             input :
-                fastqfile=sample_fastqfiles[0].left,
+                fastqfile=sample_R1[0],
                 fastqfile_R2=sample_fastqfiles[0].right,
                 metricsfile=R1_bfs.metrics_out,
                 insert_size=insertsize,
@@ -548,7 +548,7 @@ workflow peaseq {
                 blacklist=blacklist,
                 paired_end=true,
                 results_name=results_name,
-                default_location=if defined(results_name) then results_name + '/BAM_files' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/BAM_files'
+                default_location=if defined(results_name) then results_name + '/BAM_files' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/BAM_files'
         }
 
         call fastqc.fastqc as uno_PE_bamfqc {
@@ -586,13 +586,13 @@ workflow peaseq {
             pvalue="1e-9",
             keep_dup="auto",
             egs=egs.genomesize,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-auto' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-auto' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-auto',
-            coverage_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-auto' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-auto' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-auto'
+            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-auto' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-auto' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-auto',
+            coverage_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-auto' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-auto' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-auto'
     }
 
     call util.addreadme as SE_addreadme {
         input :
-            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS'
+            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS'
     }
 
     call macs.macs as SE_all {
@@ -601,8 +601,8 @@ workflow peaseq {
             pvalue="1e-9",
             keep_dup="all",
             egs=egs.genomesize,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-all' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-all' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-all',
-            coverage_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-all' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-all' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-all'
+            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-all' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-all' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-p9_kd-all',
+            coverage_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-all' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-all' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_p9_kd-all'
     }
 
     call macs.macs as SE_nomodel {
@@ -610,8 +610,8 @@ workflow peaseq {
             bamfile=SE_mergebam_afterbklist,
             nomodel=true,
             egs=egs.genomesize,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-nm' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-nm' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-nm',
-            coverage_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_nm' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_nm' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_nm'
+            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-nm' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-nm' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '-nm',
+            coverage_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_nm' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_nm' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + basename(SE_mergebam_afterbklist,'.bam') + '_nm'
     }
 
     call bamtogff.bamtogff as SE_bamtogff {
@@ -620,7 +620,7 @@ workflow peaseq {
             chromsizes=samtools_faidx.chromsizes,
             bamfile=SE_merge_markdup.mkdupbam,
             bamindex=SE_merge_mkdup.indexbam,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/BAM_Density' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_Density' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_Density'
+            default_location = if defined(results_name) then results_name + '/single-end_mode/BAM_Density' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/BAM_Density' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/BAM_Density'
     }
 
     call bedtools.bamtobed as SE_forsicerbed {
@@ -634,8 +634,8 @@ workflow peaseq {
             chromsizes=samtools_faidx.chromsizes,
             genome_fraction=egs.genomefraction,
             fragmentlength=SE_mergebam.avg_readlength,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS/BROAD_peaks' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS/BROAD_peaks' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS/BROAD_peaks',
-            coverage_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/BROAD_peaks' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/BROAD_peaks' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/BROAD_peaks'
+            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS/BROAD_peaks' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS/BROAD_peaks' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS/BROAD_peaks',
+            coverage_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/BROAD_peaks' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/BROAD_peaks' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/BROAD_peaks'
     }
 
     call rose.rose as SE_rose {
@@ -645,7 +645,7 @@ workflow peaseq {
             bamindex=select_first([SE_merge_bklist.indexbam, SE_mergeindexstats.indexbam]),
             bedfile_auto=SE_macs.peakbedfile,
             bedfile_all=SE_all.peakbedfile,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS/STITCHED_peaks' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS/STITCHED_peaks' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS/STITCHED_peaks'
+            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS/STITCHED_peaks' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS/STITCHED_peaks' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS/STITCHED_peaks'
     }
 
     call runspp.runspp as SE_runspp {
@@ -659,7 +659,7 @@ workflow peaseq {
             bedfile=SE_macs.peakbedfile,
             chromsizes=samtools_faidx.chromsizes,
             summitfile=SE_macs.summitsfile,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','') else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','') else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','')
+            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','') else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','') else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','')
     }
 
     call util.peaksanno as SE_all_peaksanno {
@@ -668,7 +668,7 @@ workflow peaseq {
             bedfile=SE_all.peakbedfile,
             chromsizes=samtools_faidx.chromsizes,
             summitfile=SE_all.summitsfile,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','') else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','') else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','')
+            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','') else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','') else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','')
     }
 
     call util.peaksanno as SE_nomodel_peaksanno {
@@ -677,7 +677,7 @@ workflow peaseq {
             bedfile=SE_nomodel.peakbedfile,
             chromsizes=samtools_faidx.chromsizes,
             summitfile=SE_nomodel.summitsfile,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','') else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','') else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','')
+            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','') else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','') else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS_Annotation/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','')
     }
 
     call util.peaksanno as SE_sicer_peaksanno {
@@ -685,7 +685,7 @@ workflow peaseq {
             gtffile=gtf,
             bedfile=SE_sicer.scoreisland,
             chromsizes=samtools_faidx.chromsizes,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS_Annotation/BROAD_peaks' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS_Annotation/BROAD_peaks' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS_Annotation/BROAD_peaks'
+            default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS_Annotation/BROAD_peaks' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS_Annotation/BROAD_peaks' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS_Annotation/BROAD_peaks'
     }
 
     # Motif Analysis
@@ -696,13 +696,13 @@ workflow peaseq {
                 reference_index=samtools_faidx.faidx_file,
                 bedfile=SE_macs.peakbedfile,
                 motif_databases=motif_databases,
-                default_location = if defined(results_name) then results_name + '/single-end_mode/MOTIFS' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/MOTIFS' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/MOTIFS'
+                default_location = if defined(results_name) then results_name + '/single-end_mode/MOTIFS' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/MOTIFS' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/MOTIFS'
         }
 
         call util.flankbed as SE_flankbed {
             input :
                 bedfile=SE_macs.summitsfile,
-                default_location = if defined(results_name) then results_name + '/single-end_mode/MOTIFS' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/MOTIFS' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/MOTIFS'
+                default_location = if defined(results_name) then results_name + '/single-end_mode/MOTIFS' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/MOTIFS' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/MOTIFS'
         }
 
         call motifs.motifs as SE_flank {
@@ -711,7 +711,7 @@ workflow peaseq {
                 reference_index=samtools_faidx.faidx_file,
                 bedfile=SE_flankbed.flankbedfile,
                 motif_databases=motif_databases,
-                default_location = if defined(results_name) then results_name + '/single-end_mode/MOTIFS' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/MOTIFS' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/MOTIFS'
+                default_location = if defined(results_name) then results_name + '/single-end_mode/MOTIFS' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/MOTIFS' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/MOTIFS'
         }
     }
 
@@ -720,7 +720,7 @@ workflow peaseq {
             wigfile=SE_macs.wigfile,
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=SE_macs.peakxlsfile,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','') else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','') else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','')
+            default_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','') else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','') else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_macs.peakbedfile),'_peaks.bed','')
     }
 
     call viz.visualization as SE_vizall {
@@ -728,7 +728,7 @@ workflow peaseq {
             wigfile=SE_all.wigfile,
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=SE_all.peakxlsfile,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','') else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','') else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','')
+            default_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','') else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','') else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_all.peakbedfile),'_peaks.bed','')
     }
 
     call viz.visualization as SE_viznomodel {
@@ -736,14 +736,14 @@ workflow peaseq {
             wigfile=SE_nomodel.wigfile,
             chromsizes=samtools_faidx.chromsizes,
             xlsfile=SE_nomodel.peakxlsfile,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','') else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','') else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','')
+            default_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','') else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','') else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/NARROW_peaks' + '/' + sub(basename(SE_nomodel.peakbedfile),'_peaks.bed','')
     }
 
     call viz.visualization as SE_vizsicer {
         input:
             wigfile=SE_sicer.wigfile,
             chromsizes=samtools_faidx.chromsizes,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/BROAD_peaks' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/BROAD_peaks' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/BROAD_peaks'
+            default_location = if defined(results_name) then results_name + '/single-end_mode/COVERAGE_files/BROAD_peaks' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/COVERAGE_files/BROAD_peaks' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/COVERAGE_files/BROAD_peaks'
     }
 
     call bedtools.bamtobed as SE_finalbed {
@@ -996,7 +996,7 @@ workflow peaseq {
             peaksxls=SE_macs.peakxlsfile,
             enhancers=SE_rose.enhancers,
             superenhancers=SE_rose.super_enhancers,
-            default_location = if defined(results_name) then results_name + '/single-end_mode/QC/SummaryStats' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/QC/SummaryStats' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/QC/SummaryStats'
+            default_location = if defined(results_name) then results_name + '/single-end_mode/QC/SummaryStats' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/QC/SummaryStats' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/QC/SummaryStats'
     }
 
     call util.summaryreport as merge_overallsummary {
@@ -1005,7 +1005,7 @@ workflow peaseq {
             overallqc_html=SE_summarystats.xhtml,
             sampleqc_txt=mergehtml.mergetxt,
             overallqc_txt=SE_summarystats.textfile,
-            default_location=if defined(results_name) then results_name + '/single-end_mode' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode'
+            default_location=if defined(results_name) then results_name + '/single-end_mode' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode'
     }
 ### ------------------------------------------------- ###
 ### ----------------- S E C T I O N 5 --------------- ###
@@ -1043,7 +1043,7 @@ workflow peaseq {
                 overallqc_se_txt=SE_summarystats.textfile,
                 overallqc_pe_html=PE_uno_summarystats.xhtml,
                 overallqc_pe_txt=PE_uno_summarystats.textfile,
-                outputfile = if defined(results_name) then results_name + '.peaseq_report.html' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '.peaseq_report.html'
+                outputfile = if defined(results_name) then results_name + '.peaseq_report.html' else sub(basename(sample_R1[0]),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '.peaseq_report.html'
         }
     } # end if one_fastqpair
 
