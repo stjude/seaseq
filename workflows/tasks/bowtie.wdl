@@ -28,7 +28,7 @@ task bowtie {
 
     command <<<
         if [ -f "~{metricsfile}" ]; then
-            readlength=$(tail -n 1 ~{metricsfile} | awk '{print $1}');
+            readlength=$(tail -n 1 ~{metricsfile} | awk '{print $6}');
             if [ $readlength -lt 28 ]; then readlength=28; fi
             echo "Metrics file with readlength " $readlength
         else
