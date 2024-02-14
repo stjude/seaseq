@@ -956,7 +956,7 @@ workflow peaseq {
             default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/COVERAGE_files/BROAD_peaks'
     }
 
-    call peaseq_util.pe_bamtobed as PE_finalbed {
+    call bedtools.bamtobed as PE_finalbed {
         input:
             bamfile=PE_sample_bam
     }

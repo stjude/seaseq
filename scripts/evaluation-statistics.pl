@@ -35,7 +35,7 @@ unless ($sppout || $bambed || $countsfile || $peaksxls || $bamflag || $rmdupflag
 my ($statsout, $htmlfile, $textfile, $configfile);
 
 #Initialize variables
-my ($Uniquecnt, $Totalcnt, $Fripcnt, $FRIP, $peaks, $PBC, $NRF, $PhantomQual) = (0,0,0,0,0,0,0,0);
+my ($Uniquecnt, $Totalcnt, $Fripcnt, $FRIP, $peaks, $PBC, $NSC, $RSC, $NRF, $PhantomQual) = (0,0,0,0,0,0,0,0,0,0);
 my (%HASH, %OVAL, %OvQual, $alignedpercent, $totalreads);
 my $prev = "NA";
 my $output_counter = 7;
@@ -170,13 +170,14 @@ if ($bambed) {
 if ($sppout) {
   #Process NSC (normalized) + RSC (relative strand cross-correlation coefficient)
   open (IN, "<$sppout"); # || die $!; 
-  my ($NSC, $RSC,$PhantomQual) = (split("\t", <IN>))[8,9,10]; close(IN);
+  ($NSC, $RSC,$PhantomQual) = (split("\t", <IN>))[8,9,10]; close(IN);
   $NSC = sprintf ("%.4f", $NSC);
   $RSC = sprintf ("%.4f", $RSC);
   print OUT "Normalized Strand cross-correlation Coefficient (NSC),$NSC\n";
   print OUT "Relative Strand cross-correlation Coefficient (RSC),$RSC\n";
   print OUT "Phantom Quality,$PhantomQual"; chop $PhantomQual;
-  
+  print OUT "\n";
+
   #QCdash
   $OVAL{$output_counter++} = 'NSC';
   $OVAL{$output_counter++} = 'RSC';

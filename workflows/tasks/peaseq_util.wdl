@@ -27,7 +27,7 @@ task fraggraph {
         ln -s ~{chromsizes} genome.chrom.sizes
 
         #namesort
-        samtools sort -t ps \
+        samtools sort -n -t ps \
             ~{bamfile} \
             -o ~{sub(basename(bamfile),".bam$", ".ns.bam")}
 
