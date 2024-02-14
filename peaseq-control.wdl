@@ -1538,7 +1538,7 @@ workflow peaseq {
             sorted=true
     }
 
-    call peaseq_util.pe_bamtobed as only_s_PE_finalbed {
+    call bedtools.bamtobed as only_s_PE_finalbed {
         input:
             bamfile=PE_sample_bam
     }
