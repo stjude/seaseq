@@ -474,8 +474,8 @@ workflow seaseq {
     call rose.rose {
         input :
             gtffile=gtf,
-            bamfile=sample_bam,
-            bamindex=select_first([merge_bklist.indexbam, mergeindexstats.indexbam, mapping.bklist_index, mapping.bam_index]),
+            bamfile=select_first([merge_markdup.mkdupbam, mapping.mkdup_bam]),
+            bamindex=select_first([merge_mkdup.indexbam, mapping.mkdup_index]),
             bedfile_auto=macs.peakbedfile,
             bedfile_all=all.peakbedfile,
             default_location=sub(basename(sample_bam),'.sorted.b.*$','') + '/PEAKS/STITCHED_peaks'

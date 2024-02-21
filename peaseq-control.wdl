@@ -1025,10 +1025,10 @@ workflow peaseq {
     call rose.rose as SE_rose {
         input :
             gtffile=gtf,
-            bamfile=SE_s_mergebam_afterbklist,
-            bamindex=select_first([SE_s_merge_bklist.indexbam, SE_s_mergeindexstats.indexbam]),
-            control=SE_c_mergebam_afterbklist,
-            controlindex=select_first([SE_c_merge_bklist.indexbam, SE_c_mergeindexstats.indexbam]),
+            bamfile=SE_s_merge_markdup.mkdupbam,
+            bamindex=SE_s_merge_mkdup.indexbam,
+            control_bamfile=SE_c_merge_markdup.mkdupbam,
+            control_bamindex=SE_c_merge_mkdup.indexbam,
             bedfile_auto=SE_macs.peakbedfile,
             bedfile_all=SE_all.peakbedfile,
             default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS/STITCHED_peaks' else if multi_fastqpair then 'AllCases_' + length(sample_fastqfiles) + 'fastqpairs+control/single-end_mode/PEAKS/STITCHED_peaks' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '+control/single-end_mode/PEAKS/STITCHED_peaks'
@@ -1353,10 +1353,10 @@ workflow peaseq {
     call rose.rose as PE_rose {
         input :
             gtffile=gtf,
-            bamfile=PE_sample_bam,
-            bamindex=select_first([s_PE_merge_bklist.indexbam, s_PE_mergeindexstats.indexbam, s_uno_PE_mapping.bklist_index, s_uno_PE_mapping.bam_index]),
-            control=PE_control_bam,
-            controlindex=select_first([c_PE_merge_bklist.indexbam, c_PE_mergeindexstats.indexbam, c_uno_PE_mapping.bklist_index, c_uno_PE_mapping.bam_index]),
+            bamfile=s_fraggraph.fragbamfile,
+            bamindex=s_frag_index.indexbam,
+            control_bamfile=c_fraggraph.fragbamfile,
+            control_bamindex=c_frag_index.indexbam,
             bedfile_auto=PE_macs.peakbedfile,
             bedfile_all=PE_all.peakbedfile,
             default_location=if defined(results_name) then results_name + '/PEAKS/STITCHED_peaks' else sub(basename(PE_sample_bam),'.sorted.b.*$','') + '+control/PEAKS/STITCHED_peaks'
