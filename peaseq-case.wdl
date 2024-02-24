@@ -851,8 +851,8 @@ workflow peaseq {
     call rose.rose as PE_rose {
         input :
             gtffile=gtf,
-            bamfile=PE_sample_bam,
-            bamindex=select_first([PE_merge_bklist.indexbam, PE_mergeindexstats.indexbam, uno_PE_mapping.bklist_index, uno_PE_mapping.bam_index]),
+            bamfile=fraggraph.fragbamfile,
+            bamindex=frag_index.indexbam,
             bedfile_auto=PE_macs.peakbedfile,
             bedfile_all=PE_all.peakbedfile,
             default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/PEAKS/STITCHED_peaks'

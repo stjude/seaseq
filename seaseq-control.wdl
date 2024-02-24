@@ -745,8 +745,8 @@ workflow seaseq {
             gtffile=gtf,
             bamfile=select_first([s_merge_markdup.mkdupbam, s_mapping.mkdup_bam]),
             bamindex=select_first([s_merge_mkdup.indexbam, s_mapping.mkdup_index]),
-            control_bamfile=select_first([c_merge_markdup.mkdupbam, c_mapping.mkdup_bam]),
-            control_bamindex=select_first([c_merge_mkdup.indexbam, c_mapping.mkdup_index]),
+            control=select_first([c_merge_markdup.mkdupbam, c_mapping.mkdup_bam]),
+            controlindex=select_first([c_merge_mkdup.indexbam, c_mapping.mkdup_index]),
             bedfile_auto=macs.peakbedfile,
             bedfile_all=all.peakbedfile,
             default_location=if defined(results_name) then results_name + '/PEAKS/STITCHED_peaks' else sub(basename(sample_bam),'.sorted.b.*$','') + '+control/PEAKS/STITCHED_peaks'
