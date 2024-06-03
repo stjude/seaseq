@@ -641,8 +641,8 @@ workflow peaseq {
     call rose.rose as SE_rose {
         input :
             gtffile=gtf,
-            bamfile=SE_mergebam_afterbklist,
-            bamindex=select_first([SE_merge_bklist.indexbam, SE_mergeindexstats.indexbam]),
+            bamfile=SE_merge_markdup.mkdupbam,
+            bamindex=SE_merge_mkdup.indexbam,
             bedfile_auto=SE_macs.peakbedfile,
             bedfile_all=SE_all.peakbedfile,
             default_location = if defined(results_name) then results_name + '/single-end_mode/PEAKS/STITCHED_peaks' else if multi_fastqpair then 'AllMapped_' + length(sample_fastqfiles) + 'fastqpairs' + '/single-end_mode/PEAKS/STITCHED_peaks' else sub(basename(sample_fastqfiles[0].left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/PEAKS/STITCHED_peaks'
@@ -851,8 +851,8 @@ workflow peaseq {
     call rose.rose as PE_rose {
         input :
             gtffile=gtf,
-            bamfile=PE_sample_bam,
-            bamindex=select_first([PE_merge_bklist.indexbam, PE_mergeindexstats.indexbam, uno_PE_mapping.bklist_index, uno_PE_mapping.bam_index]),
+            bamfile=fraggraph.fragbamfile,
+            bamindex=frag_index.indexbam,
             bedfile_auto=PE_macs.peakbedfile,
             bedfile_all=PE_all.peakbedfile,
             default_location=sub(basename(PE_sample_bam),'.sorted.b.*$','') + '/PEAKS/STITCHED_peaks'
