@@ -136,8 +136,8 @@ task rose {
         # ROSE CALLER
         #
         ROSE_main.py \
-            ~{if defined(stitch) then "-s" + stitch else ""} \
-            ~{if defined(tss) then "-t" + tss else ""} \
+            ~{if defined(stitch) then "-s " + stitch else ""} \
+            ~{if defined(tss) then "-t " + tss else ""} \
             --custom genome_refseq.ucsc \
             -i unionpeaks.gff \
             -r ~{basename(bamfile)} \
