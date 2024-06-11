@@ -167,5 +167,7 @@ task rose {
         File? g_to_e_enhancers = "~{default_location}/unionpeaks_AllStitched_GENE_TO_REGION.txt"
         File? e_to_g_super_enhancers = "~{default_location}/unionpeaks_SuperStitched_REGION_TO_GENE.txt"
         File? g_to_e_super_enhancers = "~{default_location}/unionpeaks_SuperStitched_GENE_TO_REGION.txt"
+        File? super_genes = "~{default_location}/unionpeaks_SuperStitched.table_withGENES.txt"
+        File? all_genes = "~{default_location}/unionpeaks_AllStitched.table_withGENES.txt"
     }
 }

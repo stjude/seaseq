@@ -1198,6 +1198,8 @@ workflow peaseq {
         File? g_to_e_enhancers = SE_rose.g_to_e_enhancers
         File? e_to_g_super_enhancers = SE_rose.e_to_g_super_enhancers
         File? g_to_e_super_enhancers = SE_rose.g_to_e_super_enhancers
+        File? supergenes = SE_rose.super_genes
+        File? allgenes = SE_rose.all_genes
         File? sp_pngfile = PE_rose.pngfile
         File? sp_mapped_union = PE_rose.mapped_union
         File? sp_mapped_stitch = PE_rose.mapped_stitch
@@ -1211,6 +1213,8 @@ workflow peaseq {
         File? sp_g_to_e_enhancers = PE_rose.g_to_e_enhancers
         File? sp_e_to_g_super_enhancers = PE_rose.e_to_g_super_enhancers
         File? sp_g_to_e_super_enhancers = PE_rose.g_to_e_super_enhancers
+        File? sp_supergenes = PE_rose.super_genes
+        File? sp_allgenes = PE_rose.all_genes
 
         #MOTIFS
         File? flankbedfile = SE_flankbed.flankbedfile

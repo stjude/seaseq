@@ -737,6 +737,8 @@ workflow seaseq {
         File? g_to_e_enhancers = rose.g_to_e_enhancers
         File? e_to_g_super_enhancers = rose.e_to_g_super_enhancers
         File? g_to_e_super_enhancers = rose.g_to_e_super_enhancers
+        File? supergenes = rose.super_genes
+        File? allgenes = rose.all_genes
 
         #MOTIFS
         File? flankbedfile = flankbed.flankbedfile
