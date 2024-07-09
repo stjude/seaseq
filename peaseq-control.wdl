@@ -1599,7 +1599,7 @@ workflow peaseq {
             bamflag=SE_s_mergeindexstats.flagstats,
             rmdupflag=SE_s_merge_mkdup.flagstats,
             bkflag=SE_s_merge_bklist.flagstats,
-            countsfile=SE_s_intersect.intersect_out,
+            countsfile=SE_intersect.intersect_out,
             peaksxls=SE_macs.peakxlsfile,
             enhancers=SE_rose.enhancers,
             superenhancers=SE_rose.super_enhancers,
