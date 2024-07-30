@@ -348,24 +348,12 @@ workflow peaseq {
                     inputfile=eachfastq,
                     default_location=if multi_fastqpair then 'SAMPLE/individual_fastqs/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/FastQC' else 'SAMPLE/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/FastQC'
             }
-
-            call util.basicfastqstats as spikein_indv_s_bfs {
-                input :
-                    fastqfile=eachfastq,
-                    default_location=if multi_fastqpair then 'SAMPLE/individual_fastqs/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/SummaryStats' else 'SAMPLE/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/SummaryStats'
-            }
         }
         scatter (eachfastq in original_all_control_fastqfiles) {
             call fastqc.fastqc as spikein_c_indv_fastqc {
                 input :
                     inputfile=eachfastq,
                     default_location=if multi_control_fastqpair then 'CONTROL/individual_fastqs/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/FastQC' else 'CONTROL/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/FastQC'
-            }
-
-            call util.basicfastqstats as spikein_indv_c_bfs {
-                input :
-                    fastqfile=eachfastq,
-                    default_location=if multi_control_fastqpair then 'CONTROL/individual_fastqs/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/SummaryStats' else 'CONTROL/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/SummaryStats'
             }
         }
         scatter (fastqpair in original_sample_fastqfiles) {
@@ -374,7 +362,6 @@ workflow peaseq {
                     fastqfile=fastqpair.left,
                     default_location=if multi_fastqpair then 'SAMPLE/individual_fastqs/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/SummaryStats' else 'SAMPLE/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/SummaryStats'
             }
-
             call bowtie.spikein_PE as spikein_s_indv_map {
                 input :
                     fastqfile=fastqpair.left,
@@ -392,7 +379,6 @@ workflow peaseq {
                     fastqfile=fastqpair.left,
                     default_location=if multi_control_fastqpair then 'CONTROL/individual_fastqs/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/SummaryStats' else 'CONTROL/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/SummaryStats'
             }
-                
             call bowtie.spikein_PE as spikein_c_indv_map {
                 input :
                     fastqfile=fastqpair.left,

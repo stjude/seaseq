@@ -285,11 +285,6 @@ workflow peaseq {
                     inputfile=eachfastq,
                     default_location=if multi_fastqpair then 'SAMPLE/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/FastQC' else if defined(results_name) then results_name + '/single-end_mode/SpikeIn/QC/FastQC' else sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/SpikeIn/QC/FastQC'
             }
-            call util.basicfastqstats as spikein_indv_bfs {
-            input :
-                fastqfile=eachfastq,
-                default_location=if multi_fastqpair then 'SAMPLE/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/SummaryStats' else if defined(results_name) then results_name + '/single-end_mode/SpikeIn/QC/SummaryStats' else sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/SpikeIn/QC/SummaryStats'
-            }
         }
         scatter (fastqpair in original_sample_fastqfiles) {
             call util.basicfastqstats as spikein_indv_R1_bfs {
