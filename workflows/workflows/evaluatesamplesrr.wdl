@@ -6,9 +6,11 @@ import "../../workflows/tasks/sratoolkit.wdl" as sra
 workflow evaluatesrr {
     input {
         File reference
+        File? spikein_reference
         File? blacklist
         File gtf
         Array[File]? bowtie_index
+        Array[File]? spikein_bowtie_index
         Array[File]? motif_databases
         Array[String]? sample_sraid
         Array[File]? sample_R1_fastq
@@ -37,9 +39,11 @@ workflow evaluatesrr {
         call ss.seaseq as ss {
             input :
                 reference=reference,
+                spikein_reference=spikein_reference
                 blacklist=blacklist,
                 gtf=gtf,
                 bowtie_index=bowtie_index,
+                spikein_bowtie_index=spikein_bowtie_index,
                 motif_databases=motif_databases,
                 sample_fastq=sample_R1_fastq,
                 sample_sraid=sample_sraid,
@@ -52,9 +56,11 @@ workflow evaluatesrr {
         call ps.peaseq as ps {
             input :
                 reference=reference,
+                spikein_reference=spikein_reference
                 blacklist=blacklist,
                 gtf=gtf,
                 bowtie_index=bowtie_index,
+                spikein_bowtie_index=spikein_bowtie_index,
                 motif_databases=motif_databases,
                 sample_R1_fastq=sample_R1_fastq,
                 sample_R2_fastq=sample_R2_fastq,
@@ -69,6 +75,10 @@ workflow evaluatesrr {
     # Processing OUTPUTs
 
     output {
+        Array[File?]? spikein_indv_s_htmlfile = if paired_sample_m then ps.spikein_indv_s_htmlfile else ss.spikein_indv_s_htmlfile
+        Array[File?]? spikein_indv_s_zipfile = if paired_sample_m then ps.spikein_indv_s_zipfile else ss.spikein_indv_s_zipfile
+        Array[File?]? spikein_s_metrics_out = if paired_sample_m then ps.spikein_s_metrics_out else ss.spikein_s_metrics_out
+                
         Array[File?]? indv_s_htmlfile = if paired_sample_m then ps.indv_s_htmlfile else ss.indv_s_htmlfile
         Array[File?]? indv_s_zipfile = if paired_sample_m then ps.indv_s_zipfile else ss.indv_s_zipfile
         Array[File?]? indv_s_bam_htmlfile = if paired_sample_m then ps.indv_s_bam_htmlfile else ss.indv_s_bam_htmlfile
