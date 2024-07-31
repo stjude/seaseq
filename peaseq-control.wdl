@@ -59,9 +59,11 @@ workflow peaseq {
     input {
         # group: reference_genome
         File reference
+        File? spikein_reference
         File? blacklist
         File gtf
         Array[File]? bowtie_index
+        Array[File]? spikein_bowtie_index
         Array[File]? motif_databases
 
         # group: input_genomic_data
@@ -245,6 +247,32 @@ workflow peaseq {
     }
     Array[File] actual_bowtie_index = select_first([bowtie_idx_2.bowtie_indexes, bowtie_idx.bowtie_indexes, bowtie_index])
 
+    # Spike-in DNA
+    #3. Bowtie INDEX files if not provided
+    String string_spikein = "1"
+    Array[String] string_spikein_buffer = [1]
+    if ( !defined(spikein_bowtie_index) && defined(spikein_reference) ) {
+        # create bowtie index on spikein genome
+        call bowtie.index as spikein_bowtie_idx {
+            input :
+                reference=select_first([spikein_reference, string_spikein])
+        }
+    }
+
+    #4. Make sure indexes are six else build indexes for Spike-in DNA
+    if ( defined(spikein_bowtie_index) ) {
+        # check total number of bowtie indexes provided
+        Array[File] int_spikein_bowtie_index = select_first([spikein_bowtie_index, string_spikein_buffer])
+        if ( length(int_spikein_bowtie_index) != 6 ) {
+            # create bowtie index if 6 index files aren't provided
+            call bowtie.index as spikein_bowtie_idx_2 {
+                input :
+                    reference=select_first([spikein_reference, string_spikein])
+            }
+        }
+    }
+    Array[File] actual_spikein_bowtie_index = select_first([spikein_bowtie_idx_2.bowtie_indexes, spikein_bowtie_idx.bowtie_indexes, spikein_bowtie_index, string_spikein_buffer])
+
     # FASTA faidx and chromsizes and effective genome size
     call samtools.faidx as samtools_faidx {
         # create FASTA index and chrom sizes files
@@ -291,22 +319,102 @@ workflow peaseq {
     }
 
     # collate all fastqfiles
-    Array[File] sample_R1 = flatten(select_all([sample_R1_srafile, sample_R1_fastqfiles]))
-    Array[File] sample_R2 = flatten(select_all([sample_R2_srafile, sample_R2_fastqfiles]))
-    Array[File] all_sample_fastqfiles = flatten(select_all([sample_R1_srafile, sample_R1_fastqfiles,sample_R2_srafile, sample_R2_fastqfiles]))
-    Array[File] control_R1 = flatten(select_all([control_R1_srafile, control_R1_fastqfiles]))
-    Array[File] control_R2 = flatten(select_all([control_R2_srafile, control_R2_fastqfiles]))
-    Array[File] all_control_fastqfiles = flatten(select_all([control_R1_srafile, control_R1_fastqfiles,control_R2_srafile, control_R2_fastqfiles]))
+    Array[File] original_sample_R1 = flatten(select_all([sample_R1_srafile, sample_R1_fastqfiles]))
+    Array[File] original_sample_R2 = flatten(select_all([sample_R2_srafile, sample_R2_fastqfiles]))
+    Array[File] original_all_sample_fastqfiles = flatten(select_all([sample_R1_srafile, sample_R1_fastqfiles,sample_R2_srafile, sample_R2_fastqfiles]))
+    Array[File] original_control_R1 = flatten(select_all([control_R1_srafile, control_R1_fastqfiles]))
+    Array[File] original_control_R2 = flatten(select_all([control_R2_srafile, control_R2_fastqfiles]))
+    Array[File] original_all_control_fastqfiles = flatten(select_all([control_R1_srafile, control_R1_fastqfiles,control_R2_srafile, control_R2_fastqfiles]))
 
     # transpose to paired-end tuples
-    Array[Pair[File, File]] sample_fastqfiles = zip(sample_R1, sample_R2)
-    Array[Pair[File, File]] control_fastqfiles = zip(control_R1, control_R2)
+    Array[Pair[File, File]] original_sample_fastqfiles = zip(original_sample_R1, original_sample_R2)
+    Array[Pair[File, File]] original_control_fastqfiles = zip(original_control_R1, original_control_R2)
+
+### ------------------------------------------------- ###
+### ---------------- S E C T I O N 1 ---------------- ###
+### ----------- B: remove Spike-IN reads ------------ ###
+### ------------------------------------------------- ###
 
     # if multiple fastqfiles are provided
-    Boolean multi_fastqpair = if length(sample_fastqfiles) > 1 then true else false
-    Boolean one_fastqpair = if length(sample_fastqfiles) == 1 then true else false
-    Boolean multi_control_fastqpair = if length(control_fastqfiles) > 1 then true else false
-    Boolean one_control_fastqpair = if length(control_fastqfiles) == 1 then true else false
+    Boolean multi_fastqpair = if length(original_sample_fastqfiles) > 1 then true else false
+    Boolean one_fastqpair = if length(original_sample_fastqfiles) == 1 then true else false
+    Boolean multi_control_fastqpair = if length(original_control_fastqfiles) > 1 then true else false
+    Boolean one_control_fastqpair = if length(original_control_fastqfiles) == 1 then true else false
+
+    if ( defined(spikein_bowtie_index) || defined(spikein_reference) ) {
+        scatter (eachfastq in original_all_sample_fastqfiles) {
+            call fastqc.fastqc as spikein_s_indv_fastqc {
+                input :
+                    inputfile=eachfastq,
+                    default_location=if multi_fastqpair then 'SAMPLE/individual_fastqs/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/FastQC' else 'SAMPLE/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/FastQC'
+            }
+        }
+        scatter (eachfastq in original_all_control_fastqfiles) {
+            call fastqc.fastqc as spikein_c_indv_fastqc {
+                input :
+                    inputfile=eachfastq,
+                    default_location=if multi_control_fastqpair then 'CONTROL/individual_fastqs/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/FastQC' else 'CONTROL/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/FastQC'
+            }
+        }
+        scatter (fastqpair in original_sample_fastqfiles) {
+            call util.basicfastqstats as spikein_s_indv_R1_bfs {
+                input :
+                    fastqfile=fastqpair.left,
+                    default_location=if multi_fastqpair then 'SAMPLE/individual_fastqs/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/SummaryStats' else 'SAMPLE/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/SummaryStats'
+            }
+            call bowtie.spikein_PE as spikein_s_indv_map {
+                input :
+                    fastqfile=fastqpair.left,
+                    fastqfile_R2=fastqpair.right,
+                    metricsfile=spikein_s_indv_R1_bfs.metrics_out,
+                    insert_size=insertsize,
+                    strandedness=strandedness,
+                    index_files=actual_spikein_bowtie_index,
+                    default_location=if multi_fastqpair then 'SAMPLE/individual_fastqs/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/SummaryStats' else 'SAMPLE/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/SummaryStats'
+            }
+        }
+        scatter (fastqpair in original_control_fastqfiles) {
+            call util.basicfastqstats as spikein_c_indv_R1_bfs {
+                input :
+                    fastqfile=fastqpair.left,
+                    default_location=if multi_control_fastqpair then 'CONTROL/individual_fastqs/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/SummaryStats' else 'CONTROL/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/SummaryStats'
+            }
+            call bowtie.spikein_PE as spikein_c_indv_map {
+                input :
+                    fastqfile=fastqpair.left,
+                    fastqfile_R2=fastqpair.right,
+                    metricsfile=spikein_c_indv_R1_bfs.metrics_out,
+                    insert_size=insertsize,
+                    strandedness=strandedness,
+                    index_files=actual_spikein_bowtie_index,
+                    default_location=if multi_control_fastqpair then 'CONTROL/individual_fastqs/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/SummaryStats' else 'CONTROL/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/SummaryStats'
+            }
+        }
+
+        if (length(original_sample_R1) > 1) {
+            call peaseq_util.sortfiles as spikein_s_R1_sorted { input: fastqfiles=spikein_s_indv_map.unaligned_1 }
+            call peaseq_util.sortfiles as spikein_s_R2_sorted { input: fastqfiles=spikein_s_indv_map.unaligned_2 }
+        }
+        if (length(original_control_R1) > 1) {
+            call peaseq_util.sortfiles as spikein_c_R1_sorted { input: fastqfiles=spikein_c_indv_map.unaligned_1 }
+            call peaseq_util.sortfiles as spikein_c_R2_sorted { input: fastqfiles=spikein_c_indv_map.unaligned_2 }
+        }
+
+        Array[File] spikein_sample_R1 = select_first([spikein_s_R1_sorted.allfiles, spikein_s_indv_map.unaligned_1])
+        Array[File] spikein_sample_R2 = select_first([spikein_s_R2_sorted.allfiles, spikein_s_indv_map.unaligned_2])
+        Array[File] spikein_control_R1 = select_first([spikein_c_R1_sorted.allfiles, spikein_c_indv_map.unaligned_1])
+        Array[File] spikein_control_R2 = select_first([spikein_c_R2_sorted.allfiles, spikein_c_indv_map.unaligned_2])
+
+        Array[File] spikein_all_sample_fastqfiles = flatten(select_all([spikein_sample_R1, spikein_sample_R2]))
+        Array[Pair[File, File]] spikein_sample_fastqfiles = zip(spikein_sample_R1, spikein_sample_R2)
+        Array[File] spikein_all_control_fastqfiles = flatten(select_all([spikein_control_R1, spikein_control_R2]))
+        Array[Pair[File, File]] spikein_control_fastqfiles = zip(spikein_control_R1, spikein_control_R2)
+    }
+        
+    Array[File] all_sample_fastqfiles = select_first([spikein_all_sample_fastqfiles, original_all_sample_fastqfiles])
+    Array[Pair[File, File]] sample_fastqfiles = select_first([spikein_sample_fastqfiles, original_sample_fastqfiles])
+    Array[File] all_control_fastqfiles = select_first([spikein_all_control_fastqfiles, original_all_control_fastqfiles])
+    Array[Pair[File, File]] control_fastqfiles = select_first([spikein_control_fastqfiles, original_control_fastqfiles])
 
 ### ------------------------------------------------- ###
 ### ---------------- S E C T I O N 2 ---------------- ###
@@ -1764,7 +1872,7 @@ workflow peaseq {
         }
     } # end if multifastqpair
 
-    if (multi_control_fastqpair) {
+    if ( multi_control_fastqpair ) {
         call util.evalstats as PE_merge_c_summarystats {
             input:
                 fastq_type="PEAseq PEmode Control",
@@ -1820,6 +1928,14 @@ workflow peaseq {
 ### ------------------------------------------------- ###
 
     output {
+        #SPIKE-IN
+        Array[File?]? spikein_indv_s_htmlfile = spikein_s_indv_fastqc.htmlfile
+        Array[File?]? spikein_indv_s_zipfile = spikein_s_indv_fastqc.zipfile
+        Array[File?]? spikein_s_metrics_out = spikein_s_indv_map.mapping_output
+        Array[File?]? spikein_indv_c_htmlfile = spikein_c_indv_fastqc.htmlfile
+        Array[File?]? spikein_indv_c_zipfile = spikein_c_indv_fastqc.zipfile
+        Array[File?]? spikein_c_metrics_out = spikein_c_indv_map.mapping_output
+
         #FASTQC
         Array[File?]? indv_s_htmlfile = s_indv_fastqc.htmlfile
         Array[File?]? indv_s_zipfile = s_indv_fastqc.zipfile
