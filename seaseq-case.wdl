@@ -240,19 +240,19 @@ workflow seaseq {
             call fastqc.fastqc as spikein_indv_fastqc {
                 input :
                     inputfile=eachfastq,
-                    default_location=if (one_fastq) then sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/SpikeIn/QC/FastQC' else 'SAMPLE/' + sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/SpikeIn/QC/FastQC'
+                    default_location=if (one_fastq) then sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/SpikeIn/FastQC' else 'SAMPLE/' + sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/SpikeIn/FastQC'
             }
             call util.basicfastqstats as spikein_indv_bfs {
                 input :
                     fastqfile=eachfastq,
-                    default_location=if (one_fastq) then sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/SpikeIn/QC/SummaryStats' else 'SAMPLE/' + sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/SpikeIn/QC/SummaryStats'
+                    default_location=if (one_fastq) then sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/SpikeIn/SummaryStats' else 'SAMPLE/' + sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/SpikeIn/SummaryStats'
             }
             call bowtie.spikein_SE as spikein_indv_map {
                 input :
                     fastqfile=eachfastq,
                     index_files=actual_spikein_bowtie_index,
                     metricsfile=spikein_indv_bfs.metrics_out,
-                    default_location=if (one_fastq) then sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/SpikeIn/QC/SummaryStats' else 'SAMPLE/' + sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/SpikeIn/QC/SummaryStats'
+                    default_location=if (one_fastq) then sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/SpikeIn/SummaryStats' else 'SAMPLE/' + sub(basename(eachfastq),'.fastq.gz|.fq.gz','') + '/SpikeIn/SummaryStats'
             }
         }
 

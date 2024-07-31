@@ -283,14 +283,14 @@ workflow peaseq {
             call fastqc.fastqc as spikein_indv_fastqc {
                 input :
                     inputfile=eachfastq,
-                    default_location=if multi_fastqpair then 'SAMPLE/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/FastQC' else if defined(results_name) then results_name + '/single-end_mode/SpikeIn/QC/FastQC' else sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/single-end_mode/SpikeIn/QC/FastQC'
+                    default_location=if multi_fastqpair then 'SAMPLE/' + sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/FastQC' else if defined(results_name) then results_name + '/SpikeIn/FastQC' else sub(basename(eachfastq),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/FastQC'
             }
         }
         scatter (fastqpair in original_sample_fastqfiles) {
             call util.basicfastqstats as spikein_indv_R1_bfs {
                 input :
                     fastqfile=fastqpair.left,
-                    default_location='SAMPLE/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/SummaryStats'
+                    default_location=if multi_fastqpair then 'SAMPLE/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/SummaryStats' else if defined(results_name) then results_name + '/SpikeIn/SummaryStats' else sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/SummaryStats'
             }
             call bowtie.spikein_PE as spikein_indv_map {
                 input :
@@ -300,7 +300,7 @@ workflow peaseq {
                     insert_size=insertsize,
                     strandedness=strandedness,
                     index_files=actual_spikein_bowtie_index,
-                    default_location='SAMPLE/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/QC/SummaryStats'
+                    default_location=if multi_fastqpair then 'SAMPLE/' + sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/SummaryStats' else if defined(results_name) then results_name + '/SpikeIn/SummaryStats' else sub(basename(fastqpair.left),'_R?[12]_....f.*q.gz|_R?[12].f.*q.gz','') + '/SpikeIn/SummaryStats'
             }
         }
 
