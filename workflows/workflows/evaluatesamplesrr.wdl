@@ -39,7 +39,7 @@ workflow evaluatesrr {
         call ss.seaseq as ss {
             input :
                 reference=reference,
-                spikein_reference=spikein_reference
+                spikein_reference=spikein_reference,
                 blacklist=blacklist,
                 gtf=gtf,
                 bowtie_index=bowtie_index,
@@ -56,7 +56,7 @@ workflow evaluatesrr {
         call ps.peaseq as ps {
             input :
                 reference=reference,
-                spikein_reference=spikein_reference
+                spikein_reference=spikein_reference,
                 blacklist=blacklist,
                 gtf=gtf,
                 bowtie_index=bowtie_index,
