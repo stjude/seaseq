@@ -200,7 +200,7 @@ task evalstats {
         String outputtext = sub(basename(fastqczip),'_fastqc.zip', '-stats.txt')
         String configml = sub(basename(fastqczip),'_fastqc.zip', '-config.ml')
 
-        Int memory_gb = 10
+        Int memory_gb = 20
         Int max_retries = 1
         Int ncpu = 1
     }
