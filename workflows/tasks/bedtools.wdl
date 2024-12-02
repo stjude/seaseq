@@ -13,7 +13,7 @@ task intersect {
         String suffixname = if (nooverlap) then '.bklist.bam' else '.sorted.bed'
         String default_location = "."
         
-        Int memory_gb = 10
+        Int memory_gb = 50
         Int max_retries = 1
         Int ncpu = 1
     }
